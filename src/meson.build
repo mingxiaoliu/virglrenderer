@@ -75,6 +75,8 @@ vrend_winsys_glx_sources = [
 ]
 
 virgl_venus_sources = [
+   'vkr_parser.c',
+   'vkr_parser.h',
 ]
 
 virgl_depends = [
