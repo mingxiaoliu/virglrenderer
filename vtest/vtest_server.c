@@ -85,6 +85,8 @@ struct vtest_server
    bool use_egl_surfaceless;
    bool use_gles;
 
+   bool venus;
+
    int ctx_flags;
 
    struct list_head new_clients;
@@ -154,6 +156,7 @@ while (__AFL_LOOP(1000)) {
 #define OPT_USE_GLX 'x'
 #define OPT_USE_EGL_SURFACELESS 's'
 #define OPT_USE_GLES 'e'
+#define OPT_VENUS 'v'
 #define OPT_RENDERNODE 'r'
 
 static void vtest_server_parse_args(int argc, char **argv)
@@ -167,6 +170,7 @@ static void vtest_server_parse_args(int argc, char **argv)
       {"use-glx",             no_argument, NULL, OPT_USE_GLX},
       {"use-egl-surfaceless", no_argument, NULL, OPT_USE_EGL_SURFACELESS},
       {"use-gles",            no_argument, NULL, OPT_USE_GLES},
+      {"venus",               no_argument, NULL, OPT_VENUS},
       {"rendernode",          required_argument, NULL, OPT_RENDERNODE},
       {0, 0, 0, 0}
    };
@@ -200,13 +204,16 @@ static void vtest_server_parse_args(int argc, char **argv)
       case OPT_USE_GLES:
          server.use_gles = true;
          break;
+      case OPT_VENUS:
+         server.venus = true;
+         break;
       case OPT_RENDERNODE:
          server.render_device = optarg;
          break;
       default:
          printf("Usage: %s [--no-fork] [--no-loop-or-fork] [--multi-clients] "
                 "[--use-glx] [--use-egl-surfaceless] [--use-gles] "
-                "[--rendernode <dev>]"
+                "[--venus] [--rendernode <dev>]"
                 " [file]\n", argv[0]);
          exit(EXIT_FAILURE);
          break;
@@ -233,6 +240,10 @@ static void vtest_server_parse_args(int argc, char **argv)
          server.ctx_flags |= VIRGL_RENDERER_USE_SURFACELESS;
       if (server.use_gles)
          server.ctx_flags |= VIRGL_RENDERER_USE_GLES;
+   }
+
+   if (server.venus) {
+      server.ctx_flags |= VIRGL_RENDERER_VENUS;
    }
 }
 
