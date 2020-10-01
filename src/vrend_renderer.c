@@ -77,6 +77,7 @@ const struct vrend_if_cbs *vrend_clicbs;
 
 struct vrend_fence {
    struct vrend_context *ctx;
+   uint32_t flags;
    void *fence_cookie;
 
    union {
@@ -720,6 +721,9 @@ struct vrend_context {
    struct vrend_shader_cfg shader_cfg;
 
    unsigned debug_flags;
+
+   vrend_context_fence_retire fence_retire;
+   void *fence_retire_data;
 };
 
 static struct vrend_resource *vrend_renderer_ctx_res_lookup(struct vrend_context *ctx, int res_handle);
@@ -6379,6 +6383,9 @@ struct vrend_context *vrend_create_context(int id, uint32_t nlen, const char *de
 
    vrender_get_glsl_version(&grctx->shader_cfg.glsl_version);
 
+   if (!grctx->ctx_id)
+      grctx->fence_retire = vrend_clicbs->ctx0_fence_retire;
+
    return grctx;
 }
 
@@ -9132,7 +9139,18 @@ void vrend_renderer_blit(struct vrend_context *ctx,
       vrend_pause_render_condition(ctx, false);
 }
 
-int vrend_renderer_create_fence(struct vrend_context *ctx, void *fence_cookie)
+void vrend_renderer_set_fence_retire(struct vrend_context *ctx,
+                                     vrend_context_fence_retire retire,
+                                     void *retire_data)
+{
+   assert(ctx->ctx_id);
+   ctx->fence_retire = retire;
+   ctx->fence_retire_data = retire_data;
+}
+
+int vrend_renderer_create_fence(struct vrend_context *ctx,
+                                uint32_t flags,
+                                void *fence_cookie)
 {
    struct vrend_fence *fence;
 
@@ -9144,6 +9162,7 @@ int vrend_renderer_create_fence(struct vrend_context *ctx, void *fence_cookie)
       return -ENOMEM;
 
    fence->ctx = ctx;
+   fence->flags = flags;
    fence->fence_cookie = fence_cookie;
 
 #ifdef HAVE_EPOXY_EGL_H
@@ -9176,19 +9195,47 @@ int vrend_renderer_create_fence(struct vrend_context *ctx, void *fence_cookie)
 
 static void vrend_renderer_check_queries(void);
 
+static bool need_fence_retire_signal_locked(struct vrend_fence *fence)
+{
+   struct vrend_fence *next;
+
+   /* last fence */
+   if (fence->fences.next == &vrend_state.fence_list)
+      return true;
+
+   /* next fence belongs to a different context */
+   next = LIST_ENTRY(struct vrend_fence, fence->fences.next, fences);
+   if (next->ctx != fence->ctx)
+      return true;
+
+   return false;
+}
+
 void vrend_renderer_check_fences(void)
 {
+   struct list_head retired_fences;
    struct vrend_fence *fence, *stor;
-   bool fence_cookie_valid = false;
-   void *fence_cookie;
+
+   list_inithead(&retired_fences);
 
    if (vrend_state.sync_thread) {
       flush_eventfd(vrend_state.eventfd);
       pipe_mutex_lock(vrend_state.fence_mutex);
       LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_list, fences) {
-         fence_cookie_valid = true;
-         fence_cookie = fence->fence_cookie;
-         free_fence_locked(fence);
+         /* vrend_free_fences_for_context might have marked the fence invalid
+          * by setting fence->ctx to NULL
+          */
+         if (!fence->ctx) {
+            free_fence_locked(fence);
+            continue;
+         }
+
+         if (need_fence_retire_signal_locked(fence)) {
+            list_del(&fence->fences);
+            list_addtail(&fence->fences, &retired_fences);
+         } else {
+            free_fence_locked(fence);
+         }
       }
       pipe_mutex_unlock(vrend_state.fence_mutex);
    } else {
@@ -9196,9 +9243,12 @@ void vrend_renderer_check_fences(void)
 
       LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_list, fences) {
          if (do_wait(fence, /* can_block */ false)) {
-            fence_cookie_valid = true;
-            fence_cookie = fence->fence_cookie;
-            free_fence_locked(fence);
+            if (need_fence_retire_signal_locked(fence)) {
+               list_del(&fence->fences);
+               list_addtail(&fence->fences, &retired_fences);
+            } else {
+               free_fence_locked(fence);
+            }
          } else {
             /* don't bother checking any subsequent ones */
             break;
@@ -9206,12 +9256,17 @@ void vrend_renderer_check_fences(void)
       }
    }
 
-   if (!fence_cookie_valid)
+   if (LIST_IS_EMPTY(&retired_fences))
       return;
 
    vrend_renderer_check_queries();
 
-   vrend_clicbs->ctx0_fence_retire(fence_cookie);
+   LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &retired_fences, fences) {
+      struct vrend_context *ctx = fence->ctx;
+      ctx->fence_retire(fence->fence_cookie, ctx->fence_retire_data);
+
+      free_fence_locked(fence);
+   }
 }
 
 static bool vrend_get_one_query_result(GLuint query_id, bool use_64, uint64_t *result)
@@ -10939,7 +10994,7 @@ int vrend_renderer_resource_unmap(struct pipe_resource *pres)
 int vrend_renderer_create_ctx0_fence(uint32_t fence_id)
 {
    void *fence_cookie = (void *)(uintptr_t)fence_id;
-   return vrend_renderer_create_fence(vrend_state.ctx0, fence_cookie);
+   return vrend_renderer_create_fence(vrend_state.ctx0, 0, fence_cookie);
 }
 
 int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd) {
@@ -10949,6 +11004,7 @@ int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd) {
    }
 
    struct vrend_fence *fence = NULL;
+   struct vrend_fence *first_fence = NULL;
    struct list_head *fence_list;
    struct vrend_fence *iter;
 
@@ -10960,6 +11016,12 @@ int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd) {
    }
 
    LIST_FOR_EACH_ENTRY(iter, fence_list, fences) {
+      if (fence->ctx != vrend_state.ctx0)
+         continue;
+
+      if (!first_fence)
+         first_fence = iter;
+
       const uint32_t iter_fence_id = (uintptr_t)iter->fence_cookie;
       if (iter_fence_id == fence_id) {
          fence = iter;
@@ -10968,8 +11030,6 @@ int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd) {
          /* an unrecognized fence_id smaller than the first unsignaled fence
           * is considered signaled
           */
-         struct vrend_fence *first_fence =
-            LIST_ENTRY(struct vrend_fence, fence_list->next, fences);
          if (iter == first_fence)
             break;
 

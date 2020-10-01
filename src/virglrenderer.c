@@ -165,6 +165,12 @@ void virgl_renderer_fill_caps(uint32_t set, uint32_t version,
    }
 }
 
+static void per_context_fence_retire(UNUSED struct virgl_context *ctx,
+                                     UNUSED uint64_t queue_id,
+                                     UNUSED void *fence_cookie)
+{
+}
+
 int virgl_renderer_context_create_with_flags(uint32_t ctx_id,
                                              uint32_t ctx_flags,
                                              uint32_t nlen,
@@ -204,7 +210,7 @@ int virgl_renderer_context_create_with_flags(uint32_t ctx_id,
 
    ctx->ctx_id = ctx_id;
    ctx->capset_id = capset_id;
-   ctx->fence_retire = NULL;
+   ctx->fence_retire = per_context_fence_retire;
 
    ret = virgl_context_add(ctx);
    if (ret) {
@@ -436,7 +442,8 @@ void virgl_renderer_get_rect(int resource_id, struct iovec *iov, unsigned int nu
 }
 
 
-static void ctx0_fence_retire(void *fence_cookie)
+static void ctx0_fence_retire(void *fence_cookie,
+                              UNUSED void *retire_data)
 {
    const uint32_t fence_id = (uintptr_t)fence_cookie;
    state.cbs->write_fence(state.cookie, fence_id);
