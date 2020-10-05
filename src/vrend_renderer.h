@@ -113,7 +113,7 @@ struct vrend_format_table {
 };
 
 struct vrend_if_cbs {
-   void (*write_fence)(unsigned fence_id);
+   void (*ctx0_fence_retire)(void *fence_cookie);
 
    virgl_gl_context (*create_gl_context)(int scanout, struct virgl_gl_ctx_param *params);
    void (*destroy_gl_context)(virgl_gl_context ctx);
@@ -357,12 +357,12 @@ void vrend_set_tess_state(struct vrend_context *ctx, const float tess_factors[6]
 
 void vrend_renderer_fini(void);
 
-int vrend_renderer_create_fence(struct vrend_context *ctx, uint32_t fence_id);
+int vrend_renderer_create_fence(struct vrend_context *ctx, void *fence_cookie);
 
 void vrend_renderer_check_fences(void);
 
 int vrend_renderer_create_ctx0_fence(uint32_t fence_id);
-int vrend_renderer_export_fence(uint32_t fence_id, int* out_fd);
+int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd);
 
 bool vrend_hw_switch_context(struct vrend_context *ctx, bool now);
 uint32_t vrend_renderer_object_insert(struct vrend_context *ctx, void *data,

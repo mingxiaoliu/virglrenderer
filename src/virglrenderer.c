@@ -436,8 +436,9 @@ void virgl_renderer_get_rect(int resource_id, struct iovec *iov, unsigned int nu
 }
 
 
-static void virgl_write_fence(uint32_t fence_id)
+static void ctx0_fence_retire(void *fence_cookie)
 {
+   const uint32_t fence_id = (uintptr_t)fence_cookie;
    state.cbs->write_fence(state.cookie, fence_id);
 }
 
@@ -474,7 +475,7 @@ static int make_current(virgl_renderer_gl_context ctx)
 }
 
 static const struct vrend_if_cbs vrend_cbs = {
-   virgl_write_fence,
+   ctx0_fence_retire,
    create_gl_context,
    destroy_gl_context,
    make_current,
@@ -869,5 +870,5 @@ int
 virgl_renderer_export_fence(uint32_t client_fence_id, int *fd)
 {
    TRACE_FUNC();
-   return vrend_renderer_export_fence(client_fence_id, fd);
+   return vrend_renderer_export_ctx0_fence(client_fence_id, fd);
 }
