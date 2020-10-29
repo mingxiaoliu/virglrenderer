@@ -90,6 +90,13 @@ struct virgl_renderer_callbacks {
  */
 #define VIRGL_RENDERER_USE_EXTERNAL_BLOB (1 << 5)
 
+/*
+ * When this bit is set, virgl_renderer_submit_cmd might return before the
+ * command buffer is fully parsed on CPU.  A fence with
+ * VIRGL_RENDERER_FENCE_FLAG_CPU can be used for CPU fencing.
+ */
+#define VIRGL_RENDERER_ASYNC_SUBMIT (1 << 6)
+
 #endif /* VIRGL_RENDERER_UNSTABLE_APIS */
 
 VIRGL_EXPORT int virgl_renderer_init(void *cookie, int flags, struct virgl_renderer_callbacks *cb);
@@ -316,6 +323,7 @@ VIRGL_EXPORT int
 virgl_renderer_export_fence(uint32_t client_fence_id, int *fd);
 
 #define VIRGL_RENDERER_FENCE_FLAG_MERGEABLE      (1 << 0)
+#define VIRGL_RENDERER_FENCE_FLAG_CPU            (1 << 1)
 VIRGL_EXPORT int virgl_renderer_context_create_fence(uint32_t ctx_id,
                                                      uint32_t flags,
                                                      uint64_t queue_id,
