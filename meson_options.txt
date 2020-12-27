@@ -41,7 +41,7 @@ option(
 option(
   'venus',
   type : 'boolean',
-  value : 'false',
+  value : 'true',
   description : 'enable support for venus'
 )
 

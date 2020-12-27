@@ -597,6 +597,8 @@ int virgl_renderer_init(void *cookie, int flags, struct virgl_renderer_callbacks
 
    int ret;
 
+   flags |= VIRGL_RENDERER_VENUS;
+
    /* VIRGL_RENDERER_THREAD_SYNC is a hint and can be silently ignored */
    if (!has_eventfd() || getenv("VIRGL_DISABLE_MT"))
       flags &= ~VIRGL_RENDERER_THREAD_SYNC;
