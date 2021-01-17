@@ -10840,7 +10840,7 @@ int vrend_renderer_export_query(struct pipe_resource *pres,
     * Implementations that support eglExportDMABUFImageMESA can also export certain resources.
     * This is omitted currently since virgl_renderer_get_fd_for_texture supports that use case.
     */
-   export_query->out_num_fds = 0;
+   export_query->out_num_fds = 1;
    export_query->out_fourcc = 0;
    export_query->out_modifier = DRM_FORMAT_MOD_INVALID;
    if (export_query->in_export_fds)
