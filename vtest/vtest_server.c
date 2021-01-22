@@ -64,6 +64,8 @@ struct vtest_client
 
    bool in_fd_ready;
    struct vtest_context *context;
+   int context_poll_fd;
+   bool context_need_poll;
 };
 
 struct vtest_server
@@ -82,6 +84,8 @@ struct vtest_server
    bool use_glx;
    bool use_egl_surfaceless;
    bool use_gles;
+
+   bool venus;
 
    int ctx_flags;
 
@@ -152,6 +156,7 @@ while (__AFL_LOOP(1000)) {
 #define OPT_USE_GLX 'x'
 #define OPT_USE_EGL_SURFACELESS 's'
 #define OPT_USE_GLES 'e'
+#define OPT_VENUS 'v'
 #define OPT_RENDERNODE 'r'
 
 static void vtest_server_parse_args(int argc, char **argv)
@@ -165,6 +170,7 @@ static void vtest_server_parse_args(int argc, char **argv)
       {"use-glx",             no_argument, NULL, OPT_USE_GLX},
       {"use-egl-surfaceless", no_argument, NULL, OPT_USE_EGL_SURFACELESS},
       {"use-gles",            no_argument, NULL, OPT_USE_GLES},
+      {"venus",               no_argument, NULL, OPT_VENUS},
       {"rendernode",          required_argument, NULL, OPT_RENDERNODE},
       {0, 0, 0, 0}
    };
@@ -186,7 +192,7 @@ static void vtest_server_parse_args(int argc, char **argv)
          server.loop = false;
          break;
       case OPT_MULTI_CLIENTS:
-         printf("EXPERIMENTAL: clients must know and trust each other\n");
+         printf("multi-clients enabled: clients must trust each other\n");
          server.multi_clients = true;
          break;
       case OPT_USE_GLX:
@@ -198,13 +204,16 @@ static void vtest_server_parse_args(int argc, char **argv)
       case OPT_USE_GLES:
          server.use_gles = true;
          break;
+      case OPT_VENUS:
+         server.venus = true;
+         break;
       case OPT_RENDERNODE:
          server.render_device = optarg;
          break;
       default:
          printf("Usage: %s [--no-fork] [--no-loop-or-fork] [--multi-clients] "
                 "[--use-glx] [--use-egl-surfaceless] [--use-gles] "
-                "[--rendernode <dev>]"
+                "[--venus] [--rendernode <dev>]"
                 " [file]\n", argv[0]);
          exit(EXIT_FAILURE);
          break;
@@ -231,6 +240,10 @@ static void vtest_server_parse_args(int argc, char **argv)
          server.ctx_flags |= VIRGL_RENDERER_USE_SURFACELESS;
       if (server.use_gles)
          server.ctx_flags |= VIRGL_RENDERER_USE_GLES;
+   }
+
+   if (server.venus) {
+      server.ctx_flags |= VIRGL_RENDERER_VENUS;
    }
 }
 
@@ -297,6 +310,8 @@ static int vtest_server_add_client(int in_fd, int out_fd)
 
    client->input.data.fd = in_fd;
    client->input.read = vtest_block_read;
+
+   client->context_poll_fd = -1;
 
    list_addtail(&client->head, &server.new_clients);
 
@@ -369,6 +384,11 @@ static void vtest_server_wait_clients(void)
    LIST_FOR_EACH_ENTRY(client, &server.active_clients, head) {
       FD_SET(client->in_fd, &read_fds);
       max_fd = MAX2(client->in_fd, max_fd);
+
+      if (client->context_poll_fd >= 0) {
+         FD_SET(client->context_poll_fd, &read_fds);
+         max_fd = MAX2(client->context_poll_fd, max_fd);
+      }
    }
 
    /* accept new clients when there is none or when multi_clients is set */
@@ -395,6 +415,14 @@ static void vtest_server_wait_clients(void)
    LIST_FOR_EACH_ENTRY(client, &server.active_clients, head) {
       if (FD_ISSET(client->in_fd, &read_fds)) {
          client->in_fd_ready = true;
+      }
+
+      if (client->context_poll_fd >= 0) {
+         if (FD_ISSET(client->context_poll_fd, &read_fds)) {
+            client->context_need_poll = true;
+         }
+      } else if (client->context) {
+         client->context_need_poll = true;
       }
    }
 
@@ -433,6 +461,11 @@ static void vtest_server_dispatch_clients(void)
 
    LIST_FOR_EACH_ENTRY_SAFE(client, tmp, &server.active_clients, head) {
       int err;
+
+      if (client->context_need_poll) {
+         vtest_poll_context(client->context);
+         client->context_need_poll = false;
+      }
 
       if (!client->in_fd_ready)
          continue;
@@ -559,7 +592,9 @@ static void vtest_server_run(void)
       /* init renderer after the first active client is added */
       is_empty = LIST_IS_EMPTY(&server.active_clients);
       if (was_empty && !is_empty) {
-         int ret = vtest_init_renderer(server.ctx_flags, server.render_device);
+         int ret = vtest_init_renderer(server.multi_clients,
+                                       server.ctx_flags,
+                                       server.render_device);
          if (ret) {
             vtest_server_inactivate_clients();
             run = false;
@@ -580,28 +615,46 @@ static void vtest_server_run(void)
    vtest_server_close_socket();
 }
 
-typedef int (*vtest_cmd_fptr_t)(uint32_t);
+static const struct vtest_command {
+   int (*dispatch)(uint32_t);
+   bool init_context;
+} vtest_commands[] = {
+   /* CMD ids starts at 1 */
+   [0]                          = { NULL,                        false },
+   [VCMD_GET_CAPS]              = { vtest_send_caps,             false },
+   [VCMD_RESOURCE_CREATE]       = { vtest_create_resource,       true  },
+   [VCMD_RESOURCE_UNREF]        = { vtest_resource_unref,        true  },
+   [VCMD_TRANSFER_GET]          = { vtest_transfer_get,          true  },
+   [VCMD_TRANSFER_PUT]          = { vtest_transfer_put,          true  },
+   [VCMD_SUBMIT_CMD]            = { vtest_submit_cmd,            true  },
+   [VCMD_RESOURCE_BUSY_WAIT]    = { vtest_resource_busy_wait,    false },
+   /* VCMD_CREATE_RENDERER is a special case */
+   [VCMD_CREATE_RENDERER]       = { NULL,                        false },
+   [VCMD_GET_CAPS2]             = { vtest_send_caps2,            false },
+   [VCMD_PING_PROTOCOL_VERSION] = { vtest_ping_protocol_version, false },
+   [VCMD_PROTOCOL_VERSION]      = { vtest_protocol_version,      false },
 
-static const vtest_cmd_fptr_t vtest_commands[] = {
-   NULL /* CMD ids starts at 1 */,
-   vtest_send_caps,
-   vtest_create_resource,
-   vtest_resource_unref,
-   vtest_transfer_get,
-   vtest_transfer_put,
-   vtest_submit_cmd,
-   vtest_resource_busy_wait,
-   NULL, /* VCMD_CREATE_RENDERER is a specific case */
-   vtest_send_caps2,
-   vtest_ping_protocol_version,
-   vtest_protocol_version,
-   vtest_create_resource2,
-   vtest_transfer_get2,
-   vtest_transfer_put2,
+   /* since protocol version 2 */
+   [VCMD_RESOURCE_CREATE2]      = { vtest_create_resource2,      true  },
+   [VCMD_TRANSFER_GET2]         = { vtest_transfer_get2,         true  },
+   [VCMD_TRANSFER_PUT2]         = { vtest_transfer_put2,         true  },
+
+   /* since protocol version 3 */
+   [VCMD_GET_PARAM]             = { vtest_get_param,             false },
+   [VCMD_GET_CAPSET]            = { vtest_get_capset,            false },
+   [VCMD_CONTEXT_INIT]          = { vtest_context_init,          false },
+   [VCMD_RESOURCE_CREATE_BLOB]  = { vtest_resource_create_blob,  true  },
+   [VCMD_SYNC_CREATE]           = { vtest_sync_create,           true },
+   [VCMD_SYNC_UNREF]            = { vtest_sync_unref,            true },
+   [VCMD_SYNC_READ]             = { vtest_sync_read,             true },
+   [VCMD_SYNC_WRITE]            = { vtest_sync_write,            true },
+   [VCMD_SYNC_WAIT]             = { vtest_sync_wait,             true },
+   [VCMD_SUBMIT_CMD2]           = { vtest_submit_cmd2,           true },
 };
 
 static int vtest_client_dispatch_commands(struct vtest_client *client)
 {
+   const struct vtest_command *cmd;
    int ret;
    uint32_t header[VTEST_HDR_SIZE];
 
@@ -622,31 +675,36 @@ static int vtest_client_dispatch_commands(struct vtest_client *client)
          return VTEST_CLIENT_ERROR_CONTEXT_FAILED;
       }
       printf("%s: client context created.\n", __func__);
-      vtest_poll();
+      vtest_poll_resource_busy_wait();
 
       return 0;
    }
 
-   vtest_poll();
+   vtest_poll_resource_busy_wait();
    if (header[1] <= 0 || header[1] >= ARRAY_SIZE(vtest_commands)) {
       return VTEST_CLIENT_ERROR_COMMAND_ID;
    }
 
-   if (vtest_commands[header[1]] == NULL) {
+   cmd = &vtest_commands[header[1]];
+   if (cmd->dispatch == NULL) {
       return VTEST_CLIENT_ERROR_COMMAND_UNEXPECTED;
+   }
+
+   /* we should consider per-context dispatch table to get rid of if's */
+   if (cmd->init_context) {
+      ret = vtest_lazy_init_context(client->context);
+      if (ret) {
+         return VTEST_CLIENT_ERROR_CONTEXT_FAILED;
+      }
+      client->context_poll_fd = vtest_get_context_poll_fd(client->context);
    }
 
    vtest_set_current_context(client->context);
 
-   ret = vtest_commands[header[1]](header[0]);
+   ret = cmd->dispatch(header[0]);
    if (ret < 0) {
       return VTEST_CLIENT_ERROR_COMMAND_DISPATCH;
    }
-
-   /* GL draws are fenced, while possible fence creations are too */
-   if (header[1] == VCMD_SUBMIT_CMD || header[1] == VCMD_RESOURCE_CREATE ||
-       header[1] == VCMD_RESOURCE_CREATE2)
-      vtest_renderer_create_fence();
 
    return 0;
 }

@@ -283,19 +283,18 @@ static int vrend_decode_set_index_buffer(struct vrend_context *ctx, const uint32
 static int vrend_decode_set_constant_buffer(struct vrend_context *ctx, const uint32_t *buf, uint32_t length)
 {
    uint32_t shader;
-   uint32_t index;
    int nc = (length - 2);
 
    if (length < 2)
       return EINVAL;
 
    shader = get_buf_entry(buf, VIRGL_SET_CONSTANT_BUFFER_SHADER_TYPE);
-   index = get_buf_entry(buf, VIRGL_SET_CONSTANT_BUFFER_INDEX);
+   /* VIRGL_SET_CONSTANT_BUFFER_INDEX is not used */
 
    if (shader >= PIPE_SHADER_TYPES)
       return EINVAL;
 
-   vrend_set_constants(ctx, shader, index, nc, get_buf_ptr(buf, VIRGL_SET_CONSTANT_BUFFER_DATA_START));
+   vrend_set_constants(ctx, shader, nc, get_buf_ptr(buf, VIRGL_SET_CONSTANT_BUFFER_DATA_START));
    return 0;
 }
 
@@ -757,7 +756,7 @@ static int vrend_decode_create_object(struct vrend_context *ctx, const uint32_t 
    VREND_DEBUG(dbg_object, ctx,"  CREATE %-18s handle:0x%x len:%d\n",
                vrend_get_object_type_name(obj_type), handle, length);
 
-   TRACE_SCOPE("CREATE %-18s", vrend_get_object_type_name(obj_type));
+   TRACE_SCOPE_FMT("CREATE %-18s", vrend_get_object_type_name(obj_type));
 
    switch (obj_type){
    case VIRGL_OBJECT_BLEND:
@@ -1432,8 +1431,43 @@ static int vrend_decode_pipe_resource_create(struct vrend_context *ctx, const ui
    return vrend_renderer_pipe_resource_create(ctx, blob_id, &args);
 }
 
+static int vrend_decode_pipe_resource_set_type(struct vrend_context *ctx, const uint32_t *buf, uint32_t length)
+{
+   struct vrend_renderer_resource_set_type_args args = { 0 };
+   uint32_t res_id;
+
+   if (length >= VIRGL_PIPE_RES_SET_TYPE_SIZE(0))
+      args.plane_count = (length - VIRGL_PIPE_RES_SET_TYPE_SIZE(0)) / 2;
+
+   if (length != VIRGL_PIPE_RES_SET_TYPE_SIZE(args.plane_count) ||
+       !args.plane_count || args.plane_count > VIRGL_GBM_MAX_PLANES)
+      return EINVAL;
+
+   res_id = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_RES_HANDLE);
+   args.format = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_FORMAT);
+   args.bind = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_BIND);
+   args.width = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_WIDTH);
+   args.height = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_HEIGHT);
+   args.usage = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_USAGE);
+   args.modifier = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_MODIFIER_LO);
+   args.modifier |= (uint64_t)get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_MODIFIER_HI) << 32;
+   for (uint32_t i = 0; i < args.plane_count; i++) {
+      args.plane_strides[i] = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_PLANE_STRIDE(i));
+      args.plane_offsets[i] = get_buf_entry(buf, VIRGL_PIPE_RES_SET_TYPE_PLANE_OFFSET(i));
+   }
+
+   return vrend_renderer_pipe_resource_set_type(ctx, res_id, &args);
+}
+
 static void vrend_decode_ctx_init_base(struct vrend_decode_ctx *dctx,
                                        uint32_t ctx_id);
+
+static void vrend_decode_ctx_fence_retire(void *fence_cookie,
+                                          void *retire_data)
+{
+   struct vrend_decode_ctx *dctx = retire_data;
+   dctx->base.fence_retire(&dctx->base, 0, fence_cookie);
+}
 
 struct virgl_context *vrend_renderer_context_create(uint32_t handle,
                                                     uint32_t nlen,
@@ -1453,6 +1487,10 @@ struct virgl_context *vrend_renderer_context_create(uint32_t handle,
       return NULL;
    }
 
+   vrend_renderer_set_fence_retire(dctx->grctx,
+                                   vrend_decode_ctx_fence_retire,
+                                   dctx);
+
    return &dctx->base;
 }
 
@@ -1470,12 +1508,7 @@ static void vrend_decode_ctx_attach_resource(struct virgl_context *ctx,
 {
    TRACE_FUNC();
    struct vrend_decode_ctx *dctx = (struct vrend_decode_ctx *)ctx;
-   /* in the future, we should import to create the pipe resource */
-   if (!res->pipe_resource)
-      return;
-
-   vrend_renderer_attach_res_ctx(dctx->grctx, res->res_id,
-                                 res->pipe_resource);
+   vrend_renderer_attach_res_ctx(dctx->grctx, res);
 }
 
 static void vrend_decode_ctx_detach_resource(struct virgl_context *ctx,
@@ -1483,7 +1516,7 @@ static void vrend_decode_ctx_detach_resource(struct virgl_context *ctx,
 {
    TRACE_FUNC();
    struct vrend_decode_ctx *dctx = (struct vrend_decode_ctx *)ctx;
-   vrend_renderer_detach_res_ctx(dctx->grctx, res->res_id);
+   vrend_renderer_detach_res_ctx(dctx->grctx, res);
 }
 
 static int vrend_decode_ctx_transfer_3d(struct virgl_context *ctx,
@@ -1508,8 +1541,11 @@ static int vrend_decode_ctx_get_blob(struct virgl_context *ctx,
    blob->type = VIRGL_RESOURCE_FD_INVALID;
    /* this transfers ownership and blob_id is no longer valid */
    blob->u.pipe_resource = vrend_get_blob_pipe(dctx->grctx, blob_id);
+   if (!blob->u.pipe_resource)
+      return -EINVAL;
 
-   return blob->u.pipe_resource ? 0 : EINVAL;
+   blob->map_info = vrend_renderer_resource_get_map_info(blob->u.pipe_resource);
+   return 0;
 }
 
 typedef int (*vrend_decode_callback)(struct vrend_context *ctx, const uint32_t *buf, uint32_t length);
@@ -1522,7 +1558,7 @@ static int vrend_decode_dummy(struct vrend_context *ctx, const uint32_t *buf, ui
    return 0;
 }
 
-vrend_decode_callback decode_table[VIRGL_MAX_COMMANDS] = {
+static const vrend_decode_callback decode_table[VIRGL_MAX_COMMANDS] = {
    [VIRGL_CCMD_NOP] = vrend_decode_dummy,
    [VIRGL_CCMD_CREATE_OBJECT] = vrend_decode_create_object,
    [VIRGL_CCMD_BIND_OBJECT] = vrend_decode_bind_object,
@@ -1571,7 +1607,8 @@ vrend_decode_callback decode_table[VIRGL_MAX_COMMANDS] = {
    [VIRGL_CCMD_COPY_TRANSFER3D] = vrend_decode_copy_transfer3d,
    [VIRGL_CCMD_END_TRANSFERS] = vrend_decode_dummy,
    [VIRGL_CCMD_SET_TWEAKS] = vrend_decode_set_tweaks,
-   [VIRGL_CCMD_PIPE_RESOURCE_CREATE] = vrend_decode_pipe_resource_create
+   [VIRGL_CCMD_PIPE_RESOURCE_CREATE] = vrend_decode_pipe_resource_create,
+   [VIRGL_CCMD_PIPE_RESOURCE_SET_TYPE] = vrend_decode_pipe_resource_set_type,
 };
 
 static int vrend_decode_ctx_submit_cmd(struct virgl_context *ctx,
@@ -1615,17 +1652,39 @@ static int vrend_decode_ctx_submit_cmd(struct virgl_context *ctx,
       VREND_DEBUG(dbg_cmd, gdctx->grctx, "%-4d %-20s len:%d\n",
                   cur_offset, vrend_get_comand_name(cmd), len);
 
-      TRACE_SCOPE("%s", vrend_get_comand_name(cmd));
+      TRACE_SCOPE(vrend_get_comand_name(cmd));
 
       ret = decode_table[cmd](gdctx->grctx, buf, len);
       if (ret) {
-         if (ret == EINVAL) {
+         if (ret == EINVAL)
             vrend_report_buffer_error(gdctx->grctx, *buf);
-            return ret;
-         }
+         return ret;
       }
    }
    return 0;
+}
+
+static int vrend_decode_ctx_get_fencing_fd(UNUSED struct virgl_context *ctx)
+{
+   return vrend_renderer_get_poll_fd();
+}
+
+static void vrend_decode_ctx_retire_fences(UNUSED struct virgl_context *ctx)
+{
+   vrend_renderer_check_fences();
+}
+
+static int vrend_decode_ctx_submit_fence(struct virgl_context *ctx,
+                                         uint32_t flags,
+                                         uint64_t queue_id,
+                                         void *fence_cookie)
+{
+   struct vrend_decode_ctx *dctx = (struct vrend_decode_ctx *)ctx;
+
+   if (queue_id)
+      return -EINVAL;
+
+   return vrend_renderer_create_fence(dctx->grctx, flags, fence_cookie);
 }
 
 static void vrend_decode_ctx_init_base(struct vrend_decode_ctx *dctx,
@@ -1644,4 +1703,8 @@ static void vrend_decode_ctx_init_base(struct vrend_decode_ctx *dctx,
    ctx->get_blob = vrend_decode_ctx_get_blob;
    ctx->get_blob_done = NULL;
    ctx->submit_cmd = vrend_decode_ctx_submit_cmd;
+
+   ctx->get_fencing_fd = vrend_decode_ctx_get_fencing_fd;
+   ctx->retire_fences = vrend_decode_ctx_retire_fences;
+   ctx->submit_fence = vrend_decode_ctx_submit_fence;
 }

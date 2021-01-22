@@ -59,7 +59,8 @@ virgl_resource_table_init(const struct virgl_resource_pipe_callbacks *callbacks)
    if (!virgl_resource_table)
       return ENOMEM;
 
-   pipe_callbacks = *callbacks;
+   if (callbacks)
+      pipe_callbacks = *callbacks;
 
    return 0;
 }
@@ -102,7 +103,7 @@ virgl_resource_create(uint32_t res_id)
    return res;
 }
 
-int
+struct virgl_resource *
 virgl_resource_create_from_pipe(uint32_t res_id,
                                 struct pipe_resource *pres,
                                 const struct iovec *iov,
@@ -112,7 +113,7 @@ virgl_resource_create_from_pipe(uint32_t res_id,
 
    res = virgl_resource_create(res_id);
    if (!res)
-      return ENOMEM;
+      return NULL;
 
    /* take ownership */
    res->pipe_resource = pres;
@@ -120,10 +121,10 @@ virgl_resource_create_from_pipe(uint32_t res_id,
    res->iov = iov;
    res->iov_count = iov_count;
 
-   return 0;
+   return res;
 }
 
-int
+struct virgl_resource *
 virgl_resource_create_from_fd(uint32_t res_id,
                               enum virgl_resource_fd_type fd_type,
                               int fd,
@@ -136,7 +137,7 @@ virgl_resource_create_from_fd(uint32_t res_id,
 
    res = virgl_resource_create(res_id);
    if (!res)
-      return ENOMEM;
+      return NULL;
 
    res->fd_type = fd_type;
    /* take ownership */
@@ -145,10 +146,10 @@ virgl_resource_create_from_fd(uint32_t res_id,
    res->iov = iov;
    res->iov_count = iov_count;
 
-   return 0;
+   return res;
 }
 
-int
+struct virgl_resource *
 virgl_resource_create_from_iov(uint32_t res_id,
                                const struct iovec *iov,
                                int iov_count)
@@ -160,12 +161,12 @@ virgl_resource_create_from_iov(uint32_t res_id,
 
    res = virgl_resource_create(res_id);
    if (!res)
-      return ENOMEM;
+      return NULL;
 
    res->iov = iov;
    res->iov_count = iov_count;
 
-   return 0;
+   return res;
 }
 
 void

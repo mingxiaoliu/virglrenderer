@@ -297,3 +297,121 @@ util_hash_table_destroy(struct util_hash_table *ht)
    
    FREE(ht);
 }
+
+static unsigned hash_func_u64(void *key)
+{
+   uint64_t num;
+   if (sizeof(uintptr_t) >= 8)
+      num = pointer_to_uintptr(key);
+   else
+      num = *(uint64_t *)key;
+
+   return (unsigned) ((num >> 2) ^ (num >> 6) ^ (num >> 10) ^ (num >> 14));
+}
+
+static int compare_func_u64(void *key1, void *key2)
+{
+   if (sizeof(uintptr_t) >= 8)
+      return key1 != key2;
+   else
+      return *(uint64_t *)key1 != *(uint64_t*)key2;
+}
+
+struct util_hash_table_u64 *
+util_hash_table_create_u64(void (*destroy)(void *value))
+{
+   struct util_hash_table *ht = util_hash_table_create(
+         hash_func_u64, compare_func_u64, destroy);
+   return (struct util_hash_table_u64 *)ht;
+}
+
+enum pipe_error
+util_hash_table_set_u64(struct util_hash_table_u64 *ht_u64,
+                        uint64_t key,
+                        void *value)
+{
+   struct util_hash_table *ht = (struct util_hash_table *)ht_u64;
+
+   if (sizeof(uintptr_t) >= 8) {
+      return util_hash_table_set(ht, uintptr_to_pointer(key), value);
+   } else {
+      uint64_t *real_key;
+      enum pipe_error err;
+
+      real_key = MALLOC(sizeof(*real_key));
+      if (!real_key)
+         return PIPE_ERROR_OUT_OF_MEMORY;
+      *real_key = key;
+
+      err = util_hash_table_set(ht, real_key, value);
+      if (err != PIPE_OK)
+         FREE(real_key);
+
+      return err;
+   }
+}
+
+void *
+util_hash_table_get_u64(struct util_hash_table_u64 *ht_u64,
+                        uint64_t key)
+{
+   struct util_hash_table *ht = (struct util_hash_table *)ht_u64;
+
+   if (sizeof(uintptr_t) >= 8) {
+      return util_hash_table_get(ht, uintptr_to_pointer(key));
+   } else {
+      return util_hash_table_get(ht, &key);
+   }
+}
+
+void
+util_hash_table_remove_u64(struct util_hash_table_u64 *ht_u64,
+                           uint64_t key)
+{
+   struct util_hash_table *ht = (struct util_hash_table *)ht_u64;
+
+   if (sizeof(uintptr_t) >= 8) {
+      util_hash_table_remove(ht, uintptr_to_pointer(key));
+   } else {
+      const unsigned key_hash = ht->hash(&key);
+      const struct cso_hash_iter iter =
+         util_hash_table_find_iter(ht, &key, key_hash);
+      struct util_hash_table_item *item;
+
+      if (cso_hash_iter_is_null(iter))
+         return;
+
+      item = util_hash_table_item(iter);
+      ht->destroy(item->value);
+      FREE(item->key);
+      FREE(item);
+
+      cso_hash_erase(ht->cso, iter);
+   }
+}
+
+void
+util_hash_table_destroy_u64(struct util_hash_table_u64 *ht_u64)
+{
+   struct util_hash_table *ht = (struct util_hash_table *)ht_u64;
+
+   if (sizeof(uintptr_t) >= 8) {
+      util_hash_table_destroy(ht);
+   } else {
+      struct cso_hash_iter iter;
+      struct util_hash_table_item *item;
+
+      iter = cso_hash_first_node(ht->cso);
+      while (!cso_hash_iter_is_null(iter)) {
+         item = util_hash_table_item(iter);
+         ht->destroy(item->value);
+         FREE(item->key);
+         FREE(item);
+         iter = cso_hash_iter_next(iter);
+      }
+
+      cso_hash_delete(ht->cso);
+
+      FREE(ht);
+   }
+}

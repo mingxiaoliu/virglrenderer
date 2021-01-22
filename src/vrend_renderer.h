@@ -46,6 +46,7 @@ struct virgl_gl_ctx_param {
 };
 
 struct virgl_context;
+struct virgl_resource;
 struct vrend_context;
 
 /* Number of mipmap levels for which to keep the backing iov offsets.
@@ -111,8 +112,11 @@ struct vrend_format_table {
    uint32_t flags;
 };
 
+typedef void (*vrend_context_fence_retire)(void *fence_cookie,
+                                           void *retire_data);
+
 struct vrend_if_cbs {
-   void (*write_fence)(unsigned fence_id);
+   vrend_context_fence_retire ctx0_fence_retire;
 
    virgl_gl_context (*create_gl_context)(int scanout, struct virgl_gl_ctx_param *params);
    void (*destroy_gl_context)(virgl_gl_context ctx);
@@ -185,8 +189,22 @@ struct vrend_renderer_resource_create_args {
    uint32_t flags;
 };
 
+/* set the type info of an untyped blob resource */
+struct vrend_renderer_resource_set_type_args {
+   uint32_t format;
+   uint32_t bind;
+   uint32_t width;
+   uint32_t height;
+   uint32_t usage;
+   uint64_t modifier;
+   uint32_t plane_count;
+   uint32_t plane_strides[VIRGL_GBM_MAX_PLANES];
+   uint32_t plane_offsets[VIRGL_GBM_MAX_PLANES];
+};
+
 struct pipe_resource *
-vrend_renderer_resource_create(struct vrend_renderer_resource_create_args *args, void *image_eos);
+vrend_renderer_resource_create(const struct vrend_renderer_resource_create_args *args,
+                               void *image_eos);
 
 int vrend_create_surface(struct vrend_context *ctx,
                          uint32_t handle,
@@ -326,7 +344,6 @@ void vrend_set_min_samples(struct vrend_context *ctx, unsigned min_samples);
 
 void vrend_set_constants(struct vrend_context *ctx,
                          uint32_t shader,
-                         uint32_t index,
                          uint32_t num_constant,
                          const float *data);
 
@@ -343,11 +360,18 @@ void vrend_set_tess_state(struct vrend_context *ctx, const float tess_factors[6]
 
 void vrend_renderer_fini(void);
 
-int vrend_renderer_create_fence(int client_fence_id, uint32_t ctx_id);
+void vrend_renderer_set_fence_retire(struct vrend_context *ctx,
+                                     vrend_context_fence_retire retire,
+                                     void *retire_data);
+
+int vrend_renderer_create_fence(struct vrend_context *ctx,
+                                uint32_t flags,
+                                void *fence_cookie);
 
 void vrend_renderer_check_fences(void);
 
-int vrend_renderer_export_fence(uint32_t fence_id, int* out_fd);
+int vrend_renderer_create_ctx0_fence(uint32_t fence_id);
+int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd);
 
 bool vrend_hw_switch_context(struct vrend_context *ctx, bool now);
 uint32_t vrend_renderer_object_insert(struct vrend_context *ctx, void *data,
@@ -405,10 +429,9 @@ void vrend_renderer_get_rect(struct pipe_resource *pres,
                              int x, int y, int width, int height);
 
 void vrend_renderer_attach_res_ctx(struct vrend_context *ctx,
-                                   uint32_t res_id,
-                                   struct pipe_resource *pres);
+                                   struct virgl_resource *res);
 void vrend_renderer_detach_res_ctx(struct vrend_context *ctx,
-                                   uint32_t res_id);
+                                   struct virgl_resource *res);
 
 struct vrend_context_tweaks *vrend_get_context_tweaks(struct vrend_context *ctx);
 
@@ -487,11 +510,16 @@ void vrend_sync_make_current(virgl_gl_context);
 
 int
 vrend_renderer_pipe_resource_create(struct vrend_context *ctx, uint32_t blob_id,
-                                    struct vrend_renderer_resource_create_args *args);
+                                    const struct vrend_renderer_resource_create_args *args);
 
 struct pipe_resource *vrend_get_blob_pipe(struct vrend_context *ctx, uint64_t blob_id);
 
-int vrend_renderer_resource_get_map_info(struct pipe_resource *pres, uint32_t *map_info);
+int
+vrend_renderer_pipe_resource_set_type(struct vrend_context *ctx,
+                                      uint32_t res_id,
+                                      const struct vrend_renderer_resource_set_type_args *args);
+
+uint32_t vrend_renderer_resource_get_map_info(struct pipe_resource *pres);
 
 int vrend_renderer_resource_map(struct pipe_resource *pres, void **map, uint64_t *out_size);
 
