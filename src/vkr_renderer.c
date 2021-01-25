@@ -44,6 +44,7 @@
 #include "virgl_util.h"
 #include "virglrenderer.h"
 #include "virglrenderer_hw.h"
+#include "vrend_debug.h"
 #include "vrend_iov.h"
 
 /*
@@ -2953,7 +2954,7 @@ vkr_dispatch_vkGetImageDrmFormatModifierPropertiesEXT(struct vn_dispatch_context
 static void
 vkr_dispatch_debug_log(UNUSED struct vn_dispatch_context *dispatch, const char *msg)
 {
-   fprintf(stderr, "vkr: %s\n", msg);
+   vrend_printf("vkr: %s\n", msg);
 }
 
 static void
