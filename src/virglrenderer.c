@@ -469,17 +469,16 @@ void virgl_renderer_get_cap_set(uint32_t cap_set, uint32_t *max_ver,
                                 uint32_t *max_size)
 {
    TRACE_FUNC();
+
+   /* this may be called before virgl_renderer_init */
    switch (cap_set) {
    case VIRGL_RENDERER_CAPSET_VIRGL:
    case VIRGL_RENDERER_CAPSET_VIRGL2:
-      if (state.vrend_initialized)
-         vrend_renderer_get_cap_set(cap_set, max_ver, max_size);
+      vrend_renderer_get_cap_set(cap_set, max_ver, max_size);
       break;
    case VIRGL_RENDERER_CAPSET_VENUS:
-      if (state.vkr_initialized) {
-         *max_ver = 0;
-         *max_size = vkr_get_capset(NULL);
-      }
+      *max_ver = 0;
+      *max_size = vkr_get_capset(NULL);
       break;
    default:
       *max_ver = 0;
