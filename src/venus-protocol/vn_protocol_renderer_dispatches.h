@@ -225,16 +225,16 @@ static inline void vn_dispatch_vkCreateInstance(struct vn_dispatch_context *ctx,
     struct vn_command_vkCreateInstance args;
 
     if (!ctx->dispatch_vkCreateInstance) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateInstance_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateInstance_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateInstance(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -244,10 +244,10 @@ static inline void vn_dispatch_vkCreateInstance(struct vn_dispatch_context *ctx,
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateInstance_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateInstance_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyInstance(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -255,20 +255,20 @@ static inline void vn_dispatch_vkDestroyInstance(struct vn_dispatch_context *ctx
     struct vn_command_vkDestroyInstance args;
 
     if (!ctx->dispatch_vkDestroyInstance) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyInstance_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyInstance_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyInstance(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyInstance_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyInstance_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -276,16 +276,16 @@ static inline void vn_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_con
     struct vn_command_vkEnumeratePhysicalDevices args;
 
     if (!ctx->dispatch_vkEnumeratePhysicalDevices) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEnumeratePhysicalDevices_args_temp(ctx->cs, &args);
+    vn_decode_vkEnumeratePhysicalDevices_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEnumeratePhysicalDevices(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -295,10 +295,10 @@ static inline void vn_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_con
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEnumeratePhysicalDevices_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEnumeratePhysicalDevices_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -306,20 +306,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceProperties(struct vn_dispatch_
     struct vn_command_vkGetPhysicalDeviceProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceQueueFamilyProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -327,20 +327,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceQueueFamilyProperties(struct v
     struct vn_command_vkGetPhysicalDeviceQueueFamilyProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceQueueFamilyProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceQueueFamilyProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceQueueFamilyProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceQueueFamilyProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceQueueFamilyProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceQueueFamilyProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceMemoryProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -348,20 +348,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceMemoryProperties(struct vn_dis
     struct vn_command_vkGetPhysicalDeviceMemoryProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceMemoryProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceMemoryProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceMemoryProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceMemoryProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceMemoryProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceMemoryProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceFeatures(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -369,20 +369,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceFeatures(struct vn_dispatch_co
     struct vn_command_vkGetPhysicalDeviceFeatures args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceFeatures) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceFeatures_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceFeatures_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceFeatures(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceFeatures_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceFeatures_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceFormatProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -390,20 +390,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceFormatProperties(struct vn_dis
     struct vn_command_vkGetPhysicalDeviceFormatProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceFormatProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceFormatProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceFormatProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceFormatProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceFormatProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceFormatProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceImageFormatProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -411,16 +411,16 @@ static inline void vn_dispatch_vkGetPhysicalDeviceImageFormatProperties(struct v
     struct vn_command_vkGetPhysicalDeviceImageFormatProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceImageFormatProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceImageFormatProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceImageFormatProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceImageFormatProperties(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -430,10 +430,10 @@ static inline void vn_dispatch_vkGetPhysicalDeviceImageFormatProperties(struct v
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceImageFormatProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceImageFormatProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateDevice(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -441,16 +441,16 @@ static inline void vn_dispatch_vkCreateDevice(struct vn_dispatch_context *ctx, V
     struct vn_command_vkCreateDevice args;
 
     if (!ctx->dispatch_vkCreateDevice) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateDevice_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateDevice_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateDevice(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -460,10 +460,10 @@ static inline void vn_dispatch_vkCreateDevice(struct vn_dispatch_context *ctx, V
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateDevice_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateDevice_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyDevice(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -471,20 +471,20 @@ static inline void vn_dispatch_vkDestroyDevice(struct vn_dispatch_context *ctx, 
     struct vn_command_vkDestroyDevice args;
 
     if (!ctx->dispatch_vkDestroyDevice) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyDevice_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyDevice_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyDevice(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyDevice_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyDevice_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEnumerateInstanceVersion(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -492,16 +492,16 @@ static inline void vn_dispatch_vkEnumerateInstanceVersion(struct vn_dispatch_con
     struct vn_command_vkEnumerateInstanceVersion args;
 
     if (!ctx->dispatch_vkEnumerateInstanceVersion) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEnumerateInstanceVersion_args_temp(ctx->cs, &args);
+    vn_decode_vkEnumerateInstanceVersion_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEnumerateInstanceVersion(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -511,10 +511,10 @@ static inline void vn_dispatch_vkEnumerateInstanceVersion(struct vn_dispatch_con
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEnumerateInstanceVersion_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEnumerateInstanceVersion_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEnumerateInstanceLayerProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -522,16 +522,16 @@ static inline void vn_dispatch_vkEnumerateInstanceLayerProperties(struct vn_disp
     struct vn_command_vkEnumerateInstanceLayerProperties args;
 
     if (!ctx->dispatch_vkEnumerateInstanceLayerProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEnumerateInstanceLayerProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkEnumerateInstanceLayerProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEnumerateInstanceLayerProperties(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -541,10 +541,10 @@ static inline void vn_dispatch_vkEnumerateInstanceLayerProperties(struct vn_disp
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEnumerateInstanceLayerProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEnumerateInstanceLayerProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEnumerateInstanceExtensionProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -552,16 +552,16 @@ static inline void vn_dispatch_vkEnumerateInstanceExtensionProperties(struct vn_
     struct vn_command_vkEnumerateInstanceExtensionProperties args;
 
     if (!ctx->dispatch_vkEnumerateInstanceExtensionProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEnumerateInstanceExtensionProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkEnumerateInstanceExtensionProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEnumerateInstanceExtensionProperties(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -571,10 +571,10 @@ static inline void vn_dispatch_vkEnumerateInstanceExtensionProperties(struct vn_
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEnumerateInstanceExtensionProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEnumerateInstanceExtensionProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEnumerateDeviceLayerProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -582,16 +582,16 @@ static inline void vn_dispatch_vkEnumerateDeviceLayerProperties(struct vn_dispat
     struct vn_command_vkEnumerateDeviceLayerProperties args;
 
     if (!ctx->dispatch_vkEnumerateDeviceLayerProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEnumerateDeviceLayerProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkEnumerateDeviceLayerProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEnumerateDeviceLayerProperties(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -601,10 +601,10 @@ static inline void vn_dispatch_vkEnumerateDeviceLayerProperties(struct vn_dispat
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEnumerateDeviceLayerProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEnumerateDeviceLayerProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEnumerateDeviceExtensionProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -612,16 +612,16 @@ static inline void vn_dispatch_vkEnumerateDeviceExtensionProperties(struct vn_di
     struct vn_command_vkEnumerateDeviceExtensionProperties args;
 
     if (!ctx->dispatch_vkEnumerateDeviceExtensionProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEnumerateDeviceExtensionProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkEnumerateDeviceExtensionProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEnumerateDeviceExtensionProperties(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -631,10 +631,10 @@ static inline void vn_dispatch_vkEnumerateDeviceExtensionProperties(struct vn_di
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEnumerateDeviceExtensionProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEnumerateDeviceExtensionProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetDeviceQueue(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -642,20 +642,20 @@ static inline void vn_dispatch_vkGetDeviceQueue(struct vn_dispatch_context *ctx,
     struct vn_command_vkGetDeviceQueue args;
 
     if (!ctx->dispatch_vkGetDeviceQueue) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetDeviceQueue_args_temp(ctx->cs, &args);
+    vn_decode_vkGetDeviceQueue_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetDeviceQueue(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetDeviceQueue_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetDeviceQueue_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkQueueSubmit(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -663,16 +663,16 @@ static inline void vn_dispatch_vkQueueSubmit(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkQueueSubmit args;
 
     if (!ctx->dispatch_vkQueueSubmit) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkQueueSubmit_args_temp(ctx->cs, &args);
+    vn_decode_vkQueueSubmit_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkQueueSubmit(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -682,10 +682,10 @@ static inline void vn_dispatch_vkQueueSubmit(struct vn_dispatch_context *ctx, Vk
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkQueueSubmit_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkQueueSubmit_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkQueueWaitIdle(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -693,16 +693,16 @@ static inline void vn_dispatch_vkQueueWaitIdle(struct vn_dispatch_context *ctx, 
     struct vn_command_vkQueueWaitIdle args;
 
     if (!ctx->dispatch_vkQueueWaitIdle) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkQueueWaitIdle_args_temp(ctx->cs, &args);
+    vn_decode_vkQueueWaitIdle_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkQueueWaitIdle(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -712,10 +712,10 @@ static inline void vn_dispatch_vkQueueWaitIdle(struct vn_dispatch_context *ctx, 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkQueueWaitIdle_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkQueueWaitIdle_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDeviceWaitIdle(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -723,16 +723,16 @@ static inline void vn_dispatch_vkDeviceWaitIdle(struct vn_dispatch_context *ctx,
     struct vn_command_vkDeviceWaitIdle args;
 
     if (!ctx->dispatch_vkDeviceWaitIdle) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDeviceWaitIdle_args_temp(ctx->cs, &args);
+    vn_decode_vkDeviceWaitIdle_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDeviceWaitIdle(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -742,10 +742,10 @@ static inline void vn_dispatch_vkDeviceWaitIdle(struct vn_dispatch_context *ctx,
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDeviceWaitIdle_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDeviceWaitIdle_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkAllocateMemory(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -753,16 +753,16 @@ static inline void vn_dispatch_vkAllocateMemory(struct vn_dispatch_context *ctx,
     struct vn_command_vkAllocateMemory args;
 
     if (!ctx->dispatch_vkAllocateMemory) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkAllocateMemory_args_temp(ctx->cs, &args);
+    vn_decode_vkAllocateMemory_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkAllocateMemory(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -772,10 +772,10 @@ static inline void vn_dispatch_vkAllocateMemory(struct vn_dispatch_context *ctx,
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkAllocateMemory_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkAllocateMemory_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkFreeMemory(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -783,20 +783,20 @@ static inline void vn_dispatch_vkFreeMemory(struct vn_dispatch_context *ctx, VkC
     struct vn_command_vkFreeMemory args;
 
     if (!ctx->dispatch_vkFreeMemory) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkFreeMemory_args_temp(ctx->cs, &args);
+    vn_decode_vkFreeMemory_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkFreeMemory(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkFreeMemory_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkFreeMemory_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkUnmapMemory(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -804,20 +804,20 @@ static inline void vn_dispatch_vkUnmapMemory(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkUnmapMemory args;
 
     if (!ctx->dispatch_vkUnmapMemory) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkUnmapMemory_args_temp(ctx->cs, &args);
+    vn_decode_vkUnmapMemory_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkUnmapMemory(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkUnmapMemory_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkUnmapMemory_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkFlushMappedMemoryRanges(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -825,16 +825,16 @@ static inline void vn_dispatch_vkFlushMappedMemoryRanges(struct vn_dispatch_cont
     struct vn_command_vkFlushMappedMemoryRanges args;
 
     if (!ctx->dispatch_vkFlushMappedMemoryRanges) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkFlushMappedMemoryRanges_args_temp(ctx->cs, &args);
+    vn_decode_vkFlushMappedMemoryRanges_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkFlushMappedMemoryRanges(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -844,10 +844,10 @@ static inline void vn_dispatch_vkFlushMappedMemoryRanges(struct vn_dispatch_cont
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkFlushMappedMemoryRanges_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkFlushMappedMemoryRanges_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkInvalidateMappedMemoryRanges(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -855,16 +855,16 @@ static inline void vn_dispatch_vkInvalidateMappedMemoryRanges(struct vn_dispatch
     struct vn_command_vkInvalidateMappedMemoryRanges args;
 
     if (!ctx->dispatch_vkInvalidateMappedMemoryRanges) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkInvalidateMappedMemoryRanges_args_temp(ctx->cs, &args);
+    vn_decode_vkInvalidateMappedMemoryRanges_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkInvalidateMappedMemoryRanges(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -874,10 +874,10 @@ static inline void vn_dispatch_vkInvalidateMappedMemoryRanges(struct vn_dispatch
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkInvalidateMappedMemoryRanges_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkInvalidateMappedMemoryRanges_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetDeviceMemoryCommitment(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -885,20 +885,20 @@ static inline void vn_dispatch_vkGetDeviceMemoryCommitment(struct vn_dispatch_co
     struct vn_command_vkGetDeviceMemoryCommitment args;
 
     if (!ctx->dispatch_vkGetDeviceMemoryCommitment) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetDeviceMemoryCommitment_args_temp(ctx->cs, &args);
+    vn_decode_vkGetDeviceMemoryCommitment_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetDeviceMemoryCommitment(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetDeviceMemoryCommitment_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetDeviceMemoryCommitment_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetBufferMemoryRequirements(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -906,20 +906,20 @@ static inline void vn_dispatch_vkGetBufferMemoryRequirements(struct vn_dispatch_
     struct vn_command_vkGetBufferMemoryRequirements args;
 
     if (!ctx->dispatch_vkGetBufferMemoryRequirements) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetBufferMemoryRequirements_args_temp(ctx->cs, &args);
+    vn_decode_vkGetBufferMemoryRequirements_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetBufferMemoryRequirements(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetBufferMemoryRequirements_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetBufferMemoryRequirements_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkBindBufferMemory(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -927,16 +927,16 @@ static inline void vn_dispatch_vkBindBufferMemory(struct vn_dispatch_context *ct
     struct vn_command_vkBindBufferMemory args;
 
     if (!ctx->dispatch_vkBindBufferMemory) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkBindBufferMemory_args_temp(ctx->cs, &args);
+    vn_decode_vkBindBufferMemory_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkBindBufferMemory(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -946,10 +946,10 @@ static inline void vn_dispatch_vkBindBufferMemory(struct vn_dispatch_context *ct
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkBindBufferMemory_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkBindBufferMemory_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetImageMemoryRequirements(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -957,20 +957,20 @@ static inline void vn_dispatch_vkGetImageMemoryRequirements(struct vn_dispatch_c
     struct vn_command_vkGetImageMemoryRequirements args;
 
     if (!ctx->dispatch_vkGetImageMemoryRequirements) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetImageMemoryRequirements_args_temp(ctx->cs, &args);
+    vn_decode_vkGetImageMemoryRequirements_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetImageMemoryRequirements(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetImageMemoryRequirements_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetImageMemoryRequirements_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkBindImageMemory(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -978,16 +978,16 @@ static inline void vn_dispatch_vkBindImageMemory(struct vn_dispatch_context *ctx
     struct vn_command_vkBindImageMemory args;
 
     if (!ctx->dispatch_vkBindImageMemory) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkBindImageMemory_args_temp(ctx->cs, &args);
+    vn_decode_vkBindImageMemory_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkBindImageMemory(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -997,10 +997,10 @@ static inline void vn_dispatch_vkBindImageMemory(struct vn_dispatch_context *ctx
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkBindImageMemory_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkBindImageMemory_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetImageSparseMemoryRequirements(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1008,20 +1008,20 @@ static inline void vn_dispatch_vkGetImageSparseMemoryRequirements(struct vn_disp
     struct vn_command_vkGetImageSparseMemoryRequirements args;
 
     if (!ctx->dispatch_vkGetImageSparseMemoryRequirements) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetImageSparseMemoryRequirements_args_temp(ctx->cs, &args);
+    vn_decode_vkGetImageSparseMemoryRequirements_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetImageSparseMemoryRequirements(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetImageSparseMemoryRequirements_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetImageSparseMemoryRequirements_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceSparseImageFormatProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1029,20 +1029,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceSparseImageFormatProperties(st
     struct vn_command_vkGetPhysicalDeviceSparseImageFormatProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceSparseImageFormatProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceSparseImageFormatProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceSparseImageFormatProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceSparseImageFormatProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceSparseImageFormatProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceSparseImageFormatProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkQueueBindSparse(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1050,16 +1050,16 @@ static inline void vn_dispatch_vkQueueBindSparse(struct vn_dispatch_context *ctx
     struct vn_command_vkQueueBindSparse args;
 
     if (!ctx->dispatch_vkQueueBindSparse) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkQueueBindSparse_args_temp(ctx->cs, &args);
+    vn_decode_vkQueueBindSparse_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkQueueBindSparse(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1069,10 +1069,10 @@ static inline void vn_dispatch_vkQueueBindSparse(struct vn_dispatch_context *ctx
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkQueueBindSparse_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkQueueBindSparse_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateFence(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1080,16 +1080,16 @@ static inline void vn_dispatch_vkCreateFence(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkCreateFence args;
 
     if (!ctx->dispatch_vkCreateFence) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateFence_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateFence_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateFence(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1099,10 +1099,10 @@ static inline void vn_dispatch_vkCreateFence(struct vn_dispatch_context *ctx, Vk
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateFence_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateFence_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyFence(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1110,20 +1110,20 @@ static inline void vn_dispatch_vkDestroyFence(struct vn_dispatch_context *ctx, V
     struct vn_command_vkDestroyFence args;
 
     if (!ctx->dispatch_vkDestroyFence) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyFence_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyFence_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyFence(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyFence_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyFence_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkResetFences(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1131,16 +1131,16 @@ static inline void vn_dispatch_vkResetFences(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkResetFences args;
 
     if (!ctx->dispatch_vkResetFences) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkResetFences_args_temp(ctx->cs, &args);
+    vn_decode_vkResetFences_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkResetFences(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1150,10 +1150,10 @@ static inline void vn_dispatch_vkResetFences(struct vn_dispatch_context *ctx, Vk
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkResetFences_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkResetFences_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetFenceStatus(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1161,16 +1161,16 @@ static inline void vn_dispatch_vkGetFenceStatus(struct vn_dispatch_context *ctx,
     struct vn_command_vkGetFenceStatus args;
 
     if (!ctx->dispatch_vkGetFenceStatus) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetFenceStatus_args_temp(ctx->cs, &args);
+    vn_decode_vkGetFenceStatus_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetFenceStatus(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1180,10 +1180,10 @@ static inline void vn_dispatch_vkGetFenceStatus(struct vn_dispatch_context *ctx,
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetFenceStatus_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetFenceStatus_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkWaitForFences(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1191,16 +1191,16 @@ static inline void vn_dispatch_vkWaitForFences(struct vn_dispatch_context *ctx, 
     struct vn_command_vkWaitForFences args;
 
     if (!ctx->dispatch_vkWaitForFences) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkWaitForFences_args_temp(ctx->cs, &args);
+    vn_decode_vkWaitForFences_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkWaitForFences(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1210,10 +1210,10 @@ static inline void vn_dispatch_vkWaitForFences(struct vn_dispatch_context *ctx, 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkWaitForFences_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkWaitForFences_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateSemaphore(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1221,16 +1221,16 @@ static inline void vn_dispatch_vkCreateSemaphore(struct vn_dispatch_context *ctx
     struct vn_command_vkCreateSemaphore args;
 
     if (!ctx->dispatch_vkCreateSemaphore) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateSemaphore_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateSemaphore_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateSemaphore(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1240,10 +1240,10 @@ static inline void vn_dispatch_vkCreateSemaphore(struct vn_dispatch_context *ctx
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateSemaphore_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateSemaphore_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroySemaphore(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1251,20 +1251,20 @@ static inline void vn_dispatch_vkDestroySemaphore(struct vn_dispatch_context *ct
     struct vn_command_vkDestroySemaphore args;
 
     if (!ctx->dispatch_vkDestroySemaphore) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroySemaphore_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroySemaphore_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroySemaphore(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroySemaphore_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroySemaphore_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateEvent(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1272,16 +1272,16 @@ static inline void vn_dispatch_vkCreateEvent(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkCreateEvent args;
 
     if (!ctx->dispatch_vkCreateEvent) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateEvent_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateEvent_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateEvent(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1291,10 +1291,10 @@ static inline void vn_dispatch_vkCreateEvent(struct vn_dispatch_context *ctx, Vk
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateEvent_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateEvent_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyEvent(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1302,20 +1302,20 @@ static inline void vn_dispatch_vkDestroyEvent(struct vn_dispatch_context *ctx, V
     struct vn_command_vkDestroyEvent args;
 
     if (!ctx->dispatch_vkDestroyEvent) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyEvent_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyEvent_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyEvent(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyEvent_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyEvent_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetEventStatus(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1323,16 +1323,16 @@ static inline void vn_dispatch_vkGetEventStatus(struct vn_dispatch_context *ctx,
     struct vn_command_vkGetEventStatus args;
 
     if (!ctx->dispatch_vkGetEventStatus) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetEventStatus_args_temp(ctx->cs, &args);
+    vn_decode_vkGetEventStatus_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetEventStatus(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1342,10 +1342,10 @@ static inline void vn_dispatch_vkGetEventStatus(struct vn_dispatch_context *ctx,
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetEventStatus_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetEventStatus_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkSetEvent(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1353,16 +1353,16 @@ static inline void vn_dispatch_vkSetEvent(struct vn_dispatch_context *ctx, VkCom
     struct vn_command_vkSetEvent args;
 
     if (!ctx->dispatch_vkSetEvent) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkSetEvent_args_temp(ctx->cs, &args);
+    vn_decode_vkSetEvent_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkSetEvent(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1372,10 +1372,10 @@ static inline void vn_dispatch_vkSetEvent(struct vn_dispatch_context *ctx, VkCom
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkSetEvent_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkSetEvent_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkResetEvent(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1383,16 +1383,16 @@ static inline void vn_dispatch_vkResetEvent(struct vn_dispatch_context *ctx, VkC
     struct vn_command_vkResetEvent args;
 
     if (!ctx->dispatch_vkResetEvent) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkResetEvent_args_temp(ctx->cs, &args);
+    vn_decode_vkResetEvent_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkResetEvent(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1402,10 +1402,10 @@ static inline void vn_dispatch_vkResetEvent(struct vn_dispatch_context *ctx, VkC
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkResetEvent_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkResetEvent_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateQueryPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1413,16 +1413,16 @@ static inline void vn_dispatch_vkCreateQueryPool(struct vn_dispatch_context *ctx
     struct vn_command_vkCreateQueryPool args;
 
     if (!ctx->dispatch_vkCreateQueryPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateQueryPool_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateQueryPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateQueryPool(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1432,10 +1432,10 @@ static inline void vn_dispatch_vkCreateQueryPool(struct vn_dispatch_context *ctx
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateQueryPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateQueryPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyQueryPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1443,20 +1443,20 @@ static inline void vn_dispatch_vkDestroyQueryPool(struct vn_dispatch_context *ct
     struct vn_command_vkDestroyQueryPool args;
 
     if (!ctx->dispatch_vkDestroyQueryPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyQueryPool_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyQueryPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyQueryPool(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyQueryPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyQueryPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetQueryPoolResults(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1464,16 +1464,16 @@ static inline void vn_dispatch_vkGetQueryPoolResults(struct vn_dispatch_context 
     struct vn_command_vkGetQueryPoolResults args;
 
     if (!ctx->dispatch_vkGetQueryPoolResults) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetQueryPoolResults_args_temp(ctx->cs, &args);
+    vn_decode_vkGetQueryPoolResults_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetQueryPoolResults(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1483,10 +1483,10 @@ static inline void vn_dispatch_vkGetQueryPoolResults(struct vn_dispatch_context 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetQueryPoolResults_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetQueryPoolResults_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkResetQueryPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1494,20 +1494,20 @@ static inline void vn_dispatch_vkResetQueryPool(struct vn_dispatch_context *ctx,
     struct vn_command_vkResetQueryPool args;
 
     if (!ctx->dispatch_vkResetQueryPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkResetQueryPool_args_temp(ctx->cs, &args);
+    vn_decode_vkResetQueryPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkResetQueryPool(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkResetQueryPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkResetQueryPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1515,16 +1515,16 @@ static inline void vn_dispatch_vkCreateBuffer(struct vn_dispatch_context *ctx, V
     struct vn_command_vkCreateBuffer args;
 
     if (!ctx->dispatch_vkCreateBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateBuffer(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1534,10 +1534,10 @@ static inline void vn_dispatch_vkCreateBuffer(struct vn_dispatch_context *ctx, V
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1545,20 +1545,20 @@ static inline void vn_dispatch_vkDestroyBuffer(struct vn_dispatch_context *ctx, 
     struct vn_command_vkDestroyBuffer args;
 
     if (!ctx->dispatch_vkDestroyBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyBuffer(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateBufferView(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1566,16 +1566,16 @@ static inline void vn_dispatch_vkCreateBufferView(struct vn_dispatch_context *ct
     struct vn_command_vkCreateBufferView args;
 
     if (!ctx->dispatch_vkCreateBufferView) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateBufferView_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateBufferView_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateBufferView(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1585,10 +1585,10 @@ static inline void vn_dispatch_vkCreateBufferView(struct vn_dispatch_context *ct
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateBufferView_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateBufferView_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyBufferView(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1596,20 +1596,20 @@ static inline void vn_dispatch_vkDestroyBufferView(struct vn_dispatch_context *c
     struct vn_command_vkDestroyBufferView args;
 
     if (!ctx->dispatch_vkDestroyBufferView) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyBufferView_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyBufferView_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyBufferView(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyBufferView_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyBufferView_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1617,16 +1617,16 @@ static inline void vn_dispatch_vkCreateImage(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkCreateImage args;
 
     if (!ctx->dispatch_vkCreateImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateImage_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateImage(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1636,10 +1636,10 @@ static inline void vn_dispatch_vkCreateImage(struct vn_dispatch_context *ctx, Vk
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1647,20 +1647,20 @@ static inline void vn_dispatch_vkDestroyImage(struct vn_dispatch_context *ctx, V
     struct vn_command_vkDestroyImage args;
 
     if (!ctx->dispatch_vkDestroyImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyImage_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyImage(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetImageSubresourceLayout(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1668,20 +1668,20 @@ static inline void vn_dispatch_vkGetImageSubresourceLayout(struct vn_dispatch_co
     struct vn_command_vkGetImageSubresourceLayout args;
 
     if (!ctx->dispatch_vkGetImageSubresourceLayout) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetImageSubresourceLayout_args_temp(ctx->cs, &args);
+    vn_decode_vkGetImageSubresourceLayout_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetImageSubresourceLayout(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetImageSubresourceLayout_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetImageSubresourceLayout_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateImageView(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1689,16 +1689,16 @@ static inline void vn_dispatch_vkCreateImageView(struct vn_dispatch_context *ctx
     struct vn_command_vkCreateImageView args;
 
     if (!ctx->dispatch_vkCreateImageView) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateImageView_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateImageView_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateImageView(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1708,10 +1708,10 @@ static inline void vn_dispatch_vkCreateImageView(struct vn_dispatch_context *ctx
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateImageView_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateImageView_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyImageView(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1719,20 +1719,20 @@ static inline void vn_dispatch_vkDestroyImageView(struct vn_dispatch_context *ct
     struct vn_command_vkDestroyImageView args;
 
     if (!ctx->dispatch_vkDestroyImageView) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyImageView_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyImageView_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyImageView(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyImageView_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyImageView_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateShaderModule(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1740,16 +1740,16 @@ static inline void vn_dispatch_vkCreateShaderModule(struct vn_dispatch_context *
     struct vn_command_vkCreateShaderModule args;
 
     if (!ctx->dispatch_vkCreateShaderModule) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateShaderModule_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateShaderModule_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateShaderModule(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1759,10 +1759,10 @@ static inline void vn_dispatch_vkCreateShaderModule(struct vn_dispatch_context *
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateShaderModule_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateShaderModule_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyShaderModule(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1770,20 +1770,20 @@ static inline void vn_dispatch_vkDestroyShaderModule(struct vn_dispatch_context 
     struct vn_command_vkDestroyShaderModule args;
 
     if (!ctx->dispatch_vkDestroyShaderModule) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyShaderModule_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyShaderModule_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyShaderModule(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyShaderModule_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyShaderModule_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreatePipelineCache(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1791,16 +1791,16 @@ static inline void vn_dispatch_vkCreatePipelineCache(struct vn_dispatch_context 
     struct vn_command_vkCreatePipelineCache args;
 
     if (!ctx->dispatch_vkCreatePipelineCache) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreatePipelineCache_args_temp(ctx->cs, &args);
+    vn_decode_vkCreatePipelineCache_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreatePipelineCache(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1810,10 +1810,10 @@ static inline void vn_dispatch_vkCreatePipelineCache(struct vn_dispatch_context 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreatePipelineCache_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreatePipelineCache_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyPipelineCache(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1821,20 +1821,20 @@ static inline void vn_dispatch_vkDestroyPipelineCache(struct vn_dispatch_context
     struct vn_command_vkDestroyPipelineCache args;
 
     if (!ctx->dispatch_vkDestroyPipelineCache) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyPipelineCache_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyPipelineCache_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyPipelineCache(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyPipelineCache_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyPipelineCache_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPipelineCacheData(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1842,16 +1842,16 @@ static inline void vn_dispatch_vkGetPipelineCacheData(struct vn_dispatch_context
     struct vn_command_vkGetPipelineCacheData args;
 
     if (!ctx->dispatch_vkGetPipelineCacheData) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPipelineCacheData_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPipelineCacheData_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPipelineCacheData(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1861,10 +1861,10 @@ static inline void vn_dispatch_vkGetPipelineCacheData(struct vn_dispatch_context
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPipelineCacheData_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPipelineCacheData_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkMergePipelineCaches(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1872,16 +1872,16 @@ static inline void vn_dispatch_vkMergePipelineCaches(struct vn_dispatch_context 
     struct vn_command_vkMergePipelineCaches args;
 
     if (!ctx->dispatch_vkMergePipelineCaches) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkMergePipelineCaches_args_temp(ctx->cs, &args);
+    vn_decode_vkMergePipelineCaches_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkMergePipelineCaches(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1891,10 +1891,10 @@ static inline void vn_dispatch_vkMergePipelineCaches(struct vn_dispatch_context 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkMergePipelineCaches_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkMergePipelineCaches_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateGraphicsPipelines(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1902,16 +1902,16 @@ static inline void vn_dispatch_vkCreateGraphicsPipelines(struct vn_dispatch_cont
     struct vn_command_vkCreateGraphicsPipelines args;
 
     if (!ctx->dispatch_vkCreateGraphicsPipelines) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateGraphicsPipelines_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateGraphicsPipelines_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateGraphicsPipelines(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1921,10 +1921,10 @@ static inline void vn_dispatch_vkCreateGraphicsPipelines(struct vn_dispatch_cont
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateGraphicsPipelines_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateGraphicsPipelines_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateComputePipelines(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1932,16 +1932,16 @@ static inline void vn_dispatch_vkCreateComputePipelines(struct vn_dispatch_conte
     struct vn_command_vkCreateComputePipelines args;
 
     if (!ctx->dispatch_vkCreateComputePipelines) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateComputePipelines_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateComputePipelines_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateComputePipelines(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -1951,10 +1951,10 @@ static inline void vn_dispatch_vkCreateComputePipelines(struct vn_dispatch_conte
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateComputePipelines_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateComputePipelines_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyPipeline(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1962,20 +1962,20 @@ static inline void vn_dispatch_vkDestroyPipeline(struct vn_dispatch_context *ctx
     struct vn_command_vkDestroyPipeline args;
 
     if (!ctx->dispatch_vkDestroyPipeline) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyPipeline_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyPipeline_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyPipeline(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyPipeline_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyPipeline_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreatePipelineLayout(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -1983,16 +1983,16 @@ static inline void vn_dispatch_vkCreatePipelineLayout(struct vn_dispatch_context
     struct vn_command_vkCreatePipelineLayout args;
 
     if (!ctx->dispatch_vkCreatePipelineLayout) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreatePipelineLayout_args_temp(ctx->cs, &args);
+    vn_decode_vkCreatePipelineLayout_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreatePipelineLayout(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2002,10 +2002,10 @@ static inline void vn_dispatch_vkCreatePipelineLayout(struct vn_dispatch_context
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreatePipelineLayout_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreatePipelineLayout_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyPipelineLayout(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2013,20 +2013,20 @@ static inline void vn_dispatch_vkDestroyPipelineLayout(struct vn_dispatch_contex
     struct vn_command_vkDestroyPipelineLayout args;
 
     if (!ctx->dispatch_vkDestroyPipelineLayout) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyPipelineLayout_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyPipelineLayout_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyPipelineLayout(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyPipelineLayout_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyPipelineLayout_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateSampler(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2034,16 +2034,16 @@ static inline void vn_dispatch_vkCreateSampler(struct vn_dispatch_context *ctx, 
     struct vn_command_vkCreateSampler args;
 
     if (!ctx->dispatch_vkCreateSampler) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateSampler_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateSampler_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateSampler(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2053,10 +2053,10 @@ static inline void vn_dispatch_vkCreateSampler(struct vn_dispatch_context *ctx, 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateSampler_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateSampler_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroySampler(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2064,20 +2064,20 @@ static inline void vn_dispatch_vkDestroySampler(struct vn_dispatch_context *ctx,
     struct vn_command_vkDestroySampler args;
 
     if (!ctx->dispatch_vkDestroySampler) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroySampler_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroySampler_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroySampler(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroySampler_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroySampler_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateDescriptorSetLayout(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2085,16 +2085,16 @@ static inline void vn_dispatch_vkCreateDescriptorSetLayout(struct vn_dispatch_co
     struct vn_command_vkCreateDescriptorSetLayout args;
 
     if (!ctx->dispatch_vkCreateDescriptorSetLayout) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateDescriptorSetLayout_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateDescriptorSetLayout_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateDescriptorSetLayout(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2104,10 +2104,10 @@ static inline void vn_dispatch_vkCreateDescriptorSetLayout(struct vn_dispatch_co
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateDescriptorSetLayout_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateDescriptorSetLayout_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyDescriptorSetLayout(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2115,20 +2115,20 @@ static inline void vn_dispatch_vkDestroyDescriptorSetLayout(struct vn_dispatch_c
     struct vn_command_vkDestroyDescriptorSetLayout args;
 
     if (!ctx->dispatch_vkDestroyDescriptorSetLayout) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyDescriptorSetLayout_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyDescriptorSetLayout_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyDescriptorSetLayout(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyDescriptorSetLayout_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyDescriptorSetLayout_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateDescriptorPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2136,16 +2136,16 @@ static inline void vn_dispatch_vkCreateDescriptorPool(struct vn_dispatch_context
     struct vn_command_vkCreateDescriptorPool args;
 
     if (!ctx->dispatch_vkCreateDescriptorPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateDescriptorPool_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateDescriptorPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateDescriptorPool(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2155,10 +2155,10 @@ static inline void vn_dispatch_vkCreateDescriptorPool(struct vn_dispatch_context
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateDescriptorPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateDescriptorPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyDescriptorPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2166,20 +2166,20 @@ static inline void vn_dispatch_vkDestroyDescriptorPool(struct vn_dispatch_contex
     struct vn_command_vkDestroyDescriptorPool args;
 
     if (!ctx->dispatch_vkDestroyDescriptorPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyDescriptorPool_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyDescriptorPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyDescriptorPool(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyDescriptorPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyDescriptorPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkResetDescriptorPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2187,16 +2187,16 @@ static inline void vn_dispatch_vkResetDescriptorPool(struct vn_dispatch_context 
     struct vn_command_vkResetDescriptorPool args;
 
     if (!ctx->dispatch_vkResetDescriptorPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkResetDescriptorPool_args_temp(ctx->cs, &args);
+    vn_decode_vkResetDescriptorPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkResetDescriptorPool(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2206,10 +2206,10 @@ static inline void vn_dispatch_vkResetDescriptorPool(struct vn_dispatch_context 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkResetDescriptorPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkResetDescriptorPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2217,16 +2217,16 @@ static inline void vn_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_conte
     struct vn_command_vkAllocateDescriptorSets args;
 
     if (!ctx->dispatch_vkAllocateDescriptorSets) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkAllocateDescriptorSets_args_temp(ctx->cs, &args);
+    vn_decode_vkAllocateDescriptorSets_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkAllocateDescriptorSets(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2236,10 +2236,10 @@ static inline void vn_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_conte
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkAllocateDescriptorSets_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkAllocateDescriptorSets_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkFreeDescriptorSets(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2247,16 +2247,16 @@ static inline void vn_dispatch_vkFreeDescriptorSets(struct vn_dispatch_context *
     struct vn_command_vkFreeDescriptorSets args;
 
     if (!ctx->dispatch_vkFreeDescriptorSets) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkFreeDescriptorSets_args_temp(ctx->cs, &args);
+    vn_decode_vkFreeDescriptorSets_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkFreeDescriptorSets(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2266,10 +2266,10 @@ static inline void vn_dispatch_vkFreeDescriptorSets(struct vn_dispatch_context *
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkFreeDescriptorSets_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkFreeDescriptorSets_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkUpdateDescriptorSets(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2277,20 +2277,20 @@ static inline void vn_dispatch_vkUpdateDescriptorSets(struct vn_dispatch_context
     struct vn_command_vkUpdateDescriptorSets args;
 
     if (!ctx->dispatch_vkUpdateDescriptorSets) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkUpdateDescriptorSets_args_temp(ctx->cs, &args);
+    vn_decode_vkUpdateDescriptorSets_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkUpdateDescriptorSets(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkUpdateDescriptorSets_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkUpdateDescriptorSets_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateFramebuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2298,16 +2298,16 @@ static inline void vn_dispatch_vkCreateFramebuffer(struct vn_dispatch_context *c
     struct vn_command_vkCreateFramebuffer args;
 
     if (!ctx->dispatch_vkCreateFramebuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateFramebuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateFramebuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateFramebuffer(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2317,10 +2317,10 @@ static inline void vn_dispatch_vkCreateFramebuffer(struct vn_dispatch_context *c
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateFramebuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateFramebuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyFramebuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2328,20 +2328,20 @@ static inline void vn_dispatch_vkDestroyFramebuffer(struct vn_dispatch_context *
     struct vn_command_vkDestroyFramebuffer args;
 
     if (!ctx->dispatch_vkDestroyFramebuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyFramebuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyFramebuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyFramebuffer(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyFramebuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyFramebuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateRenderPass(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2349,16 +2349,16 @@ static inline void vn_dispatch_vkCreateRenderPass(struct vn_dispatch_context *ct
     struct vn_command_vkCreateRenderPass args;
 
     if (!ctx->dispatch_vkCreateRenderPass) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateRenderPass_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateRenderPass_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateRenderPass(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2368,10 +2368,10 @@ static inline void vn_dispatch_vkCreateRenderPass(struct vn_dispatch_context *ct
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateRenderPass_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateRenderPass_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyRenderPass(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2379,20 +2379,20 @@ static inline void vn_dispatch_vkDestroyRenderPass(struct vn_dispatch_context *c
     struct vn_command_vkDestroyRenderPass args;
 
     if (!ctx->dispatch_vkDestroyRenderPass) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyRenderPass_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyRenderPass_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyRenderPass(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyRenderPass_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyRenderPass_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetRenderAreaGranularity(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2400,20 +2400,20 @@ static inline void vn_dispatch_vkGetRenderAreaGranularity(struct vn_dispatch_con
     struct vn_command_vkGetRenderAreaGranularity args;
 
     if (!ctx->dispatch_vkGetRenderAreaGranularity) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetRenderAreaGranularity_args_temp(ctx->cs, &args);
+    vn_decode_vkGetRenderAreaGranularity_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetRenderAreaGranularity(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetRenderAreaGranularity_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetRenderAreaGranularity_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateCommandPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2421,16 +2421,16 @@ static inline void vn_dispatch_vkCreateCommandPool(struct vn_dispatch_context *c
     struct vn_command_vkCreateCommandPool args;
 
     if (!ctx->dispatch_vkCreateCommandPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateCommandPool_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateCommandPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateCommandPool(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2440,10 +2440,10 @@ static inline void vn_dispatch_vkCreateCommandPool(struct vn_dispatch_context *c
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateCommandPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateCommandPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyCommandPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2451,20 +2451,20 @@ static inline void vn_dispatch_vkDestroyCommandPool(struct vn_dispatch_context *
     struct vn_command_vkDestroyCommandPool args;
 
     if (!ctx->dispatch_vkDestroyCommandPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyCommandPool_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyCommandPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyCommandPool(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyCommandPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyCommandPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkResetCommandPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2472,16 +2472,16 @@ static inline void vn_dispatch_vkResetCommandPool(struct vn_dispatch_context *ct
     struct vn_command_vkResetCommandPool args;
 
     if (!ctx->dispatch_vkResetCommandPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkResetCommandPool_args_temp(ctx->cs, &args);
+    vn_decode_vkResetCommandPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkResetCommandPool(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2491,10 +2491,10 @@ static inline void vn_dispatch_vkResetCommandPool(struct vn_dispatch_context *ct
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkResetCommandPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkResetCommandPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2502,16 +2502,16 @@ static inline void vn_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_conte
     struct vn_command_vkAllocateCommandBuffers args;
 
     if (!ctx->dispatch_vkAllocateCommandBuffers) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkAllocateCommandBuffers_args_temp(ctx->cs, &args);
+    vn_decode_vkAllocateCommandBuffers_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkAllocateCommandBuffers(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2521,10 +2521,10 @@ static inline void vn_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_conte
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkAllocateCommandBuffers_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkAllocateCommandBuffers_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkFreeCommandBuffers(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2532,20 +2532,20 @@ static inline void vn_dispatch_vkFreeCommandBuffers(struct vn_dispatch_context *
     struct vn_command_vkFreeCommandBuffers args;
 
     if (!ctx->dispatch_vkFreeCommandBuffers) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkFreeCommandBuffers_args_temp(ctx->cs, &args);
+    vn_decode_vkFreeCommandBuffers_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkFreeCommandBuffers(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkFreeCommandBuffers_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkFreeCommandBuffers_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkBeginCommandBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2553,16 +2553,16 @@ static inline void vn_dispatch_vkBeginCommandBuffer(struct vn_dispatch_context *
     struct vn_command_vkBeginCommandBuffer args;
 
     if (!ctx->dispatch_vkBeginCommandBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkBeginCommandBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkBeginCommandBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkBeginCommandBuffer(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2572,10 +2572,10 @@ static inline void vn_dispatch_vkBeginCommandBuffer(struct vn_dispatch_context *
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkBeginCommandBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkBeginCommandBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEndCommandBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2583,16 +2583,16 @@ static inline void vn_dispatch_vkEndCommandBuffer(struct vn_dispatch_context *ct
     struct vn_command_vkEndCommandBuffer args;
 
     if (!ctx->dispatch_vkEndCommandBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEndCommandBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkEndCommandBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEndCommandBuffer(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2602,10 +2602,10 @@ static inline void vn_dispatch_vkEndCommandBuffer(struct vn_dispatch_context *ct
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEndCommandBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEndCommandBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkResetCommandBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2613,16 +2613,16 @@ static inline void vn_dispatch_vkResetCommandBuffer(struct vn_dispatch_context *
     struct vn_command_vkResetCommandBuffer args;
 
     if (!ctx->dispatch_vkResetCommandBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkResetCommandBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkResetCommandBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkResetCommandBuffer(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -2632,10 +2632,10 @@ static inline void vn_dispatch_vkResetCommandBuffer(struct vn_dispatch_context *
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkResetCommandBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkResetCommandBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBindPipeline(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2643,20 +2643,20 @@ static inline void vn_dispatch_vkCmdBindPipeline(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdBindPipeline args;
 
     if (!ctx->dispatch_vkCmdBindPipeline) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBindPipeline_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBindPipeline_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBindPipeline(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBindPipeline_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBindPipeline_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetViewport(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2664,20 +2664,20 @@ static inline void vn_dispatch_vkCmdSetViewport(struct vn_dispatch_context *ctx,
     struct vn_command_vkCmdSetViewport args;
 
     if (!ctx->dispatch_vkCmdSetViewport) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetViewport_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetViewport_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetViewport(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetViewport_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetViewport_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetScissor(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2685,20 +2685,20 @@ static inline void vn_dispatch_vkCmdSetScissor(struct vn_dispatch_context *ctx, 
     struct vn_command_vkCmdSetScissor args;
 
     if (!ctx->dispatch_vkCmdSetScissor) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetScissor_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetScissor_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetScissor(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetScissor_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetScissor_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetLineWidth(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2706,20 +2706,20 @@ static inline void vn_dispatch_vkCmdSetLineWidth(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdSetLineWidth args;
 
     if (!ctx->dispatch_vkCmdSetLineWidth) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetLineWidth_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetLineWidth_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetLineWidth(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetLineWidth_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetLineWidth_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetDepthBias(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2727,20 +2727,20 @@ static inline void vn_dispatch_vkCmdSetDepthBias(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdSetDepthBias args;
 
     if (!ctx->dispatch_vkCmdSetDepthBias) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetDepthBias_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetDepthBias_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetDepthBias(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetDepthBias_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetDepthBias_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetBlendConstants(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2748,20 +2748,20 @@ static inline void vn_dispatch_vkCmdSetBlendConstants(struct vn_dispatch_context
     struct vn_command_vkCmdSetBlendConstants args;
 
     if (!ctx->dispatch_vkCmdSetBlendConstants) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetBlendConstants_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetBlendConstants_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetBlendConstants(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetBlendConstants_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetBlendConstants_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetDepthBounds(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2769,20 +2769,20 @@ static inline void vn_dispatch_vkCmdSetDepthBounds(struct vn_dispatch_context *c
     struct vn_command_vkCmdSetDepthBounds args;
 
     if (!ctx->dispatch_vkCmdSetDepthBounds) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetDepthBounds_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetDepthBounds_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetDepthBounds(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetDepthBounds_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetDepthBounds_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetStencilCompareMask(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2790,20 +2790,20 @@ static inline void vn_dispatch_vkCmdSetStencilCompareMask(struct vn_dispatch_con
     struct vn_command_vkCmdSetStencilCompareMask args;
 
     if (!ctx->dispatch_vkCmdSetStencilCompareMask) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetStencilCompareMask_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetStencilCompareMask_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetStencilCompareMask(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetStencilCompareMask_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetStencilCompareMask_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetStencilWriteMask(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2811,20 +2811,20 @@ static inline void vn_dispatch_vkCmdSetStencilWriteMask(struct vn_dispatch_conte
     struct vn_command_vkCmdSetStencilWriteMask args;
 
     if (!ctx->dispatch_vkCmdSetStencilWriteMask) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetStencilWriteMask_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetStencilWriteMask_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetStencilWriteMask(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetStencilWriteMask_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetStencilWriteMask_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetStencilReference(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2832,20 +2832,20 @@ static inline void vn_dispatch_vkCmdSetStencilReference(struct vn_dispatch_conte
     struct vn_command_vkCmdSetStencilReference args;
 
     if (!ctx->dispatch_vkCmdSetStencilReference) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetStencilReference_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetStencilReference_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetStencilReference(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetStencilReference_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetStencilReference_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBindDescriptorSets(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2853,20 +2853,20 @@ static inline void vn_dispatch_vkCmdBindDescriptorSets(struct vn_dispatch_contex
     struct vn_command_vkCmdBindDescriptorSets args;
 
     if (!ctx->dispatch_vkCmdBindDescriptorSets) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBindDescriptorSets_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBindDescriptorSets_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBindDescriptorSets(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBindDescriptorSets_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBindDescriptorSets_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBindIndexBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2874,20 +2874,20 @@ static inline void vn_dispatch_vkCmdBindIndexBuffer(struct vn_dispatch_context *
     struct vn_command_vkCmdBindIndexBuffer args;
 
     if (!ctx->dispatch_vkCmdBindIndexBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBindIndexBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBindIndexBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBindIndexBuffer(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBindIndexBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBindIndexBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBindVertexBuffers(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2895,20 +2895,20 @@ static inline void vn_dispatch_vkCmdBindVertexBuffers(struct vn_dispatch_context
     struct vn_command_vkCmdBindVertexBuffers args;
 
     if (!ctx->dispatch_vkCmdBindVertexBuffers) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBindVertexBuffers_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBindVertexBuffers_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBindVertexBuffers(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBindVertexBuffers_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBindVertexBuffers_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDraw(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2916,20 +2916,20 @@ static inline void vn_dispatch_vkCmdDraw(struct vn_dispatch_context *ctx, VkComm
     struct vn_command_vkCmdDraw args;
 
     if (!ctx->dispatch_vkCmdDraw) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDraw_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDraw_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDraw(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDraw_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDraw_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDrawIndexed(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2937,20 +2937,20 @@ static inline void vn_dispatch_vkCmdDrawIndexed(struct vn_dispatch_context *ctx,
     struct vn_command_vkCmdDrawIndexed args;
 
     if (!ctx->dispatch_vkCmdDrawIndexed) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDrawIndexed_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDrawIndexed_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDrawIndexed(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDrawIndexed_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDrawIndexed_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDrawIndirect(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2958,20 +2958,20 @@ static inline void vn_dispatch_vkCmdDrawIndirect(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdDrawIndirect args;
 
     if (!ctx->dispatch_vkCmdDrawIndirect) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDrawIndirect_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDrawIndirect_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDrawIndirect(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDrawIndirect_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDrawIndirect_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDrawIndexedIndirect(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -2979,20 +2979,20 @@ static inline void vn_dispatch_vkCmdDrawIndexedIndirect(struct vn_dispatch_conte
     struct vn_command_vkCmdDrawIndexedIndirect args;
 
     if (!ctx->dispatch_vkCmdDrawIndexedIndirect) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDrawIndexedIndirect_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDrawIndexedIndirect_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDrawIndexedIndirect(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDrawIndexedIndirect_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDrawIndexedIndirect_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDispatch(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3000,20 +3000,20 @@ static inline void vn_dispatch_vkCmdDispatch(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkCmdDispatch args;
 
     if (!ctx->dispatch_vkCmdDispatch) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDispatch_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDispatch_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDispatch(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDispatch_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDispatch_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDispatchIndirect(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3021,20 +3021,20 @@ static inline void vn_dispatch_vkCmdDispatchIndirect(struct vn_dispatch_context 
     struct vn_command_vkCmdDispatchIndirect args;
 
     if (!ctx->dispatch_vkCmdDispatchIndirect) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDispatchIndirect_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDispatchIndirect_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDispatchIndirect(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDispatchIndirect_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDispatchIndirect_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdCopyBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3042,20 +3042,20 @@ static inline void vn_dispatch_vkCmdCopyBuffer(struct vn_dispatch_context *ctx, 
     struct vn_command_vkCmdCopyBuffer args;
 
     if (!ctx->dispatch_vkCmdCopyBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdCopyBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdCopyBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdCopyBuffer(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdCopyBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdCopyBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdCopyImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3063,20 +3063,20 @@ static inline void vn_dispatch_vkCmdCopyImage(struct vn_dispatch_context *ctx, V
     struct vn_command_vkCmdCopyImage args;
 
     if (!ctx->dispatch_vkCmdCopyImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdCopyImage_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdCopyImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdCopyImage(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdCopyImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdCopyImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBlitImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3084,20 +3084,20 @@ static inline void vn_dispatch_vkCmdBlitImage(struct vn_dispatch_context *ctx, V
     struct vn_command_vkCmdBlitImage args;
 
     if (!ctx->dispatch_vkCmdBlitImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBlitImage_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBlitImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBlitImage(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBlitImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBlitImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdCopyBufferToImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3105,20 +3105,20 @@ static inline void vn_dispatch_vkCmdCopyBufferToImage(struct vn_dispatch_context
     struct vn_command_vkCmdCopyBufferToImage args;
 
     if (!ctx->dispatch_vkCmdCopyBufferToImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdCopyBufferToImage_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdCopyBufferToImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdCopyBufferToImage(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdCopyBufferToImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdCopyBufferToImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdCopyImageToBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3126,20 +3126,20 @@ static inline void vn_dispatch_vkCmdCopyImageToBuffer(struct vn_dispatch_context
     struct vn_command_vkCmdCopyImageToBuffer args;
 
     if (!ctx->dispatch_vkCmdCopyImageToBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdCopyImageToBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdCopyImageToBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdCopyImageToBuffer(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdCopyImageToBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdCopyImageToBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdUpdateBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3147,20 +3147,20 @@ static inline void vn_dispatch_vkCmdUpdateBuffer(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdUpdateBuffer args;
 
     if (!ctx->dispatch_vkCmdUpdateBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdUpdateBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdUpdateBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdUpdateBuffer(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdUpdateBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdUpdateBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdFillBuffer(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3168,20 +3168,20 @@ static inline void vn_dispatch_vkCmdFillBuffer(struct vn_dispatch_context *ctx, 
     struct vn_command_vkCmdFillBuffer args;
 
     if (!ctx->dispatch_vkCmdFillBuffer) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdFillBuffer_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdFillBuffer_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdFillBuffer(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdFillBuffer_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdFillBuffer_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdClearColorImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3189,20 +3189,20 @@ static inline void vn_dispatch_vkCmdClearColorImage(struct vn_dispatch_context *
     struct vn_command_vkCmdClearColorImage args;
 
     if (!ctx->dispatch_vkCmdClearColorImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdClearColorImage_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdClearColorImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdClearColorImage(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdClearColorImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdClearColorImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdClearDepthStencilImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3210,20 +3210,20 @@ static inline void vn_dispatch_vkCmdClearDepthStencilImage(struct vn_dispatch_co
     struct vn_command_vkCmdClearDepthStencilImage args;
 
     if (!ctx->dispatch_vkCmdClearDepthStencilImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdClearDepthStencilImage_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdClearDepthStencilImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdClearDepthStencilImage(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdClearDepthStencilImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdClearDepthStencilImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdClearAttachments(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3231,20 +3231,20 @@ static inline void vn_dispatch_vkCmdClearAttachments(struct vn_dispatch_context 
     struct vn_command_vkCmdClearAttachments args;
 
     if (!ctx->dispatch_vkCmdClearAttachments) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdClearAttachments_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdClearAttachments_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdClearAttachments(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdClearAttachments_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdClearAttachments_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdResolveImage(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3252,20 +3252,20 @@ static inline void vn_dispatch_vkCmdResolveImage(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdResolveImage args;
 
     if (!ctx->dispatch_vkCmdResolveImage) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdResolveImage_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdResolveImage_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdResolveImage(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdResolveImage_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdResolveImage_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetEvent(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3273,20 +3273,20 @@ static inline void vn_dispatch_vkCmdSetEvent(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkCmdSetEvent args;
 
     if (!ctx->dispatch_vkCmdSetEvent) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetEvent_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetEvent_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetEvent(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetEvent_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetEvent_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdResetEvent(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3294,20 +3294,20 @@ static inline void vn_dispatch_vkCmdResetEvent(struct vn_dispatch_context *ctx, 
     struct vn_command_vkCmdResetEvent args;
 
     if (!ctx->dispatch_vkCmdResetEvent) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdResetEvent_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdResetEvent_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdResetEvent(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdResetEvent_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdResetEvent_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdWaitEvents(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3315,20 +3315,20 @@ static inline void vn_dispatch_vkCmdWaitEvents(struct vn_dispatch_context *ctx, 
     struct vn_command_vkCmdWaitEvents args;
 
     if (!ctx->dispatch_vkCmdWaitEvents) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdWaitEvents_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdWaitEvents_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdWaitEvents(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdWaitEvents_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdWaitEvents_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdPipelineBarrier(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3336,20 +3336,20 @@ static inline void vn_dispatch_vkCmdPipelineBarrier(struct vn_dispatch_context *
     struct vn_command_vkCmdPipelineBarrier args;
 
     if (!ctx->dispatch_vkCmdPipelineBarrier) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdPipelineBarrier_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdPipelineBarrier_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdPipelineBarrier(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdPipelineBarrier_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdPipelineBarrier_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBeginQuery(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3357,20 +3357,20 @@ static inline void vn_dispatch_vkCmdBeginQuery(struct vn_dispatch_context *ctx, 
     struct vn_command_vkCmdBeginQuery args;
 
     if (!ctx->dispatch_vkCmdBeginQuery) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBeginQuery_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBeginQuery_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBeginQuery(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBeginQuery_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBeginQuery_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdEndQuery(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3378,20 +3378,20 @@ static inline void vn_dispatch_vkCmdEndQuery(struct vn_dispatch_context *ctx, Vk
     struct vn_command_vkCmdEndQuery args;
 
     if (!ctx->dispatch_vkCmdEndQuery) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdEndQuery_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdEndQuery_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdEndQuery(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdEndQuery_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdEndQuery_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdResetQueryPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3399,20 +3399,20 @@ static inline void vn_dispatch_vkCmdResetQueryPool(struct vn_dispatch_context *c
     struct vn_command_vkCmdResetQueryPool args;
 
     if (!ctx->dispatch_vkCmdResetQueryPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdResetQueryPool_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdResetQueryPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdResetQueryPool(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdResetQueryPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdResetQueryPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdWriteTimestamp(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3420,20 +3420,20 @@ static inline void vn_dispatch_vkCmdWriteTimestamp(struct vn_dispatch_context *c
     struct vn_command_vkCmdWriteTimestamp args;
 
     if (!ctx->dispatch_vkCmdWriteTimestamp) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdWriteTimestamp_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdWriteTimestamp_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdWriteTimestamp(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdWriteTimestamp_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdWriteTimestamp_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdCopyQueryPoolResults(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3441,20 +3441,20 @@ static inline void vn_dispatch_vkCmdCopyQueryPoolResults(struct vn_dispatch_cont
     struct vn_command_vkCmdCopyQueryPoolResults args;
 
     if (!ctx->dispatch_vkCmdCopyQueryPoolResults) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdCopyQueryPoolResults_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdCopyQueryPoolResults_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdCopyQueryPoolResults(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdCopyQueryPoolResults_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdCopyQueryPoolResults_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdPushConstants(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3462,20 +3462,20 @@ static inline void vn_dispatch_vkCmdPushConstants(struct vn_dispatch_context *ct
     struct vn_command_vkCmdPushConstants args;
 
     if (!ctx->dispatch_vkCmdPushConstants) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdPushConstants_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdPushConstants_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdPushConstants(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdPushConstants_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdPushConstants_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBeginRenderPass(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3483,20 +3483,20 @@ static inline void vn_dispatch_vkCmdBeginRenderPass(struct vn_dispatch_context *
     struct vn_command_vkCmdBeginRenderPass args;
 
     if (!ctx->dispatch_vkCmdBeginRenderPass) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBeginRenderPass_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBeginRenderPass_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBeginRenderPass(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBeginRenderPass_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBeginRenderPass_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdNextSubpass(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3504,20 +3504,20 @@ static inline void vn_dispatch_vkCmdNextSubpass(struct vn_dispatch_context *ctx,
     struct vn_command_vkCmdNextSubpass args;
 
     if (!ctx->dispatch_vkCmdNextSubpass) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdNextSubpass_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdNextSubpass_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdNextSubpass(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdNextSubpass_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdNextSubpass_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdEndRenderPass(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3525,20 +3525,20 @@ static inline void vn_dispatch_vkCmdEndRenderPass(struct vn_dispatch_context *ct
     struct vn_command_vkCmdEndRenderPass args;
 
     if (!ctx->dispatch_vkCmdEndRenderPass) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdEndRenderPass_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdEndRenderPass_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdEndRenderPass(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdEndRenderPass_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdEndRenderPass_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdExecuteCommands(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3546,20 +3546,20 @@ static inline void vn_dispatch_vkCmdExecuteCommands(struct vn_dispatch_context *
     struct vn_command_vkCmdExecuteCommands args;
 
     if (!ctx->dispatch_vkCmdExecuteCommands) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdExecuteCommands_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdExecuteCommands_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdExecuteCommands(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdExecuteCommands_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdExecuteCommands_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceFeatures2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3567,20 +3567,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceFeatures2(struct vn_dispatch_c
     struct vn_command_vkGetPhysicalDeviceFeatures2 args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceFeatures2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceFeatures2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceFeatures2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceFeatures2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceFeatures2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceFeatures2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceProperties2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3588,20 +3588,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceProperties2(struct vn_dispatch
     struct vn_command_vkGetPhysicalDeviceProperties2 args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceProperties2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceProperties2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceProperties2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceProperties2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceProperties2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceProperties2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceFormatProperties2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3609,20 +3609,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceFormatProperties2(struct vn_di
     struct vn_command_vkGetPhysicalDeviceFormatProperties2 args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceFormatProperties2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceFormatProperties2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceFormatProperties2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceFormatProperties2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceFormatProperties2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceFormatProperties2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceImageFormatProperties2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3630,16 +3630,16 @@ static inline void vn_dispatch_vkGetPhysicalDeviceImageFormatProperties2(struct 
     struct vn_command_vkGetPhysicalDeviceImageFormatProperties2 args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceImageFormatProperties2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceImageFormatProperties2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceImageFormatProperties2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceImageFormatProperties2(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -3649,10 +3649,10 @@ static inline void vn_dispatch_vkGetPhysicalDeviceImageFormatProperties2(struct 
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceImageFormatProperties2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceImageFormatProperties2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceQueueFamilyProperties2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3660,20 +3660,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceQueueFamilyProperties2(struct 
     struct vn_command_vkGetPhysicalDeviceQueueFamilyProperties2 args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceQueueFamilyProperties2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceQueueFamilyProperties2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceQueueFamilyProperties2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceQueueFamilyProperties2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceQueueFamilyProperties2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceQueueFamilyProperties2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceMemoryProperties2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3681,20 +3681,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceMemoryProperties2(struct vn_di
     struct vn_command_vkGetPhysicalDeviceMemoryProperties2 args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceMemoryProperties2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceMemoryProperties2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceMemoryProperties2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceMemoryProperties2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceMemoryProperties2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceMemoryProperties2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceSparseImageFormatProperties2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3702,20 +3702,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceSparseImageFormatProperties2(s
     struct vn_command_vkGetPhysicalDeviceSparseImageFormatProperties2 args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceSparseImageFormatProperties2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceSparseImageFormatProperties2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceSparseImageFormatProperties2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceSparseImageFormatProperties2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceSparseImageFormatProperties2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceSparseImageFormatProperties2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkTrimCommandPool(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3723,20 +3723,20 @@ static inline void vn_dispatch_vkTrimCommandPool(struct vn_dispatch_context *ctx
     struct vn_command_vkTrimCommandPool args;
 
     if (!ctx->dispatch_vkTrimCommandPool) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkTrimCommandPool_args_temp(ctx->cs, &args);
+    vn_decode_vkTrimCommandPool_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkTrimCommandPool(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkTrimCommandPool_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkTrimCommandPool_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceExternalBufferProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3744,20 +3744,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceExternalBufferProperties(struc
     struct vn_command_vkGetPhysicalDeviceExternalBufferProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceExternalBufferProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceExternalBufferProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceExternalBufferProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceExternalBufferProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceExternalBufferProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceExternalBufferProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceExternalSemaphoreProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3765,20 +3765,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceExternalSemaphoreProperties(st
     struct vn_command_vkGetPhysicalDeviceExternalSemaphoreProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceExternalSemaphoreProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceExternalSemaphoreProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceExternalSemaphoreProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceExternalSemaphoreProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceExternalSemaphoreProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceExternalSemaphoreProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetPhysicalDeviceExternalFenceProperties(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3786,20 +3786,20 @@ static inline void vn_dispatch_vkGetPhysicalDeviceExternalFenceProperties(struct
     struct vn_command_vkGetPhysicalDeviceExternalFenceProperties args;
 
     if (!ctx->dispatch_vkGetPhysicalDeviceExternalFenceProperties) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetPhysicalDeviceExternalFenceProperties_args_temp(ctx->cs, &args);
+    vn_decode_vkGetPhysicalDeviceExternalFenceProperties_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetPhysicalDeviceExternalFenceProperties(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetPhysicalDeviceExternalFenceProperties_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetPhysicalDeviceExternalFenceProperties_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkEnumeratePhysicalDeviceGroups(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3807,16 +3807,16 @@ static inline void vn_dispatch_vkEnumeratePhysicalDeviceGroups(struct vn_dispatc
     struct vn_command_vkEnumeratePhysicalDeviceGroups args;
 
     if (!ctx->dispatch_vkEnumeratePhysicalDeviceGroups) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkEnumeratePhysicalDeviceGroups_args_temp(ctx->cs, &args);
+    vn_decode_vkEnumeratePhysicalDeviceGroups_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkEnumeratePhysicalDeviceGroups(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -3826,10 +3826,10 @@ static inline void vn_dispatch_vkEnumeratePhysicalDeviceGroups(struct vn_dispatc
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkEnumeratePhysicalDeviceGroups_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkEnumeratePhysicalDeviceGroups_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetDeviceGroupPeerMemoryFeatures(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3837,20 +3837,20 @@ static inline void vn_dispatch_vkGetDeviceGroupPeerMemoryFeatures(struct vn_disp
     struct vn_command_vkGetDeviceGroupPeerMemoryFeatures args;
 
     if (!ctx->dispatch_vkGetDeviceGroupPeerMemoryFeatures) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetDeviceGroupPeerMemoryFeatures_args_temp(ctx->cs, &args);
+    vn_decode_vkGetDeviceGroupPeerMemoryFeatures_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetDeviceGroupPeerMemoryFeatures(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetDeviceGroupPeerMemoryFeatures_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetDeviceGroupPeerMemoryFeatures_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkBindBufferMemory2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3858,16 +3858,16 @@ static inline void vn_dispatch_vkBindBufferMemory2(struct vn_dispatch_context *c
     struct vn_command_vkBindBufferMemory2 args;
 
     if (!ctx->dispatch_vkBindBufferMemory2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkBindBufferMemory2_args_temp(ctx->cs, &args);
+    vn_decode_vkBindBufferMemory2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkBindBufferMemory2(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -3877,10 +3877,10 @@ static inline void vn_dispatch_vkBindBufferMemory2(struct vn_dispatch_context *c
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkBindBufferMemory2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkBindBufferMemory2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkBindImageMemory2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3888,16 +3888,16 @@ static inline void vn_dispatch_vkBindImageMemory2(struct vn_dispatch_context *ct
     struct vn_command_vkBindImageMemory2 args;
 
     if (!ctx->dispatch_vkBindImageMemory2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkBindImageMemory2_args_temp(ctx->cs, &args);
+    vn_decode_vkBindImageMemory2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkBindImageMemory2(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -3907,10 +3907,10 @@ static inline void vn_dispatch_vkBindImageMemory2(struct vn_dispatch_context *ct
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkBindImageMemory2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkBindImageMemory2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdSetDeviceMask(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3918,20 +3918,20 @@ static inline void vn_dispatch_vkCmdSetDeviceMask(struct vn_dispatch_context *ct
     struct vn_command_vkCmdSetDeviceMask args;
 
     if (!ctx->dispatch_vkCmdSetDeviceMask) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdSetDeviceMask_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdSetDeviceMask_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdSetDeviceMask(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdSetDeviceMask_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdSetDeviceMask_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDispatchBase(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3939,20 +3939,20 @@ static inline void vn_dispatch_vkCmdDispatchBase(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdDispatchBase args;
 
     if (!ctx->dispatch_vkCmdDispatchBase) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDispatchBase_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDispatchBase_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDispatchBase(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDispatchBase_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDispatchBase_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateDescriptorUpdateTemplate(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3960,16 +3960,16 @@ static inline void vn_dispatch_vkCreateDescriptorUpdateTemplate(struct vn_dispat
     struct vn_command_vkCreateDescriptorUpdateTemplate args;
 
     if (!ctx->dispatch_vkCreateDescriptorUpdateTemplate) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateDescriptorUpdateTemplate_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateDescriptorUpdateTemplate_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateDescriptorUpdateTemplate(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -3979,10 +3979,10 @@ static inline void vn_dispatch_vkCreateDescriptorUpdateTemplate(struct vn_dispat
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateDescriptorUpdateTemplate_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateDescriptorUpdateTemplate_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroyDescriptorUpdateTemplate(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -3990,20 +3990,20 @@ static inline void vn_dispatch_vkDestroyDescriptorUpdateTemplate(struct vn_dispa
     struct vn_command_vkDestroyDescriptorUpdateTemplate args;
 
     if (!ctx->dispatch_vkDestroyDescriptorUpdateTemplate) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroyDescriptorUpdateTemplate_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroyDescriptorUpdateTemplate_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroyDescriptorUpdateTemplate(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroyDescriptorUpdateTemplate_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroyDescriptorUpdateTemplate_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetBufferMemoryRequirements2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4011,20 +4011,20 @@ static inline void vn_dispatch_vkGetBufferMemoryRequirements2(struct vn_dispatch
     struct vn_command_vkGetBufferMemoryRequirements2 args;
 
     if (!ctx->dispatch_vkGetBufferMemoryRequirements2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetBufferMemoryRequirements2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetBufferMemoryRequirements2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetBufferMemoryRequirements2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetBufferMemoryRequirements2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetBufferMemoryRequirements2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetImageMemoryRequirements2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4032,20 +4032,20 @@ static inline void vn_dispatch_vkGetImageMemoryRequirements2(struct vn_dispatch_
     struct vn_command_vkGetImageMemoryRequirements2 args;
 
     if (!ctx->dispatch_vkGetImageMemoryRequirements2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetImageMemoryRequirements2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetImageMemoryRequirements2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetImageMemoryRequirements2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetImageMemoryRequirements2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetImageMemoryRequirements2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetImageSparseMemoryRequirements2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4053,20 +4053,20 @@ static inline void vn_dispatch_vkGetImageSparseMemoryRequirements2(struct vn_dis
     struct vn_command_vkGetImageSparseMemoryRequirements2 args;
 
     if (!ctx->dispatch_vkGetImageSparseMemoryRequirements2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetImageSparseMemoryRequirements2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetImageSparseMemoryRequirements2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetImageSparseMemoryRequirements2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetImageSparseMemoryRequirements2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetImageSparseMemoryRequirements2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateSamplerYcbcrConversion(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4074,16 +4074,16 @@ static inline void vn_dispatch_vkCreateSamplerYcbcrConversion(struct vn_dispatch
     struct vn_command_vkCreateSamplerYcbcrConversion args;
 
     if (!ctx->dispatch_vkCreateSamplerYcbcrConversion) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateSamplerYcbcrConversion_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateSamplerYcbcrConversion_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateSamplerYcbcrConversion(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -4093,10 +4093,10 @@ static inline void vn_dispatch_vkCreateSamplerYcbcrConversion(struct vn_dispatch
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateSamplerYcbcrConversion_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateSamplerYcbcrConversion_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkDestroySamplerYcbcrConversion(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4104,20 +4104,20 @@ static inline void vn_dispatch_vkDestroySamplerYcbcrConversion(struct vn_dispatc
     struct vn_command_vkDestroySamplerYcbcrConversion args;
 
     if (!ctx->dispatch_vkDestroySamplerYcbcrConversion) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkDestroySamplerYcbcrConversion_args_temp(ctx->cs, &args);
+    vn_decode_vkDestroySamplerYcbcrConversion_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkDestroySamplerYcbcrConversion(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkDestroySamplerYcbcrConversion_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkDestroySamplerYcbcrConversion_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetDeviceQueue2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4125,20 +4125,20 @@ static inline void vn_dispatch_vkGetDeviceQueue2(struct vn_dispatch_context *ctx
     struct vn_command_vkGetDeviceQueue2 args;
 
     if (!ctx->dispatch_vkGetDeviceQueue2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetDeviceQueue2_args_temp(ctx->cs, &args);
+    vn_decode_vkGetDeviceQueue2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetDeviceQueue2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetDeviceQueue2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetDeviceQueue2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetDescriptorSetLayoutSupport(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4146,20 +4146,20 @@ static inline void vn_dispatch_vkGetDescriptorSetLayoutSupport(struct vn_dispatc
     struct vn_command_vkGetDescriptorSetLayoutSupport args;
 
     if (!ctx->dispatch_vkGetDescriptorSetLayoutSupport) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetDescriptorSetLayoutSupport_args_temp(ctx->cs, &args);
+    vn_decode_vkGetDescriptorSetLayoutSupport_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetDescriptorSetLayoutSupport(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetDescriptorSetLayoutSupport_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetDescriptorSetLayoutSupport_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4167,16 +4167,16 @@ static inline void vn_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *c
     struct vn_command_vkCreateRenderPass2 args;
 
     if (!ctx->dispatch_vkCreateRenderPass2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCreateRenderPass2_args_temp(ctx->cs, &args);
+    vn_decode_vkCreateRenderPass2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCreateRenderPass2(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -4186,10 +4186,10 @@ static inline void vn_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *c
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCreateRenderPass2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCreateRenderPass2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBeginRenderPass2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4197,20 +4197,20 @@ static inline void vn_dispatch_vkCmdBeginRenderPass2(struct vn_dispatch_context 
     struct vn_command_vkCmdBeginRenderPass2 args;
 
     if (!ctx->dispatch_vkCmdBeginRenderPass2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBeginRenderPass2_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBeginRenderPass2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBeginRenderPass2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBeginRenderPass2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBeginRenderPass2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdNextSubpass2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4218,20 +4218,20 @@ static inline void vn_dispatch_vkCmdNextSubpass2(struct vn_dispatch_context *ctx
     struct vn_command_vkCmdNextSubpass2 args;
 
     if (!ctx->dispatch_vkCmdNextSubpass2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdNextSubpass2_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdNextSubpass2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdNextSubpass2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdNextSubpass2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdNextSubpass2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdEndRenderPass2(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4239,20 +4239,20 @@ static inline void vn_dispatch_vkCmdEndRenderPass2(struct vn_dispatch_context *c
     struct vn_command_vkCmdEndRenderPass2 args;
 
     if (!ctx->dispatch_vkCmdEndRenderPass2) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdEndRenderPass2_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdEndRenderPass2_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdEndRenderPass2(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdEndRenderPass2_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdEndRenderPass2_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetSemaphoreCounterValue(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4260,16 +4260,16 @@ static inline void vn_dispatch_vkGetSemaphoreCounterValue(struct vn_dispatch_con
     struct vn_command_vkGetSemaphoreCounterValue args;
 
     if (!ctx->dispatch_vkGetSemaphoreCounterValue) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetSemaphoreCounterValue_args_temp(ctx->cs, &args);
+    vn_decode_vkGetSemaphoreCounterValue_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetSemaphoreCounterValue(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -4279,10 +4279,10 @@ static inline void vn_dispatch_vkGetSemaphoreCounterValue(struct vn_dispatch_con
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetSemaphoreCounterValue_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetSemaphoreCounterValue_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkWaitSemaphores(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4290,16 +4290,16 @@ static inline void vn_dispatch_vkWaitSemaphores(struct vn_dispatch_context *ctx,
     struct vn_command_vkWaitSemaphores args;
 
     if (!ctx->dispatch_vkWaitSemaphores) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkWaitSemaphores_args_temp(ctx->cs, &args);
+    vn_decode_vkWaitSemaphores_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkWaitSemaphores(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -4309,10 +4309,10 @@ static inline void vn_dispatch_vkWaitSemaphores(struct vn_dispatch_context *ctx,
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkWaitSemaphores_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkWaitSemaphores_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkSignalSemaphore(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4320,16 +4320,16 @@ static inline void vn_dispatch_vkSignalSemaphore(struct vn_dispatch_context *ctx
     struct vn_command_vkSignalSemaphore args;
 
     if (!ctx->dispatch_vkSignalSemaphore) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkSignalSemaphore_args_temp(ctx->cs, &args);
+    vn_decode_vkSignalSemaphore_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkSignalSemaphore(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -4339,10 +4339,10 @@ static inline void vn_dispatch_vkSignalSemaphore(struct vn_dispatch_context *ctx
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkSignalSemaphore_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkSignalSemaphore_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDrawIndirectCount(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4350,20 +4350,20 @@ static inline void vn_dispatch_vkCmdDrawIndirectCount(struct vn_dispatch_context
     struct vn_command_vkCmdDrawIndirectCount args;
 
     if (!ctx->dispatch_vkCmdDrawIndirectCount) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDrawIndirectCount_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDrawIndirectCount_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDrawIndirectCount(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDrawIndirectCount_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDrawIndirectCount_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDrawIndexedIndirectCount(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4371,20 +4371,20 @@ static inline void vn_dispatch_vkCmdDrawIndexedIndirectCount(struct vn_dispatch_
     struct vn_command_vkCmdDrawIndexedIndirectCount args;
 
     if (!ctx->dispatch_vkCmdDrawIndexedIndirectCount) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDrawIndexedIndirectCount_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDrawIndexedIndirectCount_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDrawIndexedIndirectCount(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDrawIndexedIndirectCount_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDrawIndexedIndirectCount_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBindTransformFeedbackBuffersEXT(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4392,20 +4392,20 @@ static inline void vn_dispatch_vkCmdBindTransformFeedbackBuffersEXT(struct vn_di
     struct vn_command_vkCmdBindTransformFeedbackBuffersEXT args;
 
     if (!ctx->dispatch_vkCmdBindTransformFeedbackBuffersEXT) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBindTransformFeedbackBuffersEXT_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBindTransformFeedbackBuffersEXT_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBindTransformFeedbackBuffersEXT(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBindTransformFeedbackBuffersEXT_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBindTransformFeedbackBuffersEXT_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBeginTransformFeedbackEXT(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4413,20 +4413,20 @@ static inline void vn_dispatch_vkCmdBeginTransformFeedbackEXT(struct vn_dispatch
     struct vn_command_vkCmdBeginTransformFeedbackEXT args;
 
     if (!ctx->dispatch_vkCmdBeginTransformFeedbackEXT) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBeginTransformFeedbackEXT_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBeginTransformFeedbackEXT_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBeginTransformFeedbackEXT(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBeginTransformFeedbackEXT_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBeginTransformFeedbackEXT_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdEndTransformFeedbackEXT(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4434,20 +4434,20 @@ static inline void vn_dispatch_vkCmdEndTransformFeedbackEXT(struct vn_dispatch_c
     struct vn_command_vkCmdEndTransformFeedbackEXT args;
 
     if (!ctx->dispatch_vkCmdEndTransformFeedbackEXT) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdEndTransformFeedbackEXT_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdEndTransformFeedbackEXT_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdEndTransformFeedbackEXT(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdEndTransformFeedbackEXT_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdEndTransformFeedbackEXT_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdBeginQueryIndexedEXT(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4455,20 +4455,20 @@ static inline void vn_dispatch_vkCmdBeginQueryIndexedEXT(struct vn_dispatch_cont
     struct vn_command_vkCmdBeginQueryIndexedEXT args;
 
     if (!ctx->dispatch_vkCmdBeginQueryIndexedEXT) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdBeginQueryIndexedEXT_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdBeginQueryIndexedEXT_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdBeginQueryIndexedEXT(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdBeginQueryIndexedEXT_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdBeginQueryIndexedEXT_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdEndQueryIndexedEXT(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4476,20 +4476,20 @@ static inline void vn_dispatch_vkCmdEndQueryIndexedEXT(struct vn_dispatch_contex
     struct vn_command_vkCmdEndQueryIndexedEXT args;
 
     if (!ctx->dispatch_vkCmdEndQueryIndexedEXT) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdEndQueryIndexedEXT_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdEndQueryIndexedEXT_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdEndQueryIndexedEXT(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdEndQueryIndexedEXT_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdEndQueryIndexedEXT_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkCmdDrawIndirectByteCountEXT(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4497,20 +4497,20 @@ static inline void vn_dispatch_vkCmdDrawIndirectByteCountEXT(struct vn_dispatch_
     struct vn_command_vkCmdDrawIndirectByteCountEXT args;
 
     if (!ctx->dispatch_vkCmdDrawIndirectByteCountEXT) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkCmdDrawIndirectByteCountEXT_args_temp(ctx->cs, &args);
+    vn_decode_vkCmdDrawIndirectByteCountEXT_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkCmdDrawIndirectByteCountEXT(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkCmdDrawIndirectByteCountEXT_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkCmdDrawIndirectByteCountEXT_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetImageDrmFormatModifierPropertiesEXT(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4518,16 +4518,16 @@ static inline void vn_dispatch_vkGetImageDrmFormatModifierPropertiesEXT(struct v
     struct vn_command_vkGetImageDrmFormatModifierPropertiesEXT args;
 
     if (!ctx->dispatch_vkGetImageDrmFormatModifierPropertiesEXT) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetImageDrmFormatModifierPropertiesEXT_args_temp(ctx->cs, &args);
+    vn_decode_vkGetImageDrmFormatModifierPropertiesEXT_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetImageDrmFormatModifierPropertiesEXT(ctx, &args);
 
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS) {
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.ret < VK_SUCCESS) {
         switch (args.ret) {
         case VK_ERROR_FORMAT_NOT_SUPPORTED:
             break;
@@ -4537,10 +4537,10 @@ static inline void vn_dispatch_vkGetImageDrmFormatModifierPropertiesEXT(struct v
         }
     }
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetImageDrmFormatModifierPropertiesEXT_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetImageDrmFormatModifierPropertiesEXT_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetBufferOpaqueCaptureAddress(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4548,20 +4548,20 @@ static inline void vn_dispatch_vkGetBufferOpaqueCaptureAddress(struct vn_dispatc
     struct vn_command_vkGetBufferOpaqueCaptureAddress args;
 
     if (!ctx->dispatch_vkGetBufferOpaqueCaptureAddress) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetBufferOpaqueCaptureAddress_args_temp(ctx->cs, &args);
+    vn_decode_vkGetBufferOpaqueCaptureAddress_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetBufferOpaqueCaptureAddress(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetBufferOpaqueCaptureAddress_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetBufferOpaqueCaptureAddress_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetBufferDeviceAddress(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4569,20 +4569,20 @@ static inline void vn_dispatch_vkGetBufferDeviceAddress(struct vn_dispatch_conte
     struct vn_command_vkGetBufferDeviceAddress args;
 
     if (!ctx->dispatch_vkGetBufferDeviceAddress) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetBufferDeviceAddress_args_temp(ctx->cs, &args);
+    vn_decode_vkGetBufferDeviceAddress_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetBufferDeviceAddress(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetBufferDeviceAddress_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetBufferDeviceAddress_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkGetDeviceMemoryOpaqueCaptureAddress(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4590,20 +4590,20 @@ static inline void vn_dispatch_vkGetDeviceMemoryOpaqueCaptureAddress(struct vn_d
     struct vn_command_vkGetDeviceMemoryOpaqueCaptureAddress args;
 
     if (!ctx->dispatch_vkGetDeviceMemoryOpaqueCaptureAddress) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkGetDeviceMemoryOpaqueCaptureAddress_args_temp(ctx->cs, &args);
+    vn_decode_vkGetDeviceMemoryOpaqueCaptureAddress_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkGetDeviceMemoryOpaqueCaptureAddress(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkGetDeviceMemoryOpaqueCaptureAddress_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkGetDeviceMemoryOpaqueCaptureAddress_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkSetReplyCommandStreamMESA(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4611,20 +4611,20 @@ static inline void vn_dispatch_vkSetReplyCommandStreamMESA(struct vn_dispatch_co
     struct vn_command_vkSetReplyCommandStreamMESA args;
 
     if (!ctx->dispatch_vkSetReplyCommandStreamMESA) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkSetReplyCommandStreamMESA_args_temp(ctx->cs, &args);
+    vn_decode_vkSetReplyCommandStreamMESA_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkSetReplyCommandStreamMESA(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkSetReplyCommandStreamMESA_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkSetReplyCommandStreamMESA_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkSeekReplyCommandStreamMESA(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4632,20 +4632,20 @@ static inline void vn_dispatch_vkSeekReplyCommandStreamMESA(struct vn_dispatch_c
     struct vn_command_vkSeekReplyCommandStreamMESA args;
 
     if (!ctx->dispatch_vkSeekReplyCommandStreamMESA) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkSeekReplyCommandStreamMESA_args_temp(ctx->cs, &args);
+    vn_decode_vkSeekReplyCommandStreamMESA_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkSeekReplyCommandStreamMESA(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkSeekReplyCommandStreamMESA_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkSeekReplyCommandStreamMESA_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static inline void vn_dispatch_vkExecuteCommandStreamsMESA(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
@@ -4653,20 +4653,20 @@ static inline void vn_dispatch_vkExecuteCommandStreamsMESA(struct vn_dispatch_co
     struct vn_command_vkExecuteCommandStreamsMESA args;
 
     if (!ctx->dispatch_vkExecuteCommandStreamsMESA) {
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
         return;
     }
 
-    vn_decode_vkExecuteCommandStreamsMESA_args_temp(ctx->cs, &args);
+    vn_decode_vkExecuteCommandStreamsMESA_args_temp(ctx->decoder, &args);
 
-    if (!vn_cs_has_error(ctx->cs))
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_vkExecuteCommandStreamsMESA(ctx, &args);
 
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_vkExecuteCommandStreamsMESA_reply(ctx->cs, &args);
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkExecuteCommandStreamsMESA_reply(ctx->encoder, &args);
 
-    vn_cs_reset_temp_pool(ctx->cs);
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
 static void (*const vn_dispatch_table[188])(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags) = {
@@ -4861,15 +4861,15 @@ static inline void vn_dispatch_command(struct vn_dispatch_context *ctx)
     VkCommandTypeEXT cmd_type;
     VkCommandFlagsEXT cmd_flags;
 
-    vn_decode_VkCommandTypeEXT(ctx->cs, &cmd_type);
-    vn_decode_VkFlags(ctx->cs, &cmd_flags);
+    vn_decode_VkCommandTypeEXT(ctx->decoder, &cmd_type);
+    vn_decode_VkFlags(ctx->decoder, &cmd_flags);
 
     if (cmd_type < 188 && vn_dispatch_table[cmd_type])
         vn_dispatch_table[cmd_type](ctx, cmd_flags);
     else
-        vn_cs_set_error(ctx->cs);
+        vn_cs_decoder_set_fatal(ctx->decoder);
 
-    if (vn_cs_has_error(ctx->cs))
+    if (vn_cs_decoder_get_fatal(ctx->decoder))
         vn_dispatch_debug_log(ctx, "%s resulted in CS error", vn_dispatch_command_name(cmd_type));
 }
 

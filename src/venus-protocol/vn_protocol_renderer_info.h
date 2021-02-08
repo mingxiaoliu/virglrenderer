@@ -17,7 +17,7 @@ vn_info_wire_format_version(void)
 static inline uint32_t
 vn_info_vk_xml_version(void)
 {
-    return VK_MAKE_VERSION(1, 2, 167);
+    return VK_MAKE_VERSION(1, 2, 168);
 }
 
 static inline int

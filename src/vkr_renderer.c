@@ -2960,7 +2960,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
    dispatch->data = ctx;
    dispatch->debug_log = vkr_dispatch_debug_log;
 
-   dispatch->cs = (struct vn_cs *)&ctx->parser;
+   dispatch->parser = &ctx->parser;
 
    dispatch->dispatch_vkSetReplyCommandStreamMESA = vkr_dispatch_vkSetReplyCommandStreamMESA;
    dispatch->dispatch_vkSeekReplyCommandStreamMESA = vkr_dispatch_vkSeekReplyCommandStreamMESA;
