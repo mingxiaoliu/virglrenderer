@@ -389,10 +389,105 @@ vkr_dispatch_vkSetReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, s
 }
 
 static void
-vkr_dispatch_vkSeekReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkSeekReplyCommandStreamMESA *args)
+vkr_dispatch_vkSeekReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkSeekReplyCommandStreamMESA *args)
 {
    struct vkr_context *ctx = dispatch->data;
    vkr_cs_encoder_seek_stream(&ctx->encoder, args->position);
+}
+
+static void *
+copy_command_stream(struct vkr_context *ctx,
+                    const VkCommandStreamDescriptionMESA *stream)
+{
+   struct vkr_resource_attachment *att;
+   struct virgl_resource *res;
+
+   att = util_hash_table_get(ctx->resource_table,
+                             uintptr_to_pointer(stream->resourceId));
+   if (!att)
+      return NULL;
+   res = att->resource;
+
+   /* seek to offset */
+   size_t iov_offset = stream->offset;
+   const struct iovec *iov = NULL;
+   for (int i = 0; i < res->iov_count; i++) {
+      if (iov_offset < res->iov[i].iov_len) {
+         iov = &res->iov[i];
+         break;
+      }
+      iov_offset -= res->iov[i].iov_len;
+   }
+   if (!iov)
+      return NULL;
+
+   /* XXX until the decoder supports scatter-gather and is robust enough,
+    * always make a copy in case the caller modifies the commands while we
+    * parse
+    */
+   uint8_t *data = malloc(stream->size);
+   if (!data)
+      return NULL;
+
+   uint32_t copied = 0;
+   while (true) {
+      const size_t s = MIN2(stream->size - copied, iov->iov_len - iov_offset);
+      memcpy(data + copied, (const uint8_t *)iov->iov_base + iov_offset, s);
+
+      copied += s;
+      if (copied == stream->size) {
+         break;
+      } else if (iov == &res->iov[res->iov_count - 1]) {
+         free(data);
+         return NULL;
+      }
+
+      iov++;
+   }
+
+   return data;
+}
+
+static void
+vkr_dispatch_vkExecuteCommandStreamsMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkExecuteCommandStreamsMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+
+   /* note that nested vkExecuteCommandStreamsMESA is not allowed */
+   if (!vkr_cs_decoder_push_state(&ctx->decoder)) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   for (uint32_t i = 0; i < args->streamCount; i++) {
+      const VkCommandStreamDescriptionMESA *stream = &args->pStreams[i];
+
+      if (args->pReplyPositions)
+         vkr_cs_encoder_seek_stream(&ctx->encoder, args->pReplyPositions[i]);
+
+      if (!stream->size)
+         continue;
+
+      void *data = copy_command_stream(ctx, stream);
+      if (!data) {
+         vkr_cs_decoder_set_fatal(&ctx->decoder);
+         break;
+      }
+
+      vkr_cs_decoder_set_stream(&ctx->decoder, data, stream->size);
+      while (vkr_cs_decoder_has_command(&ctx->decoder)) {
+         vn_dispatch_command(&ctx->dispatch);
+         if (vkr_cs_decoder_get_fatal(&ctx->decoder))
+            break;
+      }
+
+      free(data);
+
+      if (vkr_cs_decoder_get_fatal(&ctx->decoder))
+         break;
+   }
+
+   vkr_cs_decoder_pop_state(&ctx->decoder);
 }
 
 static void
@@ -2929,7 +3024,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
 
    dispatch->dispatch_vkSetReplyCommandStreamMESA = vkr_dispatch_vkSetReplyCommandStreamMESA;
    dispatch->dispatch_vkSeekReplyCommandStreamMESA = vkr_dispatch_vkSeekReplyCommandStreamMESA;
-   dispatch->dispatch_vkExecuteCommandStreamsMESA = NULL;
+   dispatch->dispatch_vkExecuteCommandStreamsMESA = vkr_dispatch_vkExecuteCommandStreamsMESA;
 
    dispatch->dispatch_vkEnumerateInstanceVersion = vkr_dispatch_vkEnumerateInstanceVersion;
    dispatch->dispatch_vkEnumerateInstanceExtensionProperties = vkr_dispatch_vkEnumerateInstanceExtensionProperties;
