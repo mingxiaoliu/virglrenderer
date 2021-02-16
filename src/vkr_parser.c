@@ -35,20 +35,6 @@ vkr_parser_init(struct vkr_parser *parser, bool *error)
    parser->error = error;
 }
 
-/**
- * Reset a parser for reuse.
- */
-void
-vkr_parser_reset(struct vkr_parser *parser)
-{
-   parser->error = false;
-
-   parser->reply.remaining_size = 0;
-   parser->reply.next_iov = 0;
-   parser->reply.cur = NULL;
-   parser->reply.end = NULL;
-}
-
 void
 vkr_parser_set_reply_stream(struct vkr_parser *parser,
                             const struct iovec *iov,

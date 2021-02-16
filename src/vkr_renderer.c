@@ -3327,7 +3327,6 @@ static int vkr_context_submit_cmd(struct virgl_context *base,
       }
    }
 
-   vkr_parser_reset(&ctx->parser);
    vkr_cs_decoder_reset(&ctx->decoder);
 
    return ret;
