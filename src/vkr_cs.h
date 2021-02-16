@@ -15,8 +15,28 @@
 #include "os/os_misc.h"
 #include "util/u_hash_table.h"
 #include "util/u_math.h"
+#include "vrend_iov.h"
 
 #include "vkr_parser.h"
+
+struct vkr_cs_encoder {
+   bool *fatal_error;
+
+   struct {
+      const struct iovec *iov;
+      int iov_count;
+      size_t offset;
+      size_t size;
+
+      int cached_index;
+      size_t cached_offset;
+   } stream;
+
+   size_t remaining_size;
+   int next_iov;
+   uint8_t *cur;
+   const uint8_t *end;
+};
 
 struct vkr_cs_decoder_temp_pool {
    uint8_t **buffers;
@@ -36,6 +56,53 @@ struct vkr_cs_decoder {
    const uint8_t *cur;
    const uint8_t *end;
 };
+
+static inline void
+vkr_cs_encoder_init(struct vkr_cs_encoder *enc, bool *fatal_error)
+{
+   memset(enc, 0, sizeof(*enc));
+   enc->fatal_error = fatal_error;
+}
+
+static inline void
+vkr_cs_encoder_set_fatal(const struct vkr_cs_encoder *enc)
+{
+   *enc->fatal_error = true;
+}
+
+void
+vkr_cs_encoder_set_stream(struct vkr_cs_encoder *enc,
+                          const struct iovec *iov,
+                          int iov_count,
+                          size_t offset,
+                          size_t size);
+
+void
+vkr_cs_encoder_seek_stream(struct vkr_cs_encoder *enc, size_t pos);
+
+void
+vkr_cs_encoder_write_internal(struct vkr_cs_encoder *enc,
+                              size_t size,
+                              const void *val,
+                              size_t val_size);
+
+static inline void
+vkr_cs_encoder_write(struct vkr_cs_encoder *enc,
+                     size_t size,
+                     const void *val,
+                     size_t val_size)
+{
+   assert(val_size <= size);
+
+   if (unlikely(size > (size_t)(enc->end - enc->cur))) {
+      vkr_cs_encoder_write_internal(enc, size, val, val_size);
+      return;
+   }
+
+   /* we should not rely on the compiler to optimize away memcpy... */
+   memcpy(enc->cur, val, val_size);
+   enc->cur += size;
+}
 
 void
 vkr_cs_decoder_init(struct vkr_cs_decoder *dec,

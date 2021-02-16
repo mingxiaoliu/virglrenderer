@@ -318,7 +318,7 @@ struct vkr_context {
    struct util_hash_table *resource_table;
    struct list_head newly_exported_memories;
 
-   struct vkr_parser parser;
+   struct vkr_cs_encoder encoder;
    struct vkr_cs_decoder decoder;
    struct vn_dispatch_context dispatch;
 
@@ -416,18 +416,18 @@ vkr_dispatch_vkSetReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, s
    if (!att)
       return;
 
-   vkr_parser_set_reply_stream(&ctx->parser,
-                               att->resource->iov,
-                               att->resource->iov_count,
-                               args->pStream->offset,
-                               args->pStream->size);
+   vkr_cs_encoder_set_stream(&ctx->encoder,
+                             att->resource->iov,
+                             att->resource->iov_count,
+                             args->pStream->offset,
+                             args->pStream->size);
 }
 
 static void
 vkr_dispatch_vkSeekReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkSeekReplyCommandStreamMESA *args)
 {
    struct vkr_context *ctx = dispatch->data;
-   vkr_parser_seek_reply_stream(&ctx->parser, args->position);
+   vkr_cs_encoder_seek_stream(&ctx->encoder, args->position);
 }
 
 static void
@@ -2961,7 +2961,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
    dispatch->data = ctx;
    dispatch->debug_log = vkr_dispatch_debug_log;
 
-   dispatch->encoder = (struct vn_cs_encoder *)&ctx->parser;
+   dispatch->encoder = (struct vn_cs_encoder *)&ctx->encoder;
    dispatch->decoder = (struct vn_cs_decoder *)&ctx->decoder;
 
    dispatch->dispatch_vkSetReplyCommandStreamMESA = vkr_dispatch_vkSetReplyCommandStreamMESA;
@@ -3645,7 +3645,7 @@ vkr_context_create(size_t debug_len, const char *debug_name)
    list_inithead(&ctx->newly_exported_memories);
 
    vkr_cs_decoder_init(&ctx->decoder, ctx->object_table);
-   vkr_parser_init(&ctx->parser, &ctx->decoder.fatal_error);
+   vkr_cs_encoder_init(&ctx->encoder, &ctx->decoder.fatal_error);
 
    vkr_context_init_base(ctx);
    vkr_context_init_dispatch(ctx);

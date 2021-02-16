@@ -38,8 +38,8 @@ typedef vkr_object_id vn_object_id;
 static inline void
 vn_cs_encoder_write(struct vn_cs_encoder *enc, size_t size, const void *val, size_t val_size)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)enc;
-   vkr_parser_reply(parser, size, val, val_size);
+   struct vkr_cs_encoder *e = (struct vkr_cs_encoder *)enc;
+   vkr_cs_encoder_write(e, size, val, val_size);
 }
 
 static inline void
