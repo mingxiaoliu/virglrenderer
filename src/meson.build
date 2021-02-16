@@ -78,7 +78,7 @@ virgl_venus_sources = [
    'venus_hw.h',
    'vkr_cs.c',
    'vkr_cs.h',
-   'vkr_parser.h',
+   'vkr_object.h',
    'vkr_renderer.c',
    'vkr_renderer.h',
    'venus-protocol/vn_protocol_renderer.h',

@@ -13,8 +13,7 @@
 static inline void
 vn_encode_VkInstance(struct vn_cs_encoder *enc, const VkInstance *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_INSTANCE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -23,13 +22,12 @@ vn_decode_VkInstance_temp(struct vn_cs_decoder *dec, VkInstance *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    if (!in_place) {
+    if (vn_cs_handle_indirect_id(VK_OBJECT_TYPE_INSTANCE)) {
         *val = vn_cs_decoder_alloc_temp(dec, sizeof(vn_object_id));
         if (!val)
             return;
     }
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_INSTANCE);
 }
 
 static inline void
@@ -43,7 +41,7 @@ vn_decode_VkInstance_lookup(struct vn_cs_decoder *dec, VkInstance *val)
 static inline void
 vn_replace_VkInstance_handle(VkInstance *val)
 {
-    *val = (VkInstance)(uintptr_t)vn_cs_get_object_handle(val);
+    *val = (VkInstance)(uintptr_t)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_INSTANCE);
 }
 
 /* VK_DEFINE_HANDLE(VkPhysicalDevice) */
@@ -51,8 +49,7 @@ vn_replace_VkInstance_handle(VkInstance *val)
 static inline void
 vn_encode_VkPhysicalDevice(struct vn_cs_encoder *enc, const VkPhysicalDevice *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_PHYSICAL_DEVICE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -61,13 +58,12 @@ vn_decode_VkPhysicalDevice_temp(struct vn_cs_decoder *dec, VkPhysicalDevice *val
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    if (!in_place) {
+    if (vn_cs_handle_indirect_id(VK_OBJECT_TYPE_PHYSICAL_DEVICE)) {
         *val = vn_cs_decoder_alloc_temp(dec, sizeof(vn_object_id));
         if (!val)
             return;
     }
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_PHYSICAL_DEVICE);
 }
 
 static inline void
@@ -81,7 +77,7 @@ vn_decode_VkPhysicalDevice_lookup(struct vn_cs_decoder *dec, VkPhysicalDevice *v
 static inline void
 vn_replace_VkPhysicalDevice_handle(VkPhysicalDevice *val)
 {
-    *val = (VkPhysicalDevice)(uintptr_t)vn_cs_get_object_handle(val);
+    *val = (VkPhysicalDevice)(uintptr_t)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_PHYSICAL_DEVICE);
 }
 
 /* VK_DEFINE_HANDLE(VkDevice) */
@@ -89,8 +85,7 @@ vn_replace_VkPhysicalDevice_handle(VkPhysicalDevice *val)
 static inline void
 vn_encode_VkDevice(struct vn_cs_encoder *enc, const VkDevice *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_DEVICE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -99,13 +94,12 @@ vn_decode_VkDevice_temp(struct vn_cs_decoder *dec, VkDevice *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    if (!in_place) {
+    if (vn_cs_handle_indirect_id(VK_OBJECT_TYPE_DEVICE)) {
         *val = vn_cs_decoder_alloc_temp(dec, sizeof(vn_object_id));
         if (!val)
             return;
     }
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_DEVICE);
 }
 
 static inline void
@@ -119,7 +113,7 @@ vn_decode_VkDevice_lookup(struct vn_cs_decoder *dec, VkDevice *val)
 static inline void
 vn_replace_VkDevice_handle(VkDevice *val)
 {
-    *val = (VkDevice)(uintptr_t)vn_cs_get_object_handle(val);
+    *val = (VkDevice)(uintptr_t)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_DEVICE);
 }
 
 /* VK_DEFINE_HANDLE(VkQueue) */
@@ -127,8 +121,7 @@ vn_replace_VkDevice_handle(VkDevice *val)
 static inline void
 vn_encode_VkQueue(struct vn_cs_encoder *enc, const VkQueue *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_QUEUE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -137,13 +130,12 @@ vn_decode_VkQueue_temp(struct vn_cs_decoder *dec, VkQueue *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    if (!in_place) {
+    if (vn_cs_handle_indirect_id(VK_OBJECT_TYPE_QUEUE)) {
         *val = vn_cs_decoder_alloc_temp(dec, sizeof(vn_object_id));
         if (!val)
             return;
     }
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_QUEUE);
 }
 
 static inline void
@@ -157,7 +149,7 @@ vn_decode_VkQueue_lookup(struct vn_cs_decoder *dec, VkQueue *val)
 static inline void
 vn_replace_VkQueue_handle(VkQueue *val)
 {
-    *val = (VkQueue)(uintptr_t)vn_cs_get_object_handle(val);
+    *val = (VkQueue)(uintptr_t)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_QUEUE);
 }
 
 /* VK_DEFINE_HANDLE(VkCommandBuffer) */
@@ -165,8 +157,7 @@ vn_replace_VkQueue_handle(VkQueue *val)
 static inline void
 vn_encode_VkCommandBuffer(struct vn_cs_encoder *enc, const VkCommandBuffer *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_COMMAND_BUFFER);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -175,13 +166,12 @@ vn_decode_VkCommandBuffer_temp(struct vn_cs_decoder *dec, VkCommandBuffer *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    if (!in_place) {
+    if (vn_cs_handle_indirect_id(VK_OBJECT_TYPE_COMMAND_BUFFER)) {
         *val = vn_cs_decoder_alloc_temp(dec, sizeof(vn_object_id));
         if (!val)
             return;
     }
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_COMMAND_BUFFER);
 }
 
 static inline void
@@ -195,7 +185,7 @@ vn_decode_VkCommandBuffer_lookup(struct vn_cs_decoder *dec, VkCommandBuffer *val
 static inline void
 vn_replace_VkCommandBuffer_handle(VkCommandBuffer *val)
 {
-    *val = (VkCommandBuffer)(uintptr_t)vn_cs_get_object_handle(val);
+    *val = (VkCommandBuffer)(uintptr_t)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_COMMAND_BUFFER);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDeviceMemory) */
@@ -203,8 +193,7 @@ vn_replace_VkCommandBuffer_handle(VkCommandBuffer *val)
 static inline void
 vn_encode_VkDeviceMemory(struct vn_cs_encoder *enc, const VkDeviceMemory *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_DEVICE_MEMORY);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -213,8 +202,7 @@ vn_decode_VkDeviceMemory(struct vn_cs_decoder *dec, VkDeviceMemory *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_DEVICE_MEMORY);
 }
 
 static inline void
@@ -228,7 +216,7 @@ vn_decode_VkDeviceMemory_lookup(struct vn_cs_decoder *dec, VkDeviceMemory *val)
 static inline void
 vn_replace_VkDeviceMemory_handle(VkDeviceMemory *val)
 {
-    *val = (VkDeviceMemory)vn_cs_get_object_handle(val);
+    *val = (VkDeviceMemory)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_DEVICE_MEMORY);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkCommandPool) */
@@ -236,8 +224,7 @@ vn_replace_VkDeviceMemory_handle(VkDeviceMemory *val)
 static inline void
 vn_encode_VkCommandPool(struct vn_cs_encoder *enc, const VkCommandPool *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_COMMAND_POOL);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -246,8 +233,7 @@ vn_decode_VkCommandPool(struct vn_cs_decoder *dec, VkCommandPool *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_COMMAND_POOL);
 }
 
 static inline void
@@ -261,7 +247,7 @@ vn_decode_VkCommandPool_lookup(struct vn_cs_decoder *dec, VkCommandPool *val)
 static inline void
 vn_replace_VkCommandPool_handle(VkCommandPool *val)
 {
-    *val = (VkCommandPool)vn_cs_get_object_handle(val);
+    *val = (VkCommandPool)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_COMMAND_POOL);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBuffer) */
@@ -269,8 +255,7 @@ vn_replace_VkCommandPool_handle(VkCommandPool *val)
 static inline void
 vn_encode_VkBuffer(struct vn_cs_encoder *enc, const VkBuffer *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_BUFFER);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -279,8 +264,7 @@ vn_decode_VkBuffer(struct vn_cs_decoder *dec, VkBuffer *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_BUFFER);
 }
 
 static inline void
@@ -294,7 +278,7 @@ vn_decode_VkBuffer_lookup(struct vn_cs_decoder *dec, VkBuffer *val)
 static inline void
 vn_replace_VkBuffer_handle(VkBuffer *val)
 {
-    *val = (VkBuffer)vn_cs_get_object_handle(val);
+    *val = (VkBuffer)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_BUFFER);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBufferView) */
@@ -302,8 +286,7 @@ vn_replace_VkBuffer_handle(VkBuffer *val)
 static inline void
 vn_encode_VkBufferView(struct vn_cs_encoder *enc, const VkBufferView *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_BUFFER_VIEW);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -312,8 +295,7 @@ vn_decode_VkBufferView(struct vn_cs_decoder *dec, VkBufferView *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_BUFFER_VIEW);
 }
 
 static inline void
@@ -327,7 +309,7 @@ vn_decode_VkBufferView_lookup(struct vn_cs_decoder *dec, VkBufferView *val)
 static inline void
 vn_replace_VkBufferView_handle(VkBufferView *val)
 {
-    *val = (VkBufferView)vn_cs_get_object_handle(val);
+    *val = (VkBufferView)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_BUFFER_VIEW);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkImage) */
@@ -335,8 +317,7 @@ vn_replace_VkBufferView_handle(VkBufferView *val)
 static inline void
 vn_encode_VkImage(struct vn_cs_encoder *enc, const VkImage *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_IMAGE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -345,8 +326,7 @@ vn_decode_VkImage(struct vn_cs_decoder *dec, VkImage *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_IMAGE);
 }
 
 static inline void
@@ -360,7 +340,7 @@ vn_decode_VkImage_lookup(struct vn_cs_decoder *dec, VkImage *val)
 static inline void
 vn_replace_VkImage_handle(VkImage *val)
 {
-    *val = (VkImage)vn_cs_get_object_handle(val);
+    *val = (VkImage)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_IMAGE);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkImageView) */
@@ -368,8 +348,7 @@ vn_replace_VkImage_handle(VkImage *val)
 static inline void
 vn_encode_VkImageView(struct vn_cs_encoder *enc, const VkImageView *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_IMAGE_VIEW);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -378,8 +357,7 @@ vn_decode_VkImageView(struct vn_cs_decoder *dec, VkImageView *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_IMAGE_VIEW);
 }
 
 static inline void
@@ -393,7 +371,7 @@ vn_decode_VkImageView_lookup(struct vn_cs_decoder *dec, VkImageView *val)
 static inline void
 vn_replace_VkImageView_handle(VkImageView *val)
 {
-    *val = (VkImageView)vn_cs_get_object_handle(val);
+    *val = (VkImageView)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_IMAGE_VIEW);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkShaderModule) */
@@ -401,8 +379,7 @@ vn_replace_VkImageView_handle(VkImageView *val)
 static inline void
 vn_encode_VkShaderModule(struct vn_cs_encoder *enc, const VkShaderModule *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_SHADER_MODULE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -411,8 +388,7 @@ vn_decode_VkShaderModule(struct vn_cs_decoder *dec, VkShaderModule *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_SHADER_MODULE);
 }
 
 static inline void
@@ -426,7 +402,7 @@ vn_decode_VkShaderModule_lookup(struct vn_cs_decoder *dec, VkShaderModule *val)
 static inline void
 vn_replace_VkShaderModule_handle(VkShaderModule *val)
 {
-    *val = (VkShaderModule)vn_cs_get_object_handle(val);
+    *val = (VkShaderModule)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_SHADER_MODULE);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPipeline) */
@@ -434,8 +410,7 @@ vn_replace_VkShaderModule_handle(VkShaderModule *val)
 static inline void
 vn_encode_VkPipeline(struct vn_cs_encoder *enc, const VkPipeline *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_PIPELINE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -444,8 +419,7 @@ vn_decode_VkPipeline(struct vn_cs_decoder *dec, VkPipeline *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_PIPELINE);
 }
 
 static inline void
@@ -459,7 +433,7 @@ vn_decode_VkPipeline_lookup(struct vn_cs_decoder *dec, VkPipeline *val)
 static inline void
 vn_replace_VkPipeline_handle(VkPipeline *val)
 {
-    *val = (VkPipeline)vn_cs_get_object_handle(val);
+    *val = (VkPipeline)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_PIPELINE);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPipelineLayout) */
@@ -467,8 +441,7 @@ vn_replace_VkPipeline_handle(VkPipeline *val)
 static inline void
 vn_encode_VkPipelineLayout(struct vn_cs_encoder *enc, const VkPipelineLayout *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_PIPELINE_LAYOUT);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -477,8 +450,7 @@ vn_decode_VkPipelineLayout(struct vn_cs_decoder *dec, VkPipelineLayout *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_PIPELINE_LAYOUT);
 }
 
 static inline void
@@ -492,7 +464,7 @@ vn_decode_VkPipelineLayout_lookup(struct vn_cs_decoder *dec, VkPipelineLayout *v
 static inline void
 vn_replace_VkPipelineLayout_handle(VkPipelineLayout *val)
 {
-    *val = (VkPipelineLayout)vn_cs_get_object_handle(val);
+    *val = (VkPipelineLayout)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_PIPELINE_LAYOUT);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSampler) */
@@ -500,8 +472,7 @@ vn_replace_VkPipelineLayout_handle(VkPipelineLayout *val)
 static inline void
 vn_encode_VkSampler(struct vn_cs_encoder *enc, const VkSampler *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_SAMPLER);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -510,8 +481,7 @@ vn_decode_VkSampler(struct vn_cs_decoder *dec, VkSampler *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_SAMPLER);
 }
 
 static inline void
@@ -525,7 +495,7 @@ vn_decode_VkSampler_lookup(struct vn_cs_decoder *dec, VkSampler *val)
 static inline void
 vn_replace_VkSampler_handle(VkSampler *val)
 {
-    *val = (VkSampler)vn_cs_get_object_handle(val);
+    *val = (VkSampler)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_SAMPLER);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDescriptorSet) */
@@ -533,8 +503,7 @@ vn_replace_VkSampler_handle(VkSampler *val)
 static inline void
 vn_encode_VkDescriptorSet(struct vn_cs_encoder *enc, const VkDescriptorSet *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_SET);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -543,8 +512,7 @@ vn_decode_VkDescriptorSet(struct vn_cs_decoder *dec, VkDescriptorSet *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_DESCRIPTOR_SET);
 }
 
 static inline void
@@ -558,7 +526,7 @@ vn_decode_VkDescriptorSet_lookup(struct vn_cs_decoder *dec, VkDescriptorSet *val
 static inline void
 vn_replace_VkDescriptorSet_handle(VkDescriptorSet *val)
 {
-    *val = (VkDescriptorSet)vn_cs_get_object_handle(val);
+    *val = (VkDescriptorSet)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_SET);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDescriptorSetLayout) */
@@ -566,8 +534,7 @@ vn_replace_VkDescriptorSet_handle(VkDescriptorSet *val)
 static inline void
 vn_encode_VkDescriptorSetLayout(struct vn_cs_encoder *enc, const VkDescriptorSetLayout *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -576,8 +543,7 @@ vn_decode_VkDescriptorSetLayout(struct vn_cs_decoder *dec, VkDescriptorSetLayout
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT);
 }
 
 static inline void
@@ -591,7 +557,7 @@ vn_decode_VkDescriptorSetLayout_lookup(struct vn_cs_decoder *dec, VkDescriptorSe
 static inline void
 vn_replace_VkDescriptorSetLayout_handle(VkDescriptorSetLayout *val)
 {
-    *val = (VkDescriptorSetLayout)vn_cs_get_object_handle(val);
+    *val = (VkDescriptorSetLayout)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDescriptorPool) */
@@ -599,8 +565,7 @@ vn_replace_VkDescriptorSetLayout_handle(VkDescriptorSetLayout *val)
 static inline void
 vn_encode_VkDescriptorPool(struct vn_cs_encoder *enc, const VkDescriptorPool *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_POOL);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -609,8 +574,7 @@ vn_decode_VkDescriptorPool(struct vn_cs_decoder *dec, VkDescriptorPool *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_DESCRIPTOR_POOL);
 }
 
 static inline void
@@ -624,7 +588,7 @@ vn_decode_VkDescriptorPool_lookup(struct vn_cs_decoder *dec, VkDescriptorPool *v
 static inline void
 vn_replace_VkDescriptorPool_handle(VkDescriptorPool *val)
 {
-    *val = (VkDescriptorPool)vn_cs_get_object_handle(val);
+    *val = (VkDescriptorPool)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_POOL);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkFence) */
@@ -632,8 +596,7 @@ vn_replace_VkDescriptorPool_handle(VkDescriptorPool *val)
 static inline void
 vn_encode_VkFence(struct vn_cs_encoder *enc, const VkFence *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_FENCE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -642,8 +605,7 @@ vn_decode_VkFence(struct vn_cs_decoder *dec, VkFence *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_FENCE);
 }
 
 static inline void
@@ -657,7 +619,7 @@ vn_decode_VkFence_lookup(struct vn_cs_decoder *dec, VkFence *val)
 static inline void
 vn_replace_VkFence_handle(VkFence *val)
 {
-    *val = (VkFence)vn_cs_get_object_handle(val);
+    *val = (VkFence)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_FENCE);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSemaphore) */
@@ -665,8 +627,7 @@ vn_replace_VkFence_handle(VkFence *val)
 static inline void
 vn_encode_VkSemaphore(struct vn_cs_encoder *enc, const VkSemaphore *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_SEMAPHORE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -675,8 +636,7 @@ vn_decode_VkSemaphore(struct vn_cs_decoder *dec, VkSemaphore *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_SEMAPHORE);
 }
 
 static inline void
@@ -690,7 +650,7 @@ vn_decode_VkSemaphore_lookup(struct vn_cs_decoder *dec, VkSemaphore *val)
 static inline void
 vn_replace_VkSemaphore_handle(VkSemaphore *val)
 {
-    *val = (VkSemaphore)vn_cs_get_object_handle(val);
+    *val = (VkSemaphore)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_SEMAPHORE);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkEvent) */
@@ -698,8 +658,7 @@ vn_replace_VkSemaphore_handle(VkSemaphore *val)
 static inline void
 vn_encode_VkEvent(struct vn_cs_encoder *enc, const VkEvent *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_EVENT);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -708,8 +667,7 @@ vn_decode_VkEvent(struct vn_cs_decoder *dec, VkEvent *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_EVENT);
 }
 
 static inline void
@@ -723,7 +681,7 @@ vn_decode_VkEvent_lookup(struct vn_cs_decoder *dec, VkEvent *val)
 static inline void
 vn_replace_VkEvent_handle(VkEvent *val)
 {
-    *val = (VkEvent)vn_cs_get_object_handle(val);
+    *val = (VkEvent)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_EVENT);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkQueryPool) */
@@ -731,8 +689,7 @@ vn_replace_VkEvent_handle(VkEvent *val)
 static inline void
 vn_encode_VkQueryPool(struct vn_cs_encoder *enc, const VkQueryPool *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_QUERY_POOL);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -741,8 +698,7 @@ vn_decode_VkQueryPool(struct vn_cs_decoder *dec, VkQueryPool *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_QUERY_POOL);
 }
 
 static inline void
@@ -756,7 +712,7 @@ vn_decode_VkQueryPool_lookup(struct vn_cs_decoder *dec, VkQueryPool *val)
 static inline void
 vn_replace_VkQueryPool_handle(VkQueryPool *val)
 {
-    *val = (VkQueryPool)vn_cs_get_object_handle(val);
+    *val = (VkQueryPool)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_QUERY_POOL);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkFramebuffer) */
@@ -764,8 +720,7 @@ vn_replace_VkQueryPool_handle(VkQueryPool *val)
 static inline void
 vn_encode_VkFramebuffer(struct vn_cs_encoder *enc, const VkFramebuffer *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_FRAMEBUFFER);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -774,8 +729,7 @@ vn_decode_VkFramebuffer(struct vn_cs_decoder *dec, VkFramebuffer *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_FRAMEBUFFER);
 }
 
 static inline void
@@ -789,7 +743,7 @@ vn_decode_VkFramebuffer_lookup(struct vn_cs_decoder *dec, VkFramebuffer *val)
 static inline void
 vn_replace_VkFramebuffer_handle(VkFramebuffer *val)
 {
-    *val = (VkFramebuffer)vn_cs_get_object_handle(val);
+    *val = (VkFramebuffer)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_FRAMEBUFFER);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkRenderPass) */
@@ -797,8 +751,7 @@ vn_replace_VkFramebuffer_handle(VkFramebuffer *val)
 static inline void
 vn_encode_VkRenderPass(struct vn_cs_encoder *enc, const VkRenderPass *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_RENDER_PASS);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -807,8 +760,7 @@ vn_decode_VkRenderPass(struct vn_cs_decoder *dec, VkRenderPass *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_RENDER_PASS);
 }
 
 static inline void
@@ -822,7 +774,7 @@ vn_decode_VkRenderPass_lookup(struct vn_cs_decoder *dec, VkRenderPass *val)
 static inline void
 vn_replace_VkRenderPass_handle(VkRenderPass *val)
 {
-    *val = (VkRenderPass)vn_cs_get_object_handle(val);
+    *val = (VkRenderPass)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_RENDER_PASS);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPipelineCache) */
@@ -830,8 +782,7 @@ vn_replace_VkRenderPass_handle(VkRenderPass *val)
 static inline void
 vn_encode_VkPipelineCache(struct vn_cs_encoder *enc, const VkPipelineCache *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_PIPELINE_CACHE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -840,8 +791,7 @@ vn_decode_VkPipelineCache(struct vn_cs_decoder *dec, VkPipelineCache *val)
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_PIPELINE_CACHE);
 }
 
 static inline void
@@ -855,7 +805,7 @@ vn_decode_VkPipelineCache_lookup(struct vn_cs_decoder *dec, VkPipelineCache *val
 static inline void
 vn_replace_VkPipelineCache_handle(VkPipelineCache *val)
 {
-    *val = (VkPipelineCache)vn_cs_get_object_handle(val);
+    *val = (VkPipelineCache)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_PIPELINE_CACHE);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDescriptorUpdateTemplate) */
@@ -863,8 +813,7 @@ vn_replace_VkPipelineCache_handle(VkPipelineCache *val)
 static inline void
 vn_encode_VkDescriptorUpdateTemplate(struct vn_cs_encoder *enc, const VkDescriptorUpdateTemplate *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -873,8 +822,7 @@ vn_decode_VkDescriptorUpdateTemplate(struct vn_cs_decoder *dec, VkDescriptorUpda
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE);
 }
 
 static inline void
@@ -888,7 +836,7 @@ vn_decode_VkDescriptorUpdateTemplate_lookup(struct vn_cs_decoder *dec, VkDescrip
 static inline void
 vn_replace_VkDescriptorUpdateTemplate_handle(VkDescriptorUpdateTemplate *val)
 {
-    *val = (VkDescriptorUpdateTemplate)vn_cs_get_object_handle(val);
+    *val = (VkDescriptorUpdateTemplate)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE);
 }
 
 /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSamplerYcbcrConversion) */
@@ -896,8 +844,7 @@ vn_replace_VkDescriptorUpdateTemplate_handle(VkDescriptorUpdateTemplate *val)
 static inline void
 vn_encode_VkSamplerYcbcrConversion(struct vn_cs_encoder *enc, const VkSamplerYcbcrConversion *val)
 {
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
+    const uint64_t id = vn_cs_handle_load_id((const void **)val, VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION);
     vn_encode_uint64_t(enc, &id);
 }
 
@@ -906,8 +853,7 @@ vn_decode_VkSamplerYcbcrConversion(struct vn_cs_decoder *dec, VkSamplerYcbcrConv
 {
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-    const bool in_place = sizeof(*val) >= sizeof(vn_object_id);
-    vn_cs_handle_store_id((void *)val, id, in_place);
+    vn_cs_handle_store_id((void **)val, id, VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION);
 }
 
 static inline void
@@ -921,7 +867,7 @@ vn_decode_VkSamplerYcbcrConversion_lookup(struct vn_cs_decoder *dec, VkSamplerYc
 static inline void
 vn_replace_VkSamplerYcbcrConversion_handle(VkSamplerYcbcrConversion *val)
 {
-    *val = (VkSamplerYcbcrConversion)vn_cs_get_object_handle(val);
+    *val = (VkSamplerYcbcrConversion)vn_cs_get_object_handle((const void **)val, VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION);
 }
 
 #endif /* VN_PROTOCOL_RENDERER_HANDLES_H */

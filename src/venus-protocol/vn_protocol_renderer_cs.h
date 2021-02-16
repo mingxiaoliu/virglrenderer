@@ -24,9 +24,10 @@
  *   vn_cs_decoder_peek
  *
  *   vn_object_id
- *   vn_cs_get_object_handle
+ *   vn_cs_handle_indirect_id
  *   vn_cs_handle_load_id
  *   vn_cs_handle_store_id
+ *   vn_cs_get_object_handle
  */
 #include "vkr_cs.h"
 
@@ -91,23 +92,29 @@ vn_cs_decoder_peek(const struct vn_cs_decoder *dec, void *val, size_t val_size)
    vkr_cs_decoder_peek(d, val, val_size);
 }
 
-static inline uint64_t
-vn_cs_get_object_handle(const void *vk_handle)
+static inline bool
+vn_cs_handle_indirect_id(VkObjectType type)
 {
-   const struct vkr_object *obj = *(const struct vkr_object **)vk_handle;
-   return obj ? obj->handle : 0;
+   return vkr_cs_handle_indirect_id(type);
 }
 
 static inline vn_object_id
-vn_cs_handle_load_id(const void *vk_handle, bool in_place)
+vn_cs_handle_load_id(const void **handle, VkObjectType type)
 {
-   return vkr_parser_handle_load_id(vk_handle, in_place);
+   return vkr_cs_handle_load_id(handle, type);
 }
 
 static inline void
-vn_cs_handle_store_id(void *vk_handle, vn_object_id id, bool in_place)
+vn_cs_handle_store_id(void **handle, vn_object_id id, VkObjectType type)
 {
-   vkr_parser_handle_store_id(vk_handle, id, in_place);
+    vkr_cs_handle_store_id(handle, id, type);
+}
+
+static inline uint64_t
+vn_cs_get_object_handle(const void **handle, VkObjectType type)
+{
+   const struct vkr_object *obj = *(const struct vkr_object **)handle;
+   return obj ? obj->handle : 0;
 }
 
 static inline void

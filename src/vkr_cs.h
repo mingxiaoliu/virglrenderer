@@ -17,7 +17,7 @@
 #include "util/u_math.h"
 #include "vrend_iov.h"
 
-#include "vkr_parser.h"
+#include "vkr_object.h"
 
 struct vkr_cs_encoder {
    bool *fatal_error;
@@ -221,6 +221,41 @@ vkr_cs_decoder_alloc_temp(struct vkr_cs_decoder *dec, size_t size)
    void *ptr = pool->cur;
    pool->cur += size;
    return ptr;
+}
+
+static inline bool
+vkr_cs_handle_indirect_id(VkObjectType type)
+{
+   switch (type) {
+   case VK_OBJECT_TYPE_INSTANCE:
+   case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
+   case VK_OBJECT_TYPE_DEVICE:
+   case VK_OBJECT_TYPE_QUEUE:
+   case VK_OBJECT_TYPE_COMMAND_BUFFER:
+      return sizeof(VkInstance) < sizeof(vkr_object_id);
+   default:
+      return false;
+   }
+}
+
+static inline vkr_object_id
+vkr_cs_handle_load_id(const void **handle, VkObjectType type)
+{
+   const vkr_object_id *p = vkr_cs_handle_indirect_id(type)
+                               ? *(const vkr_object_id **)handle
+                               : (const vkr_object_id *)handle;
+   return *p;
+}
+
+static inline void
+vkr_cs_handle_store_id(void **handle,
+                       vkr_object_id id,
+                       VkObjectType type)
+{
+   vkr_object_id *p = vkr_cs_handle_indirect_id(type)
+                         ? *(vkr_object_id **)handle
+                         : (vkr_object_id *)handle;
+   *p = id;
 }
 
 #endif /* VKR_CS_H */

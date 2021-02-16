@@ -68,8 +68,8 @@
       return;                                                   \
    }                                                            \
    obj->base.type = VK_OBJECT_TYPE_ ## vk_obj;                  \
-   obj->base.id = vkr_parser_handle_load_id(args->vk_arg,       \
-         is_object_id_in_place(obj->base.type));                \
+   obj->base.id = vkr_cs_handle_load_id(                        \
+         (const void **)args->vk_arg, obj->base.type);          \
                                                                 \
    vn_replace_ ## vk_cmd ## _args_handle(args);                 \
    args->ret = vk_cmd(args->device, args->pCreateInfo, NULL,    \
@@ -331,22 +331,6 @@ struct vkr_context {
 
 static uint32_t vkr_renderer_flags;
 
-/* this must match how the parser stores the id */
-static bool
-is_object_id_in_place(VkObjectType type)
-{
-   switch (type) {
-   case VK_OBJECT_TYPE_INSTANCE:
-   case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
-   case VK_OBJECT_TYPE_DEVICE:
-   case VK_OBJECT_TYPE_QUEUE:
-   case VK_OBJECT_TYPE_COMMAND_BUFFER:
-      return sizeof(VkInstance) >= sizeof(vkr_object_id);
-   default:
-      return true;
-   }
-}
-
 struct object_array {
    uint32_t count;
    void **objects;
@@ -396,8 +380,8 @@ object_array_init(struct object_array *arr,
       }
 
       obj->type = obj_type;
-      obj->id = vkr_parser_handle_load_id((char *)handles + handle_size * i,
-            is_object_id_in_place(obj->type));
+      obj->id = vkr_cs_handle_load_id(
+            (const void **)((char *)handles + handle_size * i), obj->type);
 
       arr->objects[i] = obj;
    }
@@ -512,8 +496,8 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
    ((VkInstanceCreateInfo *)args->pCreateInfo)->pApplicationInfo = &app_info;
 
    instance->base.type = VK_OBJECT_TYPE_INSTANCE;
-   instance->base.id = vkr_parser_handle_load_id(args->pInstance,
-         is_object_id_in_place(instance->base.type));
+   instance->base.id = vkr_cs_handle_load_id((const void **)args->pInstance,
+                                             instance->base.type);
 
    vn_replace_vkCreateInstance_args_handle(args);
    args->ret = vkCreateInstance(args->pCreateInfo, NULL, &instance->base.instance);
@@ -690,8 +674,9 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
    uint32_t i;
    for (i = 0; i < count; i++) {
       struct vkr_physical_device *physical_dev = instance->physical_devices[i];
-      const vkr_object_id id = vkr_parser_handle_load_id(&args->pPhysicalDevices[i],
-            is_object_id_in_place(VK_OBJECT_TYPE_PHYSICAL_DEVICE));
+      const vkr_object_id id = vkr_cs_handle_load_id(
+            (const void **)&args->pPhysicalDevices[i],
+            VK_OBJECT_TYPE_PHYSICAL_DEVICE);
 
       if (physical_dev) {
          if (physical_dev->base.id != id) {
@@ -775,8 +760,8 @@ vkr_dispatch_vkEnumeratePhysicalDeviceGroups(struct vn_dispatch_context *dispatc
       for (uint32_t j = 0; j < props->physicalDeviceCount; j++) {
          const struct vkr_physical_device *physical_dev =
             vkr_instance_lookup_physical_device(instance, props->physicalDevices[j]);
-         vkr_parser_handle_store_id(&out->physicalDevices[j], physical_dev->base.id,
-            is_object_id_in_place(VK_OBJECT_TYPE_PHYSICAL_DEVICE));
+         vkr_cs_handle_store_id((void **)&out->physicalDevices[j], physical_dev->base.id,
+                                VK_OBJECT_TYPE_PHYSICAL_DEVICE);
       }
    }
 
@@ -1199,8 +1184,7 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
    }
 
    dev->base.type = VK_OBJECT_TYPE_DEVICE;
-   dev->base.id = vkr_parser_handle_load_id(args->pDevice,
-         is_object_id_in_place(dev->base.type));
+   dev->base.id = vkr_cs_handle_load_id((const void **)args->pDevice, dev->base.type);
 
    vn_replace_vkCreateDevice_args_handle(args);
    args->ret = vkCreateDevice(args->physicalDevice, args->pCreateInfo, NULL, &dev->base.device);
@@ -1318,7 +1302,7 @@ vkr_dispatch_vkGetDeviceQueue(struct vn_dispatch_context *dispatch, struct vn_co
    }
 
    const vkr_object_id id =
-      vkr_parser_handle_load_id(args->pQueue, is_object_id_in_place(VK_OBJECT_TYPE_QUEUE));
+      vkr_cs_handle_load_id((const void **)args->pQueue, VK_OBJECT_TYPE_QUEUE);
 
    VkQueue handle;
    vn_replace_vkGetDeviceQueue_args_handle(args);
@@ -1340,7 +1324,7 @@ vkr_dispatch_vkGetDeviceQueue2(struct vn_dispatch_context *dispatch, struct vn_c
    }
 
    const vkr_object_id id =
-      vkr_parser_handle_load_id(args->pQueue, is_object_id_in_place(VK_OBJECT_TYPE_QUEUE));
+      vkr_cs_handle_load_id((const void **)args->pQueue, VK_OBJECT_TYPE_QUEUE);
 
    VkQueue handle;
    vn_replace_vkGetDeviceQueue2_args_handle(args);
@@ -1400,8 +1384,7 @@ vkr_dispatch_vkAllocateMemory(struct vn_dispatch_context *dispatch, struct vn_co
    }
 
    mem->base.type = VK_OBJECT_TYPE_DEVICE_MEMORY;
-   mem->base.id = vkr_parser_handle_load_id(args->pMemory,
-         is_object_id_in_place(mem->base.type));
+   mem->base.id = vkr_cs_handle_load_id((const void **)args->pMemory, mem->base.type);
 
    vn_replace_vkAllocateMemory_args_handle(args);
    args->ret = vkAllocateMemory(args->device, args->pAllocateInfo, NULL, &mem->base.device_memory);
@@ -2035,8 +2018,7 @@ vkr_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *dispatch, struct vn
       return;
    }
    pass->base.type = VK_OBJECT_TYPE_RENDER_PASS;
-   pass->base.id = vkr_parser_handle_load_id(args->pRenderPass,
-         is_object_id_in_place(pass->base.type));
+   pass->base.id = vkr_cs_handle_load_id((const void **)args->pRenderPass, pass->base.type);
 
    vn_replace_vkCreateRenderPass2_args_handle(args);
    args->ret = dev->CreateRenderPass2(args->device, args->pCreateInfo,
