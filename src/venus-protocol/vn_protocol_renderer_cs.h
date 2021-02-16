@@ -28,7 +28,7 @@
  *   vn_cs_handle_load_id
  *   vn_cs_handle_store_id
  */
-#include "vkr_parser.h"
+#include "vkr_cs.h"
 
 struct vn_cs_encoder;
 struct vn_cs_decoder;
@@ -43,52 +43,52 @@ vn_cs_encoder_write(struct vn_cs_encoder *enc, size_t size, const void *val, siz
 }
 
 static inline void
-vn_cs_decoder_set_fatal(struct vn_cs_decoder *dec)
+vn_cs_decoder_set_fatal(const struct vn_cs_decoder *dec)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   vkr_parser_set_error(parser);
+   const struct vkr_cs_decoder *d = (struct vkr_cs_decoder *)dec;
+   vkr_cs_decoder_set_fatal(d);
 }
 
 static inline bool
 vn_cs_decoder_get_fatal(const struct vn_cs_decoder *dec)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   return vkr_parser_has_error(parser);
+   const struct vkr_cs_decoder *d = (struct vkr_cs_decoder *)dec;
+   return vkr_cs_decoder_get_fatal(d);
 }
 
 static inline void *
-vn_cs_decoder_lookup_object(struct vn_cs_decoder *dec, vn_object_id id)
+vn_cs_decoder_lookup_object(const struct vn_cs_decoder *dec, vn_object_id id)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   return vkr_parser_lookup_object(parser, id);
+   const struct vkr_cs_decoder *d = (const struct vkr_cs_decoder *)dec;
+   return vkr_cs_decoder_lookup_object(d, id);
 }
 
 static inline void
 vn_cs_decoder_reset_temp_pool(struct vn_cs_decoder *dec)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   vkr_parser_reset_temp_pool(parser);
+   struct vkr_cs_decoder *d = (struct vkr_cs_decoder *)dec;
+   vkr_cs_decoder_reset_temp_pool(d);
 }
 
 static inline void *
 vn_cs_decoder_alloc_temp(struct vn_cs_decoder *dec, size_t size)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   return vkr_parser_alloc_temp(parser, size);
+   struct vkr_cs_decoder *d = (struct vkr_cs_decoder *)dec;
+   return vkr_cs_decoder_alloc_temp(d, size);
 }
 
 static inline void
 vn_cs_decoder_read(struct vn_cs_decoder *dec, size_t size, void *val, size_t val_size)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   vkr_parser_read(parser, size, val, val_size);
+   struct vkr_cs_decoder *d = (struct vkr_cs_decoder *)dec;
+   vkr_cs_decoder_read(d, size, val, val_size);
 }
 
 static inline void
-vn_cs_decoder_peek(struct vn_cs_decoder *dec, void *val, size_t val_size)
+vn_cs_decoder_peek(const struct vn_cs_decoder *dec, void *val, size_t val_size)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   vkr_parser_peek(parser, val, val_size);
+   const struct vkr_cs_decoder *d = (const struct vkr_cs_decoder *)dec;
+   vkr_cs_decoder_peek(d, val, val_size);
 }
 
 static inline uint64_t

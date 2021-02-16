@@ -81,25 +81,8 @@ struct vkr_object {
    };
 };
 
-struct vkr_parser_temp_pool {
-   uint8_t **buffers;
-   uint32_t buffer_max;
-   uint32_t buffer_count;
-
-   uint8_t *cur;
-   const uint8_t *end;
-};
-
 struct vkr_parser {
-   bool error;
-
-   struct util_hash_table_u64 *object_table;
-   struct vkr_parser_temp_pool temp_pool;
-
-   struct vkr_parser_command {
-      const uint8_t *cur;
-      const uint8_t *end;
-   } command;
+   bool *error;
 
    struct vkr_parser_reply {
       const struct iovec *iov;
@@ -118,11 +101,7 @@ struct vkr_parser {
 };
 
 void
-vkr_parser_init(struct vkr_parser *parser,
-                struct util_hash_table_u64 *object_table);
-
-void
-vkr_parser_fini(struct vkr_parser *parser);
+vkr_parser_init(struct vkr_parser *parser, bool *error);
 
 void
 vkr_parser_reset(struct vkr_parser *parser);
@@ -130,102 +109,7 @@ vkr_parser_reset(struct vkr_parser *parser);
 static inline void
 vkr_parser_set_error(struct vkr_parser *parser)
 {
-   parser->error = true;
-}
-
-static inline bool
-vkr_parser_has_error(const struct vkr_parser *parser)
-{
-   return parser->error;
-}
-
-static inline struct vkr_object *
-vkr_parser_lookup_object(struct vkr_parser *parser, vkr_object_id id)
-{
-   struct vkr_object *obj;
-
-   if (!id)
-      return NULL;
-
-   obj = util_hash_table_get_u64(parser->object_table, id);
-   if (!obj)
-      vkr_parser_set_error(parser);
-
-   return obj;
-}
-
-static inline void
-vkr_parser_reset_temp_pool(struct vkr_parser *parser)
-{
-   struct vkr_parser_temp_pool *pool = &parser->temp_pool;
-   if (pool->buffer_count)
-      pool->cur = pool->buffers[pool->buffer_count - 1];
-}
-
-bool
-vkr_parser_alloc_temp_internal(struct vkr_parser *parser, size_t size);
-
-static inline void *
-vkr_parser_alloc_temp(struct vkr_parser *parser, size_t size)
-{
-   struct vkr_parser_temp_pool *pool = &parser->temp_pool;
-
-   /* align to 64-bit */
-   size = (size + 7) & ~7;
-   if (unlikely(size > (size_t)(pool->end - pool->cur))) {
-      if (!vkr_parser_alloc_temp_internal(parser, size))
-         return NULL;
-      assert(size <= (size_t)(pool->end - pool->cur));
-   }
-
-   void *ptr = pool->cur;
-   pool->cur += size;
-   return ptr;
-}
-
-void
-vkr_parser_set_command_stream(struct vkr_parser *parser,
-                              const void *data,
-                              size_t size);
-
-static inline bool
-vkr_parser_has_command(const struct vkr_parser *parser)
-{
-   return parser->command.cur < parser->command.end;
-}
-
-static inline void
-vkr_parser_read(struct vkr_parser *parser,
-                size_t size,
-                void *val,
-                size_t val_size)
-{
-   assert(val_size <= size);
-
-   if (unlikely(size > (size_t)(parser->command.end - parser->command.cur))) {
-      vkr_parser_set_error(parser);
-      memset(val, 0, val_size);
-      return;
-   }
-
-   /* we should not rely on the compiler to optimize away memcpy... */
-   memcpy(val, parser->command.cur, val_size);
-   parser->command.cur += size;
-}
-
-static inline void
-vkr_parser_peek(struct vkr_parser *parser,
-                void *val,
-                size_t val_size)
-{
-   if (unlikely(val_size > (size_t)(parser->command.end - parser->command.cur))) {
-      vkr_parser_set_error(parser);
-      memset(val, 0, val_size);
-      return;
-   }
-
-   /* we should not rely on the compiler to optimize away memcpy... */
-   memcpy(val, parser->command.cur, val_size);
+   *parser->error = true;
 }
 
 void

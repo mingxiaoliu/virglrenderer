@@ -1674,11 +1674,8 @@ struct vn_dispatch_context {
     void *data;
     void (*debug_log)(struct vn_dispatch_context *ctx, const char *msg);
 
-    union {
-        void *parser;
-        struct vn_cs_encoder *encoder;
-        struct vn_cs_decoder *decoder;
-    };
+    struct vn_cs_encoder *encoder;
+    struct vn_cs_decoder *decoder;
 
     void (*dispatch_vkCreateInstance)(struct vn_dispatch_context *ctx, struct vn_command_vkCreateInstance *args);
     void (*dispatch_vkDestroyInstance)(struct vn_dispatch_context *ctx, struct vn_command_vkDestroyInstance *args);

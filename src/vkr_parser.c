@@ -28,57 +28,11 @@
 
 #include "vkr_parser.h"
 
-static uint32_t
-grow_array_size(uint32_t size,
-                uint32_t used,
-                uint32_t growth,
-                uint32_t min_size)
-{
-   assert(size >= used && min_size);
-   if (!size)
-      size = min_size;
-
-   uint32_t new_size = size;
-   while (new_size - used < growth) {
-      new_size *= 2;
-      if (new_size < size)
-         return 0;
-   }
-   return new_size;
-}
-
-static size_t
-grow_buffer_size(size_t size, size_t used, size_t growth, size_t min_size)
-{
-   assert(size >= used && min_size);
-   if (!size)
-      size = min_size;
-
-   size_t new_size = size;
-   while (new_size - used < growth) {
-      new_size *= 2;
-      if (new_size < size)
-         return 0;
-   }
-   return new_size;
-}
-
 void
-vkr_parser_init(struct vkr_parser *parser,
-                struct util_hash_table_u64 *object_table)
+vkr_parser_init(struct vkr_parser *parser, bool *error)
 {
    memset(parser, 0, sizeof(*parser));
-   parser->object_table = object_table;
-}
-
-void
-vkr_parser_fini(struct vkr_parser *parser)
-{
-   struct vkr_parser_temp_pool *pool = &parser->temp_pool;
-   for (uint32_t i = 0; i < pool->buffer_count; i++)
-      free(pool->buffers[i]);
-   if (pool->buffers)
-      free(pool->buffers);
+   parser->error = error;
 }
 
 /**
@@ -89,84 +43,10 @@ vkr_parser_reset(struct vkr_parser *parser)
 {
    parser->error = false;
 
-   struct vkr_parser_temp_pool *pool = &parser->temp_pool;
-   if (pool->buffer_count) {
-      /* free all but the last buffer */
-      for (uint32_t i = 0; i < pool->buffer_count - 1; i++)
-         free(pool->buffers[i]);
-
-      pool->buffers[0] = pool->buffers[pool->buffer_count - 1];
-      pool->buffer_count = 1;
-
-      assert(pool->cur >= pool->buffers[0]);
-      pool->cur = pool->buffers[0];
-   }
-
-   parser->command.cur = NULL;
-   parser->command.end = NULL;
-
    parser->reply.remaining_size = 0;
    parser->reply.next_iov = 0;
    parser->reply.cur = NULL;
    parser->reply.end = NULL;
-}
-
-static bool
-vkr_parser_grow_temp_pool(struct vkr_parser *parser)
-{
-   struct vkr_parser_temp_pool *pool = &parser->temp_pool;
-   const uint32_t buffer_max =
-      grow_array_size(pool->buffer_max, pool->buffer_count, 1, 4);
-   if (!buffer_max)
-      return false;
-
-   uint8_t **buffers = realloc(pool->buffers, sizeof(*pool->buffers) * buffer_max);
-   if (!buffers)
-      return false;
-
-   pool->buffers = buffers;
-   pool->buffer_max = buffer_max;
-
-   return true;
-}
-
-bool
-vkr_parser_alloc_temp_internal(struct vkr_parser *parser, size_t size)
-{
-   struct vkr_parser_temp_pool *pool = &parser->temp_pool;
-
-   if (pool->buffer_count >= pool->buffer_max) {
-      if (!vkr_parser_grow_temp_pool(parser))
-         return false;
-      assert(pool->buffer_count < pool->buffer_max);
-   }
-
-   const size_t last_buffer_size =
-      pool->buffer_count ? pool->end - pool->buffers[pool->buffer_count - 1]
-                         : 0;
-   const size_t buffer_size = grow_buffer_size(
-      last_buffer_size, last_buffer_size, size, 4096);
-   if (!buffer_size)
-      return false;
-
-   uint8_t *buffer = malloc(buffer_size);
-   if (!buffer)
-      return false;
-
-   pool->buffers[pool->buffer_count++] = buffer;
-   pool->cur = buffer;
-   pool->end = buffer + buffer_size;
-
-   return true;
-}
-
-void
-vkr_parser_set_command_stream(struct vkr_parser *parser,
-                              const void *data,
-                              size_t size)
-{
-   parser->command.cur = data;
-   parser->command.end = parser->command.cur + size;
 }
 
 void
