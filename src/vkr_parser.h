@@ -41,11 +41,11 @@
 #include "venus-protocol/vulkan.h"
 #include "vrend_iov.h"
 
-typedef uint64_t vkr_parser_object_id;
+typedef uint64_t vkr_object_id;
 
 struct vkr_parser_object {
    VkObjectType type;
-   vkr_parser_object_id id;
+   vkr_object_id id;
 
    union {
       uint64_t handle;
@@ -140,7 +140,7 @@ vkr_parser_has_error(const struct vkr_parser *parser)
 }
 
 static inline struct vkr_parser_object *
-vkr_parser_lookup_object(struct vkr_parser *parser, vkr_parser_object_id id)
+vkr_parser_lookup_object(struct vkr_parser *parser, vkr_object_id id)
 {
    struct vkr_parser_object *obj;
 
@@ -263,26 +263,26 @@ vkr_parser_reply(struct vkr_parser *parser,
    parser->reply.cur += size;
 }
 
-static inline vkr_parser_object_id
+static inline vkr_object_id
 vkr_parser_handle_load_id(const void *vk_handle, bool in_place)
 {
    if (in_place) {
-      const vkr_parser_object_id *obj = vk_handle;
+      const vkr_object_id *obj = vk_handle;
       return *obj;
    } else {
-      const vkr_parser_object_id *const *obj = vk_handle;
+      const vkr_object_id *const *obj = vk_handle;
       return **obj;
    }
 }
 
 static inline void
-vkr_parser_handle_store_id(void *vk_handle, vkr_parser_object_id id, bool in_place)
+vkr_parser_handle_store_id(void *vk_handle, vkr_object_id id, bool in_place)
 {
    if (in_place) {
-      vkr_parser_object_id *dst = vk_handle;
+      vkr_object_id *dst = vk_handle;
       *dst = id;
    } else {
-      vkr_parser_object_id **dst = vk_handle;
+      vkr_object_id **dst = vk_handle;
       **dst = id;
    }
 }

@@ -33,7 +33,7 @@
 struct vn_cs_encoder;
 struct vn_cs_decoder;
 
-typedef vkr_parser_object_id vn_object_id;
+typedef vkr_object_id vn_object_id;
 
 static inline void
 vn_cs_encoder_write(struct vn_cs_encoder *enc, size_t size, const void *val, size_t val_size)

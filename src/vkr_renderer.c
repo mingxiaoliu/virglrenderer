@@ -340,7 +340,7 @@ is_object_id_in_place(VkObjectType type)
    case VK_OBJECT_TYPE_DEVICE:
    case VK_OBJECT_TYPE_QUEUE:
    case VK_OBJECT_TYPE_COMMAND_BUFFER:
-      return sizeof(VkInstance) >= sizeof(vkr_parser_object_id);
+      return sizeof(VkInstance) >= sizeof(vkr_object_id);
    default:
       return true;
    }
@@ -689,7 +689,7 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
    uint32_t i;
    for (i = 0; i < count; i++) {
       struct vkr_physical_device *physical_dev = instance->physical_devices[i];
-      const vkr_parser_object_id id = vkr_parser_handle_load_id(&args->pPhysicalDevices[i],
+      const vkr_object_id id = vkr_parser_handle_load_id(&args->pPhysicalDevices[i],
             is_object_id_in_place(VK_OBJECT_TYPE_PHYSICAL_DEVICE));
 
       if (physical_dev) {
@@ -1092,7 +1092,7 @@ vkr_queue_destroy(struct vkr_context *ctx,
 static struct vkr_queue *
 vkr_queue_create(struct vkr_context *ctx,
                  struct vkr_device *dev,
-                 vkr_parser_object_id id,
+                 vkr_object_id id,
                  VkQueue handle,
                  uint32_t family,
                  uint32_t index)
@@ -1316,7 +1316,7 @@ vkr_dispatch_vkGetDeviceQueue(struct vn_dispatch_context *dispatch, struct vn_co
       return;
    }
 
-   const vkr_parser_object_id id =
+   const vkr_object_id id =
       vkr_parser_handle_load_id(args->pQueue, is_object_id_in_place(VK_OBJECT_TYPE_QUEUE));
 
    VkQueue handle;
@@ -1338,7 +1338,7 @@ vkr_dispatch_vkGetDeviceQueue2(struct vn_dispatch_context *dispatch, struct vn_c
       return;
    }
 
-   const vkr_parser_object_id id =
+   const vkr_object_id id =
       vkr_parser_handle_load_id(args->pQueue, is_object_id_in_place(VK_OBJECT_TYPE_QUEUE));
 
    VkQueue handle;
