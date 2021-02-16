@@ -94,8 +94,7 @@ vn_cs_decoder_peek(struct vn_cs_decoder *dec, void *val, size_t val_size)
 static inline uint64_t
 vn_cs_get_object_handle(const void *vk_handle)
 {
-   const struct vkr_parser_object *obj =
-      *(const struct vkr_parser_object **)vk_handle;
+   const struct vkr_object *obj = *(const struct vkr_object **)vk_handle;
    return obj ? obj->handle : 0;
 }
 

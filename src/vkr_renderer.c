@@ -95,7 +95,7 @@
 struct vkr_physical_device;
 
 struct vkr_instance {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    uint32_t version;
    PFN_vkGetMemoryFdKHR get_memory_fd;
@@ -107,7 +107,7 @@ struct vkr_instance {
 };
 
 struct vkr_physical_device {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    VkExtensionProperties *extensions;
    uint32_t extension_count;
@@ -130,7 +130,7 @@ struct vkr_queue_sync {
 };
 
 struct vkr_device {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct vkr_physical_device *physical_device;
 
@@ -164,7 +164,7 @@ struct vkr_device {
 };
 
 struct vkr_queue {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct vkr_device *device;
 
@@ -185,7 +185,7 @@ struct vkr_queue {
 };
 
 struct vkr_device_memory {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    VkDevice device;
    uint32_t property_flags;
@@ -197,97 +197,97 @@ struct vkr_device_memory {
 };
 
 struct vkr_fence  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_semaphore  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_buffer  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_buffer_view  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_image  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_image_view  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_sampler  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_sampler_ycbcr_conversion {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_descriptor_set_layout {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_descriptor_pool {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct list_head descriptor_sets;
 };
 
 struct vkr_descriptor_set {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct list_head head;
 };
 
 struct vkr_descriptor_update_template {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_render_pass {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_framebuffer {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_event {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_query_pool {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_shader_module {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_pipeline_layout {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_pipeline_cache {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_pipeline {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_command_pool {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct list_head command_buffers;
 };
 
 struct vkr_command_buffer {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct vkr_device *device;
 
@@ -387,7 +387,7 @@ object_array_init(struct object_array *arr,
    }
 
    for (uint32_t i = 0; i < count; i++) {
-      struct vkr_parser_object *obj = calloc(1, obj_size);
+      struct vkr_object *obj = calloc(1, obj_size);
       if (!obj) {
          arr->count = i;
          object_array_fini(arr, true);
@@ -3597,7 +3597,7 @@ vkr_context_init_base(struct vkr_context *ctx)
 static void
 destroy_func_object(void *val)
 {
-   struct vkr_parser_object *obj = val;
+   struct vkr_object *obj = val;
    free(obj);
 }
 
