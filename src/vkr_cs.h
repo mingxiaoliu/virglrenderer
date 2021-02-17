@@ -15,9 +15,10 @@
 #include "os/os_misc.h"
 #include "util/u_hash_table.h"
 #include "util/u_math.h"
-#include "vrend_iov.h"
+#include "util/u_memory.h"
 
 #include "vkr_object.h"
+#include "vrend_iov.h"
 
 struct vkr_cs_encoder {
    bool *fatal_error;
@@ -38,6 +39,14 @@ struct vkr_cs_encoder {
    const uint8_t *end;
 };
 
+struct vkr_cs_decoder_saved_state {
+   const uint8_t *cur;
+   const uint8_t *end;
+
+   uint32_t pool_buffer_count;
+   uint8_t *pool_reset_to;
+};
+
 struct vkr_cs_decoder_temp_pool {
    uint8_t **buffers;
    uint32_t buffer_count;
@@ -54,6 +63,9 @@ struct vkr_cs_decoder {
 
    bool fatal_error;
    struct vkr_cs_decoder_temp_pool temp_pool;
+
+   struct vkr_cs_decoder_saved_state saved_states[1];
+   uint32_t saved_state_count;
 
    const uint8_t *cur;
    const uint8_t *end;
@@ -142,6 +154,12 @@ vkr_cs_decoder_has_command(const struct vkr_cs_decoder *dec)
 {
    return dec->cur < dec->end;
 }
+
+bool
+vkr_cs_decoder_push_state(struct vkr_cs_decoder *dec);
+
+void
+vkr_cs_decoder_pop_state(struct vkr_cs_decoder *dec);
 
 static inline void
 vkr_cs_decoder_read(struct vkr_cs_decoder *dec,
@@ -249,9 +267,7 @@ vkr_cs_handle_load_id(const void **handle, VkObjectType type)
 }
 
 static inline void
-vkr_cs_handle_store_id(void **handle,
-                       vkr_object_id id,
-                       VkObjectType type)
+vkr_cs_handle_store_id(void **handle, vkr_object_id id, VkObjectType type)
 {
    vkr_object_id *p = vkr_cs_handle_indirect_id(type)
                          ? *(vkr_object_id **)handle
