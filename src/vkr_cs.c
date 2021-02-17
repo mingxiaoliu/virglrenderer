@@ -195,7 +195,8 @@ vkr_cs_decoder_sanity_check(const struct vkr_cs_decoder *dec)
    const struct vkr_cs_decoder_temp_pool *pool = &dec->temp_pool;
    assert(pool->buffer_count <= pool->buffer_max);
    if (pool->buffer_count) {
-      assert(pool->buffers[pool->buffer_count - 1] <= pool->cur);
+      assert(pool->buffers[pool->buffer_count - 1] <= pool->reset_to);
+      assert(pool->reset_to <= pool->cur);
       assert(pool->cur <= pool->end);
    }
 
@@ -218,6 +219,7 @@ vkr_cs_decoder_gc_temp_pool(struct vkr_cs_decoder *dec)
       pool->buffer_count = 1;
    }
 
+   pool->reset_to = pool->buffers[0];
    pool->cur = pool->buffers[0];
 
    vkr_cs_decoder_sanity_check(dec);
@@ -297,6 +299,7 @@ vkr_cs_decoder_alloc_temp_internal(struct vkr_cs_decoder *dec, size_t size)
       return false;
 
    pool->buffers[pool->buffer_count++] = buf;
+   pool->reset_to = buf;
    pool->cur = buf;
    pool->end = buf + buf_size;
 

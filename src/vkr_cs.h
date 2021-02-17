@@ -43,6 +43,8 @@ struct vkr_cs_decoder_temp_pool {
    uint32_t buffer_count;
    uint32_t buffer_max;
 
+   uint8_t *reset_to;
+
    uint8_t *cur;
    const uint8_t *end;
 };
@@ -196,8 +198,7 @@ static inline void
 vkr_cs_decoder_reset_temp_pool(struct vkr_cs_decoder *dec)
 {
    struct vkr_cs_decoder_temp_pool *pool = &dec->temp_pool;
-   if (pool->buffer_count)
-      pool->cur = pool->buffers[pool->buffer_count - 1];
+   pool->cur = pool->reset_to;
 }
 
 bool
