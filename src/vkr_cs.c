@@ -189,6 +189,40 @@ vkr_cs_decoder_fini(struct vkr_cs_decoder *dec)
       free(pool->buffers);
 }
 
+static void
+vkr_cs_decoder_sanity_check(const struct vkr_cs_decoder *dec)
+{
+   const struct vkr_cs_decoder_temp_pool *pool = &dec->temp_pool;
+   assert(pool->buffer_count <= pool->buffer_max);
+   if (pool->buffer_count) {
+      assert(pool->buffers[pool->buffer_count - 1] <= pool->cur);
+      assert(pool->cur <= pool->end);
+   }
+
+   assert(dec->cur <= dec->end);
+}
+
+static void
+vkr_cs_decoder_gc_temp_pool(struct vkr_cs_decoder *dec)
+{
+   struct vkr_cs_decoder_temp_pool *pool = &dec->temp_pool;
+   if (!pool->buffer_count)
+      return;
+
+   /* free all but the last buffer */
+   if (pool->buffer_count > 1) {
+      for (uint32_t i = 0; i < pool->buffer_count - 1; i++)
+         free(pool->buffers[i]);
+
+      pool->buffers[0] = pool->buffers[pool->buffer_count - 1];
+      pool->buffer_count = 1;
+   }
+
+   pool->cur = pool->buffers[0];
+
+   vkr_cs_decoder_sanity_check(dec);
+}
+
 /**
  * Reset a decoder for reuse.
  */
@@ -197,18 +231,7 @@ vkr_cs_decoder_reset(struct vkr_cs_decoder *dec)
 {
    /* dec->fatal_error is sticky */
 
-   struct vkr_cs_decoder_temp_pool *pool = &dec->temp_pool;
-   if (pool->buffer_count) {
-      /* free all but the last buffer */
-      for (uint32_t i = 0; i < pool->buffer_count - 1; i++)
-         free(pool->buffers[i]);
-
-      pool->buffers[0] = pool->buffers[pool->buffer_count - 1];
-      pool->buffer_count = 1;
-
-      assert(pool->cur >= pool->buffers[0]);
-      pool->cur = pool->buffers[0];
-   }
+   vkr_cs_decoder_gc_temp_pool(dec);
 
    dec->cur = NULL;
    dec->end = NULL;
@@ -276,6 +299,8 @@ vkr_cs_decoder_alloc_temp_internal(struct vkr_cs_decoder *dec, size_t size)
    pool->buffers[pool->buffer_count++] = buf;
    pool->cur = buf;
    pool->end = buf + buf_size;
+
+   vkr_cs_decoder_sanity_check(dec);
 
    return true;
 }
