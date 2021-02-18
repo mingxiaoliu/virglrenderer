@@ -84,7 +84,7 @@ vn_info_extension_spec_version(const char *name)
         "VK_MESA_venus_protocol",
     };
     static const uint32_t ext_versions[51] = {
-        1,
+        0,
         2,
         1,
         1,
@@ -134,7 +134,7 @@ vn_info_extension_spec_version(const char *name)
         1,
         1,
         3,
-        1,
+        0,
     };
     const char **found;
 
