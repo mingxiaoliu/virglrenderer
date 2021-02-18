@@ -443,6 +443,7 @@ copy_command_stream(struct vkr_context *ctx,
       }
 
       iov++;
+      iov_offset = 0;
    }
 
    return data;
