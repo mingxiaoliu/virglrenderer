@@ -6560,4 +6560,71 @@ static inline void vn_encode_vkExecuteCommandStreamsMESA_reply(struct vn_cs_enco
     /* skip args->flags */
 }
 
+static inline void vn_decode_vkCreateRingMESA_args_temp(struct vn_cs_decoder *dec, struct vn_command_vkCreateRingMESA *args)
+{
+    vn_decode_uint64_t(dec, &args->ring);
+    if (vn_decode_simple_pointer(dec)) {
+        args->pCreateInfo = vn_cs_decoder_alloc_temp(dec, sizeof(*args->pCreateInfo));
+        if (!args->pCreateInfo) return;
+        vn_decode_VkRingCreateInfoMESA_temp(dec, (VkRingCreateInfoMESA *)args->pCreateInfo);
+    } else {
+        args->pCreateInfo = NULL;
+    }
+}
+
+static inline void vn_replace_vkCreateRingMESA_args_handle(struct vn_command_vkCreateRingMESA *args)
+{
+    /* skip args->ring */
+    if (args->pCreateInfo)
+        vn_replace_VkRingCreateInfoMESA_handle((VkRingCreateInfoMESA *)args->pCreateInfo);
+}
+
+static inline void vn_encode_vkCreateRingMESA_reply(struct vn_cs_encoder *enc, const struct vn_command_vkCreateRingMESA *args)
+{
+    vn_encode_VkCommandTypeEXT(enc, &(VkCommandTypeEXT){VK_COMMAND_TYPE_vkCreateRingMESA_EXT});
+
+    /* skip args->ring */
+    /* skip args->pCreateInfo */
+}
+
+static inline void vn_decode_vkDestroyRingMESA_args_temp(struct vn_cs_decoder *dec, struct vn_command_vkDestroyRingMESA *args)
+{
+    vn_decode_uint64_t(dec, &args->ring);
+}
+
+static inline void vn_replace_vkDestroyRingMESA_args_handle(struct vn_command_vkDestroyRingMESA *args)
+{
+    /* skip args->ring */
+}
+
+static inline void vn_encode_vkDestroyRingMESA_reply(struct vn_cs_encoder *enc, const struct vn_command_vkDestroyRingMESA *args)
+{
+    vn_encode_VkCommandTypeEXT(enc, &(VkCommandTypeEXT){VK_COMMAND_TYPE_vkDestroyRingMESA_EXT});
+
+    /* skip args->ring */
+}
+
+static inline void vn_decode_vkNotifyRingMESA_args_temp(struct vn_cs_decoder *dec, struct vn_command_vkNotifyRingMESA *args)
+{
+    vn_decode_uint64_t(dec, &args->ring);
+    vn_decode_uint32_t(dec, &args->seqno);
+    vn_decode_VkFlags(dec, &args->flags);
+}
+
+static inline void vn_replace_vkNotifyRingMESA_args_handle(struct vn_command_vkNotifyRingMESA *args)
+{
+    /* skip args->ring */
+    /* skip args->seqno */
+    /* skip args->flags */
+}
+
+static inline void vn_encode_vkNotifyRingMESA_reply(struct vn_cs_encoder *enc, const struct vn_command_vkNotifyRingMESA *args)
+{
+    vn_encode_VkCommandTypeEXT(enc, &(VkCommandTypeEXT){VK_COMMAND_TYPE_vkNotifyRingMESA_EXT});
+
+    /* skip args->ring */
+    /* skip args->seqno */
+    /* skip args->flags */
+}
+
 #endif /* VN_PROTOCOL_RENDERER_COMMANDS_H */

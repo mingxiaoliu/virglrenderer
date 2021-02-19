@@ -17212,6 +17212,84 @@ vn_replace_VkCommandStreamDependencyMESA_handle(VkCommandStreamDependencyMESA *v
     /* skip val->dstCommandStream */
 }
 
+/* struct VkRingCreateInfoMESA chain */
+
+static inline void *
+vn_decode_VkRingCreateInfoMESA_pnext_temp(struct vn_cs_decoder *dec)
+{
+    /* no known/supported struct */
+    if (vn_decode_simple_pointer(dec))
+        vn_cs_decoder_set_fatal(dec);
+    return NULL;
+}
+
+static inline void
+vn_decode_VkRingCreateInfoMESA_self_temp(struct vn_cs_decoder *dec, VkRingCreateInfoMESA *val)
+{
+    /* skip val->{sType,pNext} */
+    vn_decode_VkFlags(dec, &val->flags);
+    vn_decode_uint32_t(dec, &val->resourceId);
+    vn_decode_size_t(dec, &val->offset);
+    vn_decode_size_t(dec, &val->size);
+    vn_decode_uint64_t(dec, &val->idleTimeout);
+    vn_decode_size_t(dec, &val->headOffset);
+    vn_decode_size_t(dec, &val->tailOffset);
+    vn_decode_size_t(dec, &val->statusOffset);
+    vn_decode_size_t(dec, &val->bufferOffset);
+    vn_decode_size_t(dec, &val->bufferSize);
+    vn_decode_size_t(dec, &val->extraOffset);
+    vn_decode_size_t(dec, &val->extraSize);
+}
+
+static inline void
+vn_decode_VkRingCreateInfoMESA_temp(struct vn_cs_decoder *dec, VkRingCreateInfoMESA *val)
+{
+    VkStructureType stype;
+    vn_decode_VkStructureType(dec, &stype);
+    assert(stype == VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA);
+
+    val->sType = stype;
+    val->pNext = vn_decode_VkRingCreateInfoMESA_pnext_temp(dec);
+    vn_decode_VkRingCreateInfoMESA_self_temp(dec, val);
+}
+
+static inline void
+vn_replace_VkRingCreateInfoMESA_handle_self(VkRingCreateInfoMESA *val)
+{
+    /* skip val->sType */
+    /* skip val->pNext */
+    /* skip val->flags */
+    /* skip val->resourceId */
+    /* skip val->offset */
+    /* skip val->size */
+    /* skip val->idleTimeout */
+    /* skip val->headOffset */
+    /* skip val->tailOffset */
+    /* skip val->statusOffset */
+    /* skip val->bufferOffset */
+    /* skip val->bufferSize */
+    /* skip val->extraOffset */
+    /* skip val->extraSize */
+}
+
+static inline void
+vn_replace_VkRingCreateInfoMESA_handle(VkRingCreateInfoMESA *val)
+{
+    struct VkBaseOutStructure *pnext = (struct VkBaseOutStructure *)val;
+
+    do {
+        switch ((int32_t)pnext->sType) {
+        case VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA:
+            vn_replace_VkRingCreateInfoMESA_handle_self((VkRingCreateInfoMESA *)pnext);
+            break;
+        default:
+            /* ignore unknown/unsupported struct */
+            break;
+        }
+        pnext = pnext->pNext;
+    } while (pnext);
+}
+
 /*
  * Helpers for manual serialization
  */

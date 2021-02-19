@@ -25,6 +25,9 @@
 #include "virgl_util.h"
 #include "virglrenderer.h"
 #include "virglrenderer_hw.h"
+#include "vkr_cs.h"
+#include "vkr_object.h"
+#include "vkr_ring.h"
 #include "vrend_debug.h"
 #include "vrend_iov.h"
 
@@ -297,6 +300,7 @@ struct vkr_context {
 
    mtx_t mutex;
 
+   struct list_head rings;
    struct util_hash_table_u64 *object_table;
    struct util_hash_table *resource_table;
    struct list_head newly_exported_memories;
@@ -491,6 +495,123 @@ vkr_dispatch_vkExecuteCommandStreamsMESA(struct vn_dispatch_context *dispatch, s
    }
 
    vkr_cs_decoder_pop_state(&ctx->decoder);
+}
+
+static void
+vkr_dispatch_vkCreateRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkCreateRingMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   const VkRingCreateInfoMESA *info = args->pCreateInfo;
+   const struct vkr_resource_attachment *att;
+   uint8_t *shared;
+   size_t size;
+   struct vkr_ring *ring;
+
+   att = util_hash_table_get(ctx->resource_table,
+                             uintptr_to_pointer(info->resourceId));
+   if (!att) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+   /* TODO */
+   if (att->resource->iov_count != 1) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   shared = att->resource->iov[0].iov_base;
+   size = att->resource->iov[0].iov_len;
+   if (info->offset > size || info->size > size - info->offset) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   shared += info->offset;
+   size = info->size;
+   if (info->headOffset > size ||
+       info->tailOffset > size ||
+       info->statusOffset > size ||
+       info->bufferOffset > size ||
+       info->extraOffset > size) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+   if (sizeof(uint32_t) > size - info->headOffset ||
+       sizeof(uint32_t) > size - info->tailOffset ||
+       sizeof(uint32_t) > size - info->statusOffset ||
+       info->bufferSize > size - info->bufferOffset ||
+       info->extraSize > size - info->extraOffset) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+   if (!info->bufferSize || !util_is_power_of_two(info->bufferSize)) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   const struct vkr_ring_layout layout = {
+      .head_offset = info->headOffset,
+      .tail_offset = info->tailOffset,
+      .status_offset = info->statusOffset,
+      .buffer_offset = info->bufferOffset,
+      .buffer_size = info->bufferSize,
+      .extra_offset = info->extraOffset,
+      .extra_size = info->extraSize,
+   };
+
+   ring = vkr_ring_create(&layout, shared, &ctx->base, info->idleTimeout);
+   if (!ring) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   ring->id = args->ring;
+   list_addtail(&ring->head, &ctx->rings);
+
+   vkr_ring_start(ring);
+}
+
+static void
+vkr_dispatch_vkDestroyRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkDestroyRingMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_ring *ring = NULL, *iter;
+
+   LIST_FOR_EACH_ENTRY(iter, &ctx->rings, head) {
+      if (iter->id == args->ring) {
+         ring = iter;
+         break;
+      }
+   }
+
+   if (!ring || !vkr_ring_stop(ring)) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   list_del(&ring->head);
+   vkr_ring_destroy(ring);
+}
+
+static void
+vkr_dispatch_vkNotifyRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkNotifyRingMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_ring *ring = NULL, *iter;
+
+   LIST_FOR_EACH_ENTRY(iter, &ctx->rings, head) {
+      if (iter->id == args->ring) {
+         ring = iter;
+         break;
+      }
+   }
+
+   if (!ring) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   vkr_ring_notify(ring);
 }
 
 static void
@@ -3028,6 +3149,9 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
    dispatch->dispatch_vkSetReplyCommandStreamMESA = vkr_dispatch_vkSetReplyCommandStreamMESA;
    dispatch->dispatch_vkSeekReplyCommandStreamMESA = vkr_dispatch_vkSeekReplyCommandStreamMESA;
    dispatch->dispatch_vkExecuteCommandStreamsMESA = vkr_dispatch_vkExecuteCommandStreamsMESA;
+   dispatch->dispatch_vkCreateRingMESA = vkr_dispatch_vkCreateRingMESA;
+   dispatch->dispatch_vkDestroyRingMESA = vkr_dispatch_vkDestroyRingMESA;
+   dispatch->dispatch_vkNotifyRingMESA = vkr_dispatch_vkNotifyRingMESA;
 
    dispatch->dispatch_vkEnumerateInstanceVersion = vkr_dispatch_vkEnumerateInstanceVersion;
    dispatch->dispatch_vkEnumerateInstanceExtensionProperties = vkr_dispatch_vkEnumerateInstanceExtensionProperties;
@@ -3691,6 +3815,12 @@ static void vkr_context_destroy(struct virgl_context *base)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
 
+   struct vkr_ring *ring, *ring_tmp;
+   LIST_FOR_EACH_ENTRY_SAFE(ring, ring_tmp, &ctx->rings, head) {
+      vkr_ring_stop(ring);
+      vkr_ring_destroy(ring);
+   }
+
    /* TODO properly destroy all Vulkan objects */
    util_hash_table_destroy(ctx->resource_table);
    util_hash_table_destroy_u64(ctx->object_table);
@@ -3769,6 +3899,8 @@ vkr_context_create(size_t debug_len, const char *debug_name)
       free(ctx);
       return NULL;
    }
+
+   list_inithead(&ctx->rings);
 
    ctx->object_table =
       util_hash_table_create_u64(destroy_func_object);
