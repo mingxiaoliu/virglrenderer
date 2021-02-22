@@ -295,6 +295,8 @@ struct vkr_context {
 
    char *debug_name;
 
+   mtx_t mutex;
+
    struct util_hash_table_u64 *object_table;
    struct util_hash_table *resource_table;
    struct list_head newly_exported_memories;
@@ -3244,7 +3246,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
 }
 
 static int
-vkr_context_submit_fence(struct virgl_context *base,
+vkr_context_submit_fence_locked(struct virgl_context *base,
                          uint32_t flags,
                          uint64_t queue_id,
                          void *fence_cookie)
@@ -3321,8 +3323,23 @@ vkr_context_submit_fence(struct virgl_context *base,
    return 0;
 }
 
+static int
+vkr_context_submit_fence(struct virgl_context *base,
+                         uint32_t flags,
+                         uint64_t queue_id,
+                         void *fence_cookie)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   int ret;
+
+   mtx_lock(&ctx->mutex);
+   ret = vkr_context_submit_fence_locked(base, flags, queue_id, fence_cookie);
+   mtx_unlock(&ctx->mutex);
+   return ret;
+}
+
 static void
-vkr_context_retire_fences(UNUSED struct virgl_context *base)
+vkr_context_retire_fences_locked(UNUSED struct virgl_context *base)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
    struct vkr_queue_sync *sync, *sync_tmp;
@@ -3362,6 +3379,15 @@ vkr_context_retire_fences(UNUSED struct virgl_context *base)
    }
 }
 
+static void
+vkr_context_retire_fences(struct virgl_context *base)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   mtx_lock(&ctx->mutex);
+   vkr_context_retire_fences_locked(base);
+   mtx_unlock(&ctx->mutex);
+}
+
 static int vkr_context_get_fencing_fd(struct virgl_context *base)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
@@ -3374,6 +3400,8 @@ static int vkr_context_submit_cmd(struct virgl_context *base,
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
    int ret = 0;
+
+   mtx_lock(&ctx->mutex);
 
    vkr_cs_decoder_set_stream(&ctx->decoder, buffer, size);
 
@@ -3388,10 +3416,12 @@ static int vkr_context_submit_cmd(struct virgl_context *base,
 
    vkr_cs_decoder_reset(&ctx->decoder);
 
+   mtx_unlock(&ctx->mutex);
+
    return ret;
 }
 
-static int vkr_context_get_blob(struct virgl_context *base,
+static int vkr_context_get_blob_locked(struct virgl_context *base,
                                 uint64_t blob_id,
                                 uint32_t flags,
                                 struct virgl_context_blob *blob)
@@ -3484,6 +3514,21 @@ static int vkr_context_get_blob(struct virgl_context *base,
    return 0;
 }
 
+static int vkr_context_get_blob(struct virgl_context *base,
+                                uint64_t blob_id,
+                                uint32_t flags,
+                                struct virgl_context_blob *blob)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   int ret;
+
+   mtx_lock(&ctx->mutex);
+   ret = vkr_context_get_blob_locked(base, blob_id, flags, blob);
+   /* XXX unlock in vkr_context_get_blob_done */
+
+   return ret;
+}
+
 static void vkr_context_get_blob_done(struct virgl_context *base,
                                       uint32_t res_id,
                                       struct virgl_context_blob *blob)
@@ -3494,9 +3539,12 @@ static void vkr_context_get_blob_done(struct virgl_context *base,
    mem->exported = true;
    mem->exported_res_id = res_id;
    list_add(&mem->head, &ctx->newly_exported_memories);
+
+   /* XXX locked in vkr_context_get_blob */
+   mtx_unlock(&ctx->mutex);
 }
 
-static int vkr_context_transfer_3d(struct virgl_context *base,
+static int vkr_context_transfer_3d_locked(struct virgl_context *base,
                                    struct virgl_resource *res,
                                    const struct vrend_transfer_info *info,
                                    int transfer_mode)
@@ -3562,7 +3610,22 @@ static int vkr_context_transfer_3d(struct virgl_context *base,
    return 0;
 }
 
-static void vkr_context_attach_resource(struct virgl_context *base,
+static int vkr_context_transfer_3d(struct virgl_context *base,
+                                   struct virgl_resource *res,
+                                   const struct vrend_transfer_info *info,
+                                   int transfer_mode)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   int ret;
+
+   mtx_lock(&ctx->mutex);
+   ret = vkr_context_transfer_3d_locked(base, res, info, transfer_mode);
+   mtx_unlock(&ctx->mutex);
+
+   return ret;
+}
+
+static void vkr_context_attach_resource_locked(struct virgl_context *base,
                                         struct virgl_resource *res)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
@@ -3604,13 +3667,24 @@ static void vkr_context_attach_resource(struct virgl_context *base,
                        att);
 }
 
+static void vkr_context_attach_resource(struct virgl_context *base,
+                                        struct virgl_resource *res)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   mtx_lock(&ctx->mutex);
+   vkr_context_attach_resource_locked(base, res);
+   mtx_unlock(&ctx->mutex);
+}
+
 static void vkr_context_detach_resource(struct virgl_context *base,
                                         struct virgl_resource *res)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
 
+   mtx_lock(&ctx->mutex);
    util_hash_table_remove(ctx->resource_table,
                           uintptr_to_pointer(res->res_id));
+   mtx_unlock(&ctx->mutex);
 }
 
 static void vkr_context_destroy(struct virgl_context *base)
@@ -3630,6 +3704,7 @@ static void vkr_context_destroy(struct virgl_context *base)
 
    vkr_cs_decoder_fini(&ctx->decoder);
 
+   mtx_destroy(&ctx->mutex);
    free(ctx->debug_name);
    free(ctx);
 }
@@ -3681,11 +3756,19 @@ vkr_context_create(size_t debug_len, const char *debug_name)
       return NULL;
 
    ctx->debug_name = malloc(debug_len + 1);
-   if (!ctx->debug_name)
-      goto fail;
+   if (!ctx->debug_name) {
+      free(ctx);
+      return NULL;
+   }
 
    memcpy(ctx->debug_name, debug_name, debug_len);
    ctx->debug_name[debug_len] = '\0';
+
+   if (mtx_init(&ctx->mutex, mtx_plain) != thrd_success) {
+      free(ctx->debug_name);
+      free(ctx);
+      return NULL;
+   }
 
    ctx->object_table =
       util_hash_table_create_u64(destroy_func_object);
@@ -3722,6 +3805,7 @@ fail:
       util_hash_table_destroy_u64(ctx->object_table);
    if (ctx->resource_table)
       util_hash_table_destroy(ctx->resource_table);
+   mtx_destroy(&ctx->mutex);
    free(ctx->debug_name);
    free(ctx);
    return NULL;
