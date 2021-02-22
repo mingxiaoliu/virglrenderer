@@ -3491,11 +3491,6 @@ static void vkr_context_get_blob_done(struct virgl_context *base,
    struct vkr_context *ctx = (struct vkr_context *)base;
    struct vkr_device_memory *mem = blob->renderer_data;
 
-   if (!res_id) {
-      close(blob->u.fd);
-      return;
-   }
-
    mem->exported = true;
    mem->exported_res_id = res_id;
    list_add(&mem->head, &ctx->newly_exported_memories);
