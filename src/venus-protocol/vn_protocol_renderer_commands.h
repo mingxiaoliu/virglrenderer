@@ -6627,4 +6627,27 @@ static inline void vn_encode_vkNotifyRingMESA_reply(struct vn_cs_encoder *enc, c
     /* skip args->flags */
 }
 
+static inline void vn_decode_vkWriteRingExtraMESA_args_temp(struct vn_cs_decoder *dec, struct vn_command_vkWriteRingExtraMESA *args)
+{
+    vn_decode_uint64_t(dec, &args->ring);
+    vn_decode_size_t(dec, &args->offset);
+    vn_decode_uint32_t(dec, &args->value);
+}
+
+static inline void vn_replace_vkWriteRingExtraMESA_args_handle(struct vn_command_vkWriteRingExtraMESA *args)
+{
+    /* skip args->ring */
+    /* skip args->offset */
+    /* skip args->value */
+}
+
+static inline void vn_encode_vkWriteRingExtraMESA_reply(struct vn_cs_encoder *enc, const struct vn_command_vkWriteRingExtraMESA *args)
+{
+    vn_encode_VkCommandTypeEXT(enc, &(VkCommandTypeEXT){VK_COMMAND_TYPE_vkWriteRingExtraMESA_EXT});
+
+    /* skip args->ring */
+    /* skip args->offset */
+    /* skip args->value */
+}
+
 #endif /* VN_PROTOCOL_RENDERER_COMMANDS_H */

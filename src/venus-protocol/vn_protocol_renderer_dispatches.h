@@ -201,6 +201,7 @@ static inline const char *vn_dispatch_command_name(VkCommandTypeEXT type)
     case VK_COMMAND_TYPE_vkCreateRingMESA_EXT: return "vkCreateRingMESA";
     case VK_COMMAND_TYPE_vkDestroyRingMESA_EXT: return "vkDestroyRingMESA";
     case VK_COMMAND_TYPE_vkNotifyRingMESA_EXT: return "vkNotifyRingMESA";
+    case VK_COMMAND_TYPE_vkWriteRingExtraMESA_EXT: return "vkWriteRingExtraMESA";
     case VK_COMMAND_TYPE_vkGetDeviceProcAddr_EXT: return "vkGetDeviceProcAddr";
     case VK_COMMAND_TYPE_vkGetInstanceProcAddr_EXT: return "vkGetInstanceProcAddr";
     case VK_COMMAND_TYPE_vkMapMemory_EXT: return "vkMapMemory";
@@ -4735,7 +4736,28 @@ static inline void vn_dispatch_vkNotifyRingMESA(struct vn_dispatch_context *ctx,
     vn_cs_decoder_reset_temp_pool(ctx->decoder);
 }
 
-static void (*const vn_dispatch_table[191])(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags) = {
+static inline void vn_dispatch_vkWriteRingExtraMESA(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
+{
+    struct vn_command_vkWriteRingExtraMESA args;
+
+    if (!ctx->dispatch_vkWriteRingExtraMESA) {
+        vn_cs_decoder_set_fatal(ctx->decoder);
+        return;
+    }
+
+    vn_decode_vkWriteRingExtraMESA_args_temp(ctx->decoder, &args);
+
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
+        ctx->dispatch_vkWriteRingExtraMESA(ctx, &args);
+
+
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_vkWriteRingExtraMESA_reply(ctx->encoder, &args);
+
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
+}
+
+static void (*const vn_dispatch_table[192])(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags) = {
     [VK_COMMAND_TYPE_vkCreateInstance_EXT] = vn_dispatch_vkCreateInstance,
     [VK_COMMAND_TYPE_vkDestroyInstance_EXT] = vn_dispatch_vkDestroyInstance,
     [VK_COMMAND_TYPE_vkEnumeratePhysicalDevices_EXT] = vn_dispatch_vkEnumeratePhysicalDevices,
@@ -4923,6 +4945,7 @@ static void (*const vn_dispatch_table[191])(struct vn_dispatch_context *ctx, VkC
     [VK_COMMAND_TYPE_vkCreateRingMESA_EXT] = vn_dispatch_vkCreateRingMESA,
     [VK_COMMAND_TYPE_vkDestroyRingMESA_EXT] = vn_dispatch_vkDestroyRingMESA,
     [VK_COMMAND_TYPE_vkNotifyRingMESA_EXT] = vn_dispatch_vkNotifyRingMESA,
+    [VK_COMMAND_TYPE_vkWriteRingExtraMESA_EXT] = vn_dispatch_vkWriteRingExtraMESA,
 };
 
 static inline void vn_dispatch_command(struct vn_dispatch_context *ctx)
@@ -4933,7 +4956,7 @@ static inline void vn_dispatch_command(struct vn_dispatch_context *ctx)
     vn_decode_VkCommandTypeEXT(ctx->decoder, &cmd_type);
     vn_decode_VkFlags(ctx->decoder, &cmd_flags);
 
-    if (cmd_type < 191 && vn_dispatch_table[cmd_type])
+    if (cmd_type < 192 && vn_dispatch_table[cmd_type])
         vn_dispatch_table[cmd_type](ctx, cmd_flags);
     else
         vn_cs_decoder_set_fatal(ctx->decoder);

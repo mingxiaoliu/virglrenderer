@@ -250,6 +250,7 @@ typedef enum VkCommandTypeEXT {
     VK_COMMAND_TYPE_vkCreateRingMESA_EXT = 188,
     VK_COMMAND_TYPE_vkDestroyRingMESA_EXT = 189,
     VK_COMMAND_TYPE_vkNotifyRingMESA_EXT = 190,
+    VK_COMMAND_TYPE_vkWriteRingExtraMESA_EXT = 191,
 } VkCommandTypeEXT;
 
 typedef enum VkCommandFlagBitsEXT {
@@ -1712,6 +1713,12 @@ struct vn_command_vkNotifyRingMESA {
     VkRingNotifyFlagsMESA flags;
 };
 
+struct vn_command_vkWriteRingExtraMESA {
+    uint64_t ring;
+    size_t offset;
+    uint32_t value;
+};
+
 struct vn_dispatch_context {
     void *data;
     void (*debug_log)(struct vn_dispatch_context *ctx, const char *msg);
@@ -1910,6 +1917,7 @@ struct vn_dispatch_context {
     void (*dispatch_vkCreateRingMESA)(struct vn_dispatch_context *ctx, struct vn_command_vkCreateRingMESA *args);
     void (*dispatch_vkDestroyRingMESA)(struct vn_dispatch_context *ctx, struct vn_command_vkDestroyRingMESA *args);
     void (*dispatch_vkNotifyRingMESA)(struct vn_dispatch_context *ctx, struct vn_command_vkNotifyRingMESA *args);
+    void (*dispatch_vkWriteRingExtraMESA)(struct vn_dispatch_context *ctx, struct vn_command_vkWriteRingExtraMESA *args);
 };
 
 #endif /* VN_PROTOCOL_RENDERER_DEFINES_H */

@@ -610,6 +610,20 @@ vkr_dispatch_vkNotifyRingMESA(struct vn_dispatch_context *dispatch, struct vn_co
 }
 
 static void
+vkr_dispatch_vkWriteRingExtraMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkWriteRingExtraMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_ring *ring = lookup_ring(ctx, args->ring);
+   if (!ring) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   if (!vkr_ring_write_extra(ring, args->offset, args->value))
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+}
+
+static void
 vkr_dispatch_vkEnumerateInstanceVersion(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkEnumerateInstanceVersion *args)
 {
    vn_replace_vkEnumerateInstanceVersion_args_handle(args);
@@ -3160,6 +3174,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
    dispatch->dispatch_vkCreateRingMESA = vkr_dispatch_vkCreateRingMESA;
    dispatch->dispatch_vkDestroyRingMESA = vkr_dispatch_vkDestroyRingMESA;
    dispatch->dispatch_vkNotifyRingMESA = vkr_dispatch_vkNotifyRingMESA;
+   dispatch->dispatch_vkWriteRingExtraMESA = vkr_dispatch_vkWriteRingExtraMESA;
 
    dispatch->dispatch_vkEnumerateInstanceVersion = vkr_dispatch_vkEnumerateInstanceVersion;
    dispatch->dispatch_vkEnumerateInstanceExtensionProperties = vkr_dispatch_vkEnumerateInstanceExtensionProperties;
