@@ -1484,10 +1484,10 @@ vkr_dispatch_vkGetDeviceGroupPeerMemoryFeatures(UNUSED struct vn_dispatch_contex
 }
 
 static void
-vkr_dispatch_vkDeviceWaitIdle(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkDeviceWaitIdle *args)
+vkr_dispatch_vkDeviceWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkDeviceWaitIdle *args)
 {
-   vn_replace_vkDeviceWaitIdle_args_handle(args);
-   args->ret = vkDeviceWaitIdle(args->device);
+   struct vkr_context *ctx = dispatch->data;
+   vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
 static void
@@ -1550,10 +1550,10 @@ vkr_dispatch_vkQueueBindSparse(UNUSED struct vn_dispatch_context *dispatch, stru
 }
 
 static void
-vkr_dispatch_vkQueueWaitIdle(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkQueueWaitIdle *args)
+vkr_dispatch_vkQueueWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkQueueWaitIdle *args)
 {
-   vn_replace_vkQueueWaitIdle_args_handle(args);
-   args->ret = vkQueueWaitIdle(args->queue);
+   struct vkr_context *ctx = dispatch->data;
+   vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
 static void
@@ -1803,8 +1803,15 @@ vkr_dispatch_vkGetFenceStatus(UNUSED struct vn_dispatch_context *dispatch, struc
 }
 
 static void
-vkr_dispatch_vkWaitForFences(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkWaitForFences *args)
+vkr_dispatch_vkWaitForFences(struct vn_dispatch_context *dispatch, struct vn_command_vkWaitForFences *args)
 {
+   struct vkr_context *ctx = dispatch->data;
+
+   if (args->timeout) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
    vn_replace_vkWaitForFences_args_handle(args);
    args->ret = vkWaitForFences(args->device, args->fenceCount, args->pFences, args->waitAll, args->timeout);
 }
@@ -1848,7 +1855,13 @@ vkr_dispatch_vkWaitSemaphores(struct vn_dispatch_context *dispatch, struct vn_co
 {
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
+
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   if (args->timeout) {
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
