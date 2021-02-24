@@ -497,6 +497,17 @@ vkr_dispatch_vkExecuteCommandStreamsMESA(struct vn_dispatch_context *dispatch, s
    vkr_cs_decoder_pop_state(&ctx->decoder);
 }
 
+static struct vkr_ring *
+lookup_ring(struct vkr_context *ctx, uint64_t ring_id)
+{
+   struct vkr_ring *ring;
+   LIST_FOR_EACH_ENTRY(ring, &ctx->rings, head) {
+      if (ring->id == ring_id)
+         return ring;
+   }
+   return NULL;
+}
+
 static void
 vkr_dispatch_vkCreateRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkCreateRingMESA *args)
 {
@@ -575,15 +586,7 @@ static void
 vkr_dispatch_vkDestroyRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkDestroyRingMESA *args)
 {
    struct vkr_context *ctx = dispatch->data;
-   struct vkr_ring *ring = NULL, *iter;
-
-   LIST_FOR_EACH_ENTRY(iter, &ctx->rings, head) {
-      if (iter->id == args->ring) {
-         ring = iter;
-         break;
-      }
-   }
-
+   struct vkr_ring *ring = lookup_ring(ctx, args->ring);
    if (!ring || !vkr_ring_stop(ring)) {
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
@@ -597,15 +600,7 @@ static void
 vkr_dispatch_vkNotifyRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkNotifyRingMESA *args)
 {
    struct vkr_context *ctx = dispatch->data;
-   struct vkr_ring *ring = NULL, *iter;
-
-   LIST_FOR_EACH_ENTRY(iter, &ctx->rings, head) {
-      if (iter->id == args->ring) {
-         ring = iter;
-         break;
-      }
-   }
-
+   struct vkr_ring *ring = lookup_ring(ctx, args->ring);
    if (!ring) {
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
