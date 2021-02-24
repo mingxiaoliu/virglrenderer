@@ -42,6 +42,8 @@ struct vkr_ring_shared {
    const volatile atomic_uint *tail;
    volatile atomic_uint *status;
    const void *buffer;
+
+   void *extra;
 };
 
 struct vkr_ring {
@@ -54,6 +56,8 @@ struct vkr_ring {
    uint32_t buffer_mask;
    uint32_t cur;
    void *cmd;
+
+   size_t extra_size;
 
    struct virgl_context *context;
    uint64_t idle_timeout;
@@ -82,5 +86,8 @@ vkr_ring_stop(struct vkr_ring *ring);
 
 void
 vkr_ring_notify(struct vkr_ring *ring);
+
+bool
+vkr_ring_write_extra(struct vkr_ring *ring, size_t offset, uint32_t val);
 
 #endif /* VKR_RING_H */

@@ -72,8 +72,10 @@ vkr_ring_create(const struct vkr_ring_layout *layout,
    ring->shared.tail = (void *)((uint8_t *)shared + layout->tail_offset);
    ring->shared.status = (void *)((uint8_t *)shared + layout->status_offset);
    ring->shared.buffer = (void *)((uint8_t *)shared + layout->buffer_offset);
+   ring->shared.extra = (void *)((uint8_t *)shared + layout->extra_offset);
    ring->buffer_size = layout->buffer_size;
    ring->buffer_mask = layout->buffer_size - 1;
+   ring->extra_size = layout->extra_size;
 
    if (*ring->shared.head || *ring->shared.status) {
       free(ring);
@@ -223,4 +225,17 @@ vkr_ring_notify(struct vkr_ring *ring)
    ring->pending_notify = true;
    cnd_signal(&ring->cond);
    mtx_unlock(&ring->mutex);
+}
+
+bool
+vkr_ring_write_extra(struct vkr_ring *ring, size_t offset, uint32_t val)
+{
+   if (offset > ring->extra_size || sizeof(val) > ring->extra_size - offset)
+      return false;
+
+   volatile atomic_uint *dst =
+      (void *)((uint8_t *)ring->shared.extra + offset);
+   atomic_store_explicit(dst, val, memory_order_release);
+
+   return true;
 }
