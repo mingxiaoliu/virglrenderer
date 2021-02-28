@@ -3671,7 +3671,9 @@ static int vkr_context_get_blob(struct virgl_context *base,
 
    mtx_lock(&ctx->mutex);
    ret = vkr_context_get_blob_locked(base, blob_id, flags, blob);
-   /* XXX unlock in vkr_context_get_blob_done */
+   /* XXX unlock in vkr_context_get_blob_done on success */
+   if (ret)
+      mtx_unlock(&ctx->mutex);
 
    return ret;
 }
