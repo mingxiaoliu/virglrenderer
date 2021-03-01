@@ -75,6 +75,7 @@ vrend_winsys_glx_sources = [
 ]
 
 virgl_venus_sources = [
+   'venus-protocol/vn_protocol_renderer.h',
    'venus_hw.h',
    'vkr_cs.c',
    'vkr_cs.h',
@@ -83,7 +84,6 @@ virgl_venus_sources = [
    'vkr_renderer.h',
    'vkr_ring.c',
    'vkr_ring.h',
-   'venus-protocol/vn_protocol_renderer.h',
 ]
 
 virgl_depends = [
