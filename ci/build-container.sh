@@ -13,7 +13,7 @@ export CC="gcc-8"
 export CXX="g++-8"
 export CFLAGS="-g3"
 export CXXFLAGS="-g3"
-export GIT_DATE="2020-11-11"
+export GIT_DATE="2020-02-02"
 export MESA_DEBUG=1
 
 echo 'path-exclude=/usr/share/doc/*' > /etc/dpkg/dpkg.cfg.d/99-exclude-cruft
@@ -42,7 +42,6 @@ apt-get -y install --no-install-recommends \
       golang-go \
       kbd \
       libcurl4-openssl-dev \
-      libepoxy-dev \
       libgbm-dev \
       libnss-systemd \
       libpng-dev \
@@ -80,14 +79,61 @@ apt-get -y install --no-install-recommends \
       xterm \
       xvfb \
       zlib1g-dev
+
 apt-get -y build-dep --no-install-recommends \
-      libepoxy-dev \
       libdrm \
       mesa \
       piglit \
-      virglrenderer
-apt-get -y remove valgrind
+      check
+
+apt-get -y remove valgrind libdrm-dev
 rm -rf /var/lib/apt/lists/*
+
+export KNOWN_GOOD_DRM=libdrm-2.4.104
+mkdir /drm
+pushd /drm
+git clone --shallow-since="$GIT_DATE" https://gitlab.freedesktop.org/mesa/drm.git . && \
+    git checkout ${KNOWN_GOOD_DRM} && \
+    git log --oneline -n 1 && \
+    mkdir -p build && \
+    meson build/ && \
+    meson configure build/ -Dprefix=/usr/local -Dlibdir=lib && \
+    ninja -C build/ install >/dev/null && \
+    rm -rf /drm
+    [ "$?" = "0" ] || exit 1
+popd
+
+export KNOWN_GOOD_MESA=${KNOWN_GOOD_MESA:-30a393f4581079ced1ac05d6b74c7408fbe26f83}
+echo $KNOWN_GOOD_MESA
+export MESA_REPO=https://gitlab.freedesktop.org/mesa/mesa.git
+echo $MESA_REPO
+mkdir /mesa
+pushd /mesa
+git clone --shallow-since="$GIT_DATE" ${MESA_REPO} . && \
+    git checkout ${KNOWN_GOOD_MESA} && \
+    git log --oneline -n 1 && \
+    mkdir -p build && \
+    meson build/ && \
+    meson configure build/ -Dprefix=/usr/local -Dplatforms=drm,x11,wayland,surfaceless -Ddri-drivers=i965 -Dgallium-drivers=swrast,virgl,radeonsi -Dbuildtype=debugoptimized -Dllvm=true -Dglx=dri -Dgallium-vdpau=false -Dgallium-va=false -Dvulkan-drivers=[] -Dlibdir=lib && \
+    ninja -C build/ install >/dev/null && \
+    rm -rf /mesa
+    [ "$?" = "0" ] || exit 1
+popd
+
+export KNOWN_GOOD_EPOXY=${KNOWN_GOOD_EPOXY:-1.5.4}
+mkdir /epoxy
+pushd /epoxy
+git clone --shallow-since="$GIT_DATE" https://github.com/anholt/libepoxy.git . && \
+    git fetch --tags && 
+    git checkout ${KNOWN_GOOD_EPOXY} && \
+    git log --oneline -n 1 && \
+    mkdir -p build && \
+    meson build/ && \
+    meson configure build/ -Dprefix=/usr/local -Dlibdir=lib && \
+    ninja -C build/ install >/dev/null && \
+    rm -rf /epoxy
+    [ "$?" == "0" ] || exit 1
+popd
 
 export BATTERY_VERSION=0.1.23
 mkdir /battery
@@ -96,6 +142,7 @@ wget "https://github.com/VoltLang/Battery/releases/download/v${BATTERY_VERSION}/
     tar xzvf battery-${BATTERY_VERSION}-x86_64-linux.tar.gz && \
     rm battery-${BATTERY_VERSION}-x86_64-linux.tar.gz && \
     mv battery /usr/local/bin
+    [ "$?" = "0" ] || exit 1
 popd
 
 mkdir /volt
@@ -109,6 +156,7 @@ git clone --depth=1 https://github.com/VoltLang/Watt.git && \
     battery build && \
     cp dEQP/deqp /usr/local/bin && \
     rm -rf /volt
+    [ "$?" = "0" ] || exit 1
 popd
 
 # To avoid this error:
@@ -128,6 +176,7 @@ git clone --shallow-since="$GIT_DATE" https://github.com/KhronosGroup/VK-GL-CTS.
     make -j$(nproc) && \
     find . -name CMakeFiles | xargs rm -rf && \
     find . -name lib\*.a | xargs rm -rf
+    [ "$?" = "0" ] || exit 1
 popd
 
 export KNOWN_GOOD_PIGLIT=${KNOWN_GOOD_PIGLIT:-08a92f4094c927276a20f608d7b3c5de2a72e9e7}
@@ -141,34 +190,7 @@ git clone --shallow-since="$GIT_DATE" https://gitlab.freedesktop.org/mesa/piglit
     rm -rf /usr/local/lib/piglit/generated_tests/spec/arb_vertex_attrib_64bit && \
     rm -rf /usr/local/lib/piglit/generated_tests/spec/glsl-4.20 && \
     rm -rf /piglit
+    [ "$?" = "0" ] || exit 1
 popd
 
-export KNOWN_GOOD_DRM=libdrm-2.4.103
-mkdir /drm
-pushd /drm
-git clone --shallow-since="$GIT_DATE" https://gitlab.freedesktop.org/mesa/drm.git . && \
-    git checkout ${KNOWN_GOOD_DRM} && \
-    git log --oneline -n 1 && \
-    mkdir -p build && \
-    meson build/ && \
-    meson configure build/ -Dprefix=/usr/local -Dlibdir=lib && \
-    ninja -C build/ install >/dev/null && \
-    rm -rf /drm
-popd
-
-export KNOWN_GOOD_MESA=${KNOWN_GOOD_MESA:-1c17223c02b68679d67a4e4a6be8b9b7a80fa2e9}
-echo $KNOWN_GOOD_MESA
-export MESA_REPO=https://gitlab.freedesktop.org/mesa/mesa.git
-echo $MESA_REPO
-mkdir /mesa
-pushd /mesa
-git clone --shallow-since="$GIT_DATE" ${MESA_REPO} . && \
-    git checkout ${KNOWN_GOOD_MESA} && \
-    git log --oneline -n 1 && \
-    mkdir -p build && \
-    meson build/ && \
-    meson configure build/ -Dprefix=/usr/local -Dplatforms=drm,x11,wayland,surfaceless -Ddri-drivers=i965 -Dgallium-drivers=swrast,virgl,radeonsi -Dbuildtype=debugoptimized -Dllvm=true -Dglx=dri -Dgallium-vdpau=false -Dgallium-va=false -Dvulkan-drivers=[] -Dlibdir=lib && \
-    ninja -C build/ install >/dev/null && \
-    rm -rf /mesa
-popd
 
