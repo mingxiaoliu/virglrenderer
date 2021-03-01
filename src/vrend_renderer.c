@@ -80,6 +80,10 @@ static const uint32_t fake_occlusion_query_samples_passed_default = 1024;
 const struct vrend_if_cbs *vrend_clicbs;
 
 struct vrend_fence {
+   /* When the sync thread is waiting on the fence and the main thread
+    * destroys the context, ctx is set to NULL.  Otherwise, ctx is always
+    * valid.
+    */
    struct vrend_context *ctx;
    uint32_t flags;
    void *fence_cookie;
@@ -324,6 +328,9 @@ struct global_renderer_state {
    int eventfd;
 
    pipe_mutex fence_mutex;
+   /* a fence is always on either of the lists, or is pointed to by
+    * fence_waiting
+    */
    struct list_head fence_list;
    struct list_head fence_wait_list;
    struct vrend_fence *fence_waiting;
@@ -5901,7 +5908,7 @@ static void vrend_free_fences_for_context(struct vrend_context *ctx)
             free_fence_locked(fence);
       }
       if (vrend_state.fence_waiting) {
-         /* mark the fence invalid */
+         /* mark the fence invalid as the sync thread is still waiting on it */
          vrend_state.fence_waiting->ctx = NULL;
       }
       pipe_mutex_unlock(vrend_state.fence_mutex);
@@ -9200,11 +9207,11 @@ int vrend_renderer_create_fence(struct vrend_context *ctx,
    struct vrend_fence *fence;
 
    if (!ctx)
-      return -EINVAL;
+      return EINVAL;
 
    fence = malloc(sizeof(struct vrend_fence));
    if (!fence)
-      return -ENOMEM;
+      return ENOMEM;
 
    fence->ctx = ctx;
    fence->flags = flags;
@@ -9246,7 +9253,7 @@ int vrend_renderer_create_fence(struct vrend_context *ctx,
  fail:
    vrend_printf( "failed to create fence sync object\n");
    free(fence);
-   return -ENOMEM;
+   return ENOMEM;
 }
 
 static void vrend_renderer_check_queries(void);
@@ -11080,54 +11087,68 @@ int vrend_renderer_create_ctx0_fence(uint32_t fence_id)
          VIRGL_RENDERER_FENCE_FLAG_MERGEABLE, fence_cookie);
 }
 
+static bool find_ctx0_fence_locked(struct list_head *fence_list,
+                                   void *fence_cookie,
+                                   bool *seen_first,
+                                   struct vrend_fence **fence)
+{
+   struct vrend_fence *iter;
+
+   LIST_FOR_EACH_ENTRY(iter, fence_list, fences) {
+      /* only consider ctx0 fences */
+      if (iter->ctx != vrend_state.ctx0)
+         continue;
+
+      if (iter->fence_cookie == fence_cookie) {
+         *fence = iter;
+         return true;
+      }
+
+      if (!*seen_first) {
+         if (fence_cookie < iter->fence_cookie)
+            return true;
+         *seen_first = true;
+      }
+   }
+
+   return false;
+}
+
 int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd) {
 #ifdef HAVE_EPOXY_EGL_H
    if (!vrend_state.use_egl_fence) {
       return -EINVAL;
    }
 
-   struct vrend_fence *fence = NULL;
-   struct vrend_fence *first_fence = NULL;
-   struct list_head *fence_list;
-   struct vrend_fence *iter;
-
-   if (vrend_state.sync_thread) {
+   if (vrend_state.sync_thread)
       pipe_mutex_lock(vrend_state.fence_mutex);
-      fence_list = &vrend_state.fence_wait_list;
-   } else {
-      fence_list = &vrend_state.fence_list;
-   }
 
-   LIST_FOR_EACH_ENTRY(iter, fence_list, fences) {
-      if (fence->ctx != vrend_state.ctx0)
-         continue;
-
-      if (!first_fence)
-         first_fence = iter;
-
-      const uint32_t iter_fence_id = (uintptr_t)iter->fence_cookie;
-      if (iter_fence_id == fence_id) {
-         fence = iter;
-         break;
-      } else if (iter_fence_id > fence_id) {
-         /* an unrecognized fence_id smaller than the first unsignaled fence
-          * is considered signaled
-          */
-         if (iter == first_fence)
-            break;
-
-         return -EINVAL;
-      }
+   void *fence_cookie = (void *)(uintptr_t)fence_id;
+   bool seen_first = false;
+   struct vrend_fence *fence = NULL;
+   bool found = find_ctx0_fence_locked(&vrend_state.fence_list,
+                                       fence_cookie,
+                                       &seen_first,
+                                       &fence);
+   if (!found) {
+      found = find_ctx0_fence_locked(&vrend_state.fence_wait_list,
+                                     fence_cookie,
+                                     &seen_first,
+                                     &fence);
+      /* consider signaled when no active ctx0 fence at all */
+      if (!found && !seen_first)
+         found = true;
    }
 
    if (vrend_state.sync_thread)
       pipe_mutex_unlock(vrend_state.fence_mutex);
 
-   if (fence)
-      return virgl_egl_export_fence(egl, fence->eglsyncobj, out_fd) ? 0 : -EINVAL;
-   else
-      return virgl_egl_export_signaled_fence(egl, out_fd) ? 0 : -EINVAL;
-#else
-   return -EINVAL;
+   if (found) {
+      if (fence)
+         return virgl_egl_export_fence(egl, fence->eglsyncobj, out_fd) ? 0 : -EINVAL;
+      else
+         return virgl_egl_export_signaled_fence(egl, out_fd) ? 0 : -EINVAL;
+   }
 #endif
+   return -EINVAL;
 }

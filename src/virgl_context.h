@@ -68,7 +68,8 @@ struct virgl_context {
     * is called from virgl_context::retire_fences to retire signaled fences of
     * each queue.  When a queue has multiple signaled fences by the time
     * virgl_context::retire_fences is called, this callback might not be called
-    * on all fences but only on the latest one, depending on the flags.
+    * on all fences but only on the latest one, depending on the flags of the
+    * fences.
     */
    virgl_context_fence_retire fence_retire;
 
@@ -114,6 +115,7 @@ struct virgl_context {
    /* retire signaled fences of all queues */
    void (*retire_fences)(struct virgl_context *ctx);
 
+   /* submit a fence to the queue identified by queue_id */
    int (*submit_fence)(struct virgl_context *ctx,
                        uint32_t flags,
                        uint64_t queue_id,

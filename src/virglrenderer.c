@@ -381,7 +381,7 @@ int virgl_renderer_create_fence(int client_fence_id, UNUSED uint32_t ctx_id)
    const uint32_t fence_id = (uint32_t)client_fence_id;
    if (state.vrend_initialized)
       return vrend_renderer_create_ctx0_fence(fence_id);
-   return -1;
+   return EINVAL;
 }
 
 int virgl_renderer_context_create_fence(uint32_t ctx_id,
@@ -393,6 +393,7 @@ int virgl_renderer_context_create_fence(uint32_t ctx_id,
    if (!ctx)
       return -EINVAL;
 
+   assert(state.cbs->version >= 3 && state.cbs->write_context_fence);
    return ctx->submit_fence(ctx, flags, queue_id, fence_cookie);
 }
 
@@ -503,7 +504,7 @@ void virgl_renderer_get_rect(int resource_id, struct iovec *iov, unsigned int nu
 static void ctx0_fence_retire(void *fence_cookie,
                               UNUSED void *retire_data)
 {
-   const uint32_t fence_id = (uintptr_t)fence_cookie;
+   const uint32_t fence_id = (uint32_t)(uintptr_t)fence_cookie;
    state.cbs->write_fence(state.cookie, fence_id);
 }
 
