@@ -1468,6 +1468,11 @@ vkr_dispatch_vkDestroyDevice(struct vn_dispatch_context *dispatch, struct vn_com
       return;
    }
 
+   /* TODO cleanup all objects here? */
+   struct vkr_queue *queue, *queue_tmp;
+   LIST_FOR_EACH_ENTRY_SAFE(queue, queue_tmp, &dev->queues, head)
+      vkr_queue_destroy(ctx, queue);
+
    struct vkr_queue_sync *sync, *sync_tmp;
    LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &dev->free_syncs, head) {
       vkDestroyFence(dev->base.device, sync->fence, NULL);
@@ -1476,11 +1481,6 @@ vkr_dispatch_vkDestroyDevice(struct vn_dispatch_context *dispatch, struct vn_com
 
    vn_replace_vkDestroyDevice_args_handle(args);
    vkDestroyDevice(args->device, NULL);
-
-   /* TODO cleanup all objects instead? */
-   struct vkr_queue *queue, *queue_tmp;
-   LIST_FOR_EACH_ENTRY_SAFE(queue, queue_tmp, &dev->queues, head)
-      vkr_queue_destroy(ctx, queue);
 
    util_hash_table_remove_u64(ctx->object_table, dev->base.id);
 }
