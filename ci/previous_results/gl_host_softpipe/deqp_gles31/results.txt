@@ -15059,6 +15059,9 @@ dEQP-GLES31.functional.draw_indirect.random.55 Pass
 dEQP-GLES31.functional.draw_indirect.random.56 Pass
 dEQP-GLES31.functional.draw_indirect.random.57 Pass
 dEQP-GLES31.functional.draw_indirect.random.61 Pass
+dEQP-GLES31.functional.fbo.color.tex2d.r16 Pass
+dEQP-GLES31.functional.fbo.color.tex2d.rg16 Pass
+dEQP-GLES31.functional.fbo.color.tex2d.rgba16 Pass
 dEQP-GLES31.functional.fbo.color.texcubearray.r8i NotSupported
 dEQP-GLES31.functional.fbo.color.texcubearray.r8ui NotSupported
 dEQP-GLES31.functional.fbo.color.texcubearray.r8 NotSupported
@@ -33534,14 +33537,14 @@ dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_atomi
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_atomic_multiple_unrelated_write_read_ordered Pass
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_atomic_multiple_write_read Pass
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_atomic_overwrite Pass
-dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_atomic_read_write Pass
+dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_atomic_read_write Fail
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_atomic_write_read Pass
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_multiple_interleaved_write_read Pass
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_multiple_unrelated_write_read_non_ordered Pass
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_multiple_unrelated_write_read_ordered Pass
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_multiple_write_read Pass
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_overwrite Pass
-dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_read_write Pass
+dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_read_write Fail
 dEQP-GLES31.functional.synchronization.inter_call.with_memory_barrier.ssbo_write_read Pass
 dEQP-GLES31.functional.synchronization.inter_invocation.image_alias_overwrite Pass
 dEQP-GLES31.functional.synchronization.inter_invocation.image_alias_write Pass

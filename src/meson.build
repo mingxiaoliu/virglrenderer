@@ -75,12 +75,15 @@ vrend_winsys_glx_sources = [
 ]
 
 virgl_venus_sources = [
+   'venus-protocol/vn_protocol_renderer.h',
    'venus_hw.h',
-   'vkr_parser.c',
-   'vkr_parser.h',
+   'vkr_cs.c',
+   'vkr_cs.h',
+   'vkr_object.h',
    'vkr_renderer.c',
    'vkr_renderer.h',
-   'venus-protocol/vn_protocol_renderer.h',
+   'vkr_ring.c',
+   'vkr_ring.h',
 ]
 
 virgl_depends = [
@@ -93,6 +96,10 @@ virgl_depends = [
 
 if with_tracing == 'perfetto'
    virgl_depends += [vperfetto_min_dep]
+endif
+
+if with_tracing == 'percetto'
+   virgl_depends += [percetto_dep]
 endif
 
 virgl_sources += vrend_sources

@@ -17,7 +17,7 @@ vn_info_wire_format_version(void)
 static inline uint32_t
 vn_info_vk_xml_version(void)
 {
-    return VK_MAKE_VERSION(1, 2, 167);
+    return VK_MAKE_VERSION(1, 2, 168);
 }
 
 static inline int
@@ -84,7 +84,7 @@ vn_info_extension_spec_version(const char *name)
         "VK_MESA_venus_protocol",
     };
     static const uint32_t ext_versions[51] = {
-        1,
+        0,
         2,
         1,
         1,
@@ -134,7 +134,7 @@ vn_info_extension_spec_version(const char *name)
         1,
         1,
         3,
-        1,
+        0,
     };
     const char **found;
 

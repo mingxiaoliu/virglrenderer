@@ -1,26 +1,7 @@
-/**************************************************************************
- *
- * Copyright (C) 2020 Chromium.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
- * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- *
- **************************************************************************/
+/*
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "vkr_renderer.h"
 
@@ -44,6 +25,9 @@
 #include "virgl_util.h"
 #include "virglrenderer.h"
 #include "virglrenderer_hw.h"
+#include "vkr_cs.h"
+#include "vkr_object.h"
+#include "vkr_ring.h"
 #include "vrend_debug.h"
 #include "vrend_iov.h"
 
@@ -68,8 +52,8 @@
       return;                                                   \
    }                                                            \
    obj->base.type = VK_OBJECT_TYPE_ ## vk_obj;                  \
-   obj->base.id = vkr_parser_handle_load_id(args->vk_arg,       \
-         is_object_id_in_place(obj->base.type));                \
+   obj->base.id = vkr_cs_handle_load_id(                        \
+         (const void **)args->vk_arg, obj->base.type);          \
                                                                 \
    vn_replace_ ## vk_cmd ## _args_handle(args);                 \
    args->ret = vk_cmd(args->device, args->pCreateInfo, NULL,    \
@@ -85,7 +69,7 @@
       (struct vkr_ ## vkr_type *)(uintptr_t)args->vk_arg;       \
    if (!obj || obj->base.type != VK_OBJECT_TYPE_ ## vk_obj) {   \
       if (obj)                                                  \
-         vkr_parser_set_error(&ctx->parser);                    \
+         vkr_cs_decoder_set_fatal(&ctx->decoder);               \
       return;                                                   \
    }                                                            \
                                                                 \
@@ -95,7 +79,7 @@
 struct vkr_physical_device;
 
 struct vkr_instance {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    uint32_t version;
    PFN_vkGetMemoryFdKHR get_memory_fd;
@@ -107,7 +91,7 @@ struct vkr_instance {
 };
 
 struct vkr_physical_device {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    VkExtensionProperties *extensions;
    uint32_t extension_count;
@@ -130,7 +114,7 @@ struct vkr_queue_sync {
 };
 
 struct vkr_device {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct vkr_physical_device *physical_device;
 
@@ -164,7 +148,7 @@ struct vkr_device {
 };
 
 struct vkr_queue {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct vkr_device *device;
 
@@ -187,7 +171,7 @@ struct vkr_queue {
 };
 
 struct vkr_device_memory {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    VkDevice device;
    uint32_t property_flags;
@@ -199,97 +183,97 @@ struct vkr_device_memory {
 };
 
 struct vkr_fence  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_semaphore  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_buffer  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_buffer_view  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_image  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_image_view  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_sampler  {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_sampler_ycbcr_conversion {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_descriptor_set_layout {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_descriptor_pool {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct list_head descriptor_sets;
 };
 
 struct vkr_descriptor_set {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct list_head head;
 };
 
 struct vkr_descriptor_update_template {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_render_pass {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_framebuffer {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_event {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_query_pool {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_shader_module {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_pipeline_layout {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_pipeline_cache {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_pipeline {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 };
 
 struct vkr_command_pool {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct list_head command_buffers;
 };
 
 struct vkr_command_buffer {
-   struct vkr_parser_object base;
+   struct vkr_object base;
 
    struct vkr_device *device;
 
@@ -316,11 +300,15 @@ struct vkr_context {
 
    char *debug_name;
 
+   mtx_t mutex;
+
+   struct list_head rings;
    struct util_hash_table_u64 *object_table;
    struct util_hash_table *resource_table;
    struct list_head newly_exported_memories;
 
-   struct vkr_parser parser;
+   struct vkr_cs_encoder encoder;
+   struct vkr_cs_decoder decoder;
    struct vn_dispatch_context dispatch;
 
    int fence_eventfd;
@@ -332,22 +320,6 @@ struct vkr_context {
 };
 
 static uint32_t vkr_renderer_flags;
-
-/* this must match how the parser stores the id */
-static bool
-is_object_id_in_place(VkObjectType type)
-{
-   switch (type) {
-   case VK_OBJECT_TYPE_INSTANCE:
-   case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
-   case VK_OBJECT_TYPE_DEVICE:
-   case VK_OBJECT_TYPE_QUEUE:
-   case VK_OBJECT_TYPE_COMMAND_BUFFER:
-      return sizeof(VkInstance) >= sizeof(vkr_parser_object_id);
-   default:
-      return true;
-   }
-}
 
 struct object_array {
    uint32_t count;
@@ -390,7 +362,7 @@ object_array_init(struct object_array *arr,
    }
 
    for (uint32_t i = 0; i < count; i++) {
-      struct vkr_parser_object *obj = calloc(1, obj_size);
+      struct vkr_object *obj = calloc(1, obj_size);
       if (!obj) {
          arr->count = i;
          object_array_fini(arr, true);
@@ -398,8 +370,8 @@ object_array_init(struct object_array *arr,
       }
 
       obj->type = obj_type;
-      obj->id = vkr_parser_handle_load_id((char *)handles + handle_size * i,
-            is_object_id_in_place(obj->type));
+      obj->id = vkr_cs_handle_load_id(
+            (const void **)((char *)handles + handle_size * i), obj->type);
 
       arr->objects[i] = obj;
    }
@@ -418,18 +390,240 @@ vkr_dispatch_vkSetReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, s
    if (!att)
       return;
 
-   vkr_parser_set_reply_stream(&ctx->parser,
-                               att->resource->iov,
-                               att->resource->iov_count,
-                               args->pStream->offset,
-                               args->pStream->size);
+   vkr_cs_encoder_set_stream(&ctx->encoder,
+                             att->resource->iov,
+                             att->resource->iov_count,
+                             args->pStream->offset,
+                             args->pStream->size);
 }
 
 static void
-vkr_dispatch_vkSeekReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkSeekReplyCommandStreamMESA *args)
+vkr_dispatch_vkSeekReplyCommandStreamMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkSeekReplyCommandStreamMESA *args)
 {
    struct vkr_context *ctx = dispatch->data;
-   vkr_parser_seek_reply_stream(&ctx->parser, args->position);
+   vkr_cs_encoder_seek_stream(&ctx->encoder, args->position);
+}
+
+static void *
+copy_command_stream(struct vkr_context *ctx,
+                    const VkCommandStreamDescriptionMESA *stream)
+{
+   struct vkr_resource_attachment *att;
+   struct virgl_resource *res;
+
+   att = util_hash_table_get(ctx->resource_table,
+                             uintptr_to_pointer(stream->resourceId));
+   if (!att)
+      return NULL;
+   res = att->resource;
+
+   /* seek to offset */
+   size_t iov_offset = stream->offset;
+   const struct iovec *iov = NULL;
+   for (int i = 0; i < res->iov_count; i++) {
+      if (iov_offset < res->iov[i].iov_len) {
+         iov = &res->iov[i];
+         break;
+      }
+      iov_offset -= res->iov[i].iov_len;
+   }
+   if (!iov)
+      return NULL;
+
+   /* XXX until the decoder supports scatter-gather and is robust enough,
+    * always make a copy in case the caller modifies the commands while we
+    * parse
+    */
+   uint8_t *data = malloc(stream->size);
+   if (!data)
+      return NULL;
+
+   uint32_t copied = 0;
+   while (true) {
+      const size_t s = MIN2(stream->size - copied, iov->iov_len - iov_offset);
+      memcpy(data + copied, (const uint8_t *)iov->iov_base + iov_offset, s);
+
+      copied += s;
+      if (copied == stream->size) {
+         break;
+      } else if (iov == &res->iov[res->iov_count - 1]) {
+         free(data);
+         return NULL;
+      }
+
+      iov++;
+      iov_offset = 0;
+   }
+
+   return data;
+}
+
+static void
+vkr_dispatch_vkExecuteCommandStreamsMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkExecuteCommandStreamsMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+
+   /* note that nested vkExecuteCommandStreamsMESA is not allowed */
+   if (!vkr_cs_decoder_push_state(&ctx->decoder)) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   for (uint32_t i = 0; i < args->streamCount; i++) {
+      const VkCommandStreamDescriptionMESA *stream = &args->pStreams[i];
+
+      if (args->pReplyPositions)
+         vkr_cs_encoder_seek_stream(&ctx->encoder, args->pReplyPositions[i]);
+
+      if (!stream->size)
+         continue;
+
+      void *data = copy_command_stream(ctx, stream);
+      if (!data) {
+         vkr_cs_decoder_set_fatal(&ctx->decoder);
+         break;
+      }
+
+      vkr_cs_decoder_set_stream(&ctx->decoder, data, stream->size);
+      while (vkr_cs_decoder_has_command(&ctx->decoder)) {
+         vn_dispatch_command(&ctx->dispatch);
+         if (vkr_cs_decoder_get_fatal(&ctx->decoder))
+            break;
+      }
+
+      free(data);
+
+      if (vkr_cs_decoder_get_fatal(&ctx->decoder))
+         break;
+   }
+
+   vkr_cs_decoder_pop_state(&ctx->decoder);
+}
+
+static struct vkr_ring *
+lookup_ring(struct vkr_context *ctx, uint64_t ring_id)
+{
+   struct vkr_ring *ring;
+   LIST_FOR_EACH_ENTRY(ring, &ctx->rings, head) {
+      if (ring->id == ring_id)
+         return ring;
+   }
+   return NULL;
+}
+
+static void
+vkr_dispatch_vkCreateRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkCreateRingMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   const VkRingCreateInfoMESA *info = args->pCreateInfo;
+   const struct vkr_resource_attachment *att;
+   uint8_t *shared;
+   size_t size;
+   struct vkr_ring *ring;
+
+   att = util_hash_table_get(ctx->resource_table,
+                             uintptr_to_pointer(info->resourceId));
+   if (!att) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+   /* TODO */
+   if (att->resource->iov_count != 1) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   shared = att->resource->iov[0].iov_base;
+   size = att->resource->iov[0].iov_len;
+   if (info->offset > size || info->size > size - info->offset) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   shared += info->offset;
+   size = info->size;
+   if (info->headOffset > size ||
+       info->tailOffset > size ||
+       info->statusOffset > size ||
+       info->bufferOffset > size ||
+       info->extraOffset > size) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+   if (sizeof(uint32_t) > size - info->headOffset ||
+       sizeof(uint32_t) > size - info->tailOffset ||
+       sizeof(uint32_t) > size - info->statusOffset ||
+       info->bufferSize > size - info->bufferOffset ||
+       info->extraSize > size - info->extraOffset) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+   if (!info->bufferSize || !util_is_power_of_two(info->bufferSize)) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   const struct vkr_ring_layout layout = {
+      .head_offset = info->headOffset,
+      .tail_offset = info->tailOffset,
+      .status_offset = info->statusOffset,
+      .buffer_offset = info->bufferOffset,
+      .buffer_size = info->bufferSize,
+      .extra_offset = info->extraOffset,
+      .extra_size = info->extraSize,
+   };
+
+   ring = vkr_ring_create(&layout, shared, &ctx->base, info->idleTimeout);
+   if (!ring) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   ring->id = args->ring;
+   list_addtail(&ring->head, &ctx->rings);
+
+   vkr_ring_start(ring);
+}
+
+static void
+vkr_dispatch_vkDestroyRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkDestroyRingMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_ring *ring = lookup_ring(ctx, args->ring);
+   if (!ring || !vkr_ring_stop(ring)) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   list_del(&ring->head);
+   vkr_ring_destroy(ring);
+}
+
+static void
+vkr_dispatch_vkNotifyRingMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkNotifyRingMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_ring *ring = lookup_ring(ctx, args->ring);
+   if (!ring) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   vkr_ring_notify(ring);
+}
+
+static void
+vkr_dispatch_vkWriteRingExtraMESA(struct vn_dispatch_context *dispatch, struct vn_command_vkWriteRingExtraMESA *args)
+{
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_ring *ring = lookup_ring(ctx, args->ring);
+   if (!ring) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   if (!vkr_ring_write_extra(ring, args->offset, args->value))
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
 static void
@@ -475,7 +669,7 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
    struct vkr_context *ctx = dispatch->data;
 
    if (ctx->instance) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -514,8 +708,8 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
    ((VkInstanceCreateInfo *)args->pCreateInfo)->pApplicationInfo = &app_info;
 
    instance->base.type = VK_OBJECT_TYPE_INSTANCE;
-   instance->base.id = vkr_parser_handle_load_id(args->pInstance,
-         is_object_id_in_place(instance->base.type));
+   instance->base.id = vkr_cs_handle_load_id((const void **)args->pInstance,
+                                             instance->base.type);
 
    vn_replace_vkCreateInstance_args_handle(args);
    args->ret = vkCreateInstance(args->pCreateInfo, NULL, &instance->base.instance);
@@ -541,7 +735,7 @@ vkr_dispatch_vkDestroyInstance(struct vn_dispatch_context *dispatch, struct vn_c
    struct vkr_instance *instance = (struct vkr_instance *)args->instance;
 
    if (ctx->instance != instance) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -666,7 +860,7 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
 
    struct vkr_instance *instance = (struct vkr_instance *)args->instance;
    if (instance != ctx->instance) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -692,12 +886,13 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
    uint32_t i;
    for (i = 0; i < count; i++) {
       struct vkr_physical_device *physical_dev = instance->physical_devices[i];
-      const vkr_parser_object_id id = vkr_parser_handle_load_id(&args->pPhysicalDevices[i],
-            is_object_id_in_place(VK_OBJECT_TYPE_PHYSICAL_DEVICE));
+      const vkr_object_id id = vkr_cs_handle_load_id(
+            (const void **)&args->pPhysicalDevices[i],
+            VK_OBJECT_TYPE_PHYSICAL_DEVICE);
 
       if (physical_dev) {
          if (physical_dev->base.id != id) {
-            vkr_parser_set_error(&ctx->parser);
+            vkr_cs_decoder_set_fatal(&ctx->decoder);
             break;
          }
          continue;
@@ -740,7 +935,7 @@ vkr_dispatch_vkEnumeratePhysicalDeviceGroups(struct vn_dispatch_context *dispatc
 
    struct vkr_instance *instance = (struct vkr_instance *)args->instance;
    if (instance != ctx->instance) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -777,8 +972,8 @@ vkr_dispatch_vkEnumeratePhysicalDeviceGroups(struct vn_dispatch_context *dispatc
       for (uint32_t j = 0; j < props->physicalDeviceCount; j++) {
          const struct vkr_physical_device *physical_dev =
             vkr_instance_lookup_physical_device(instance, props->physicalDevices[j]);
-         vkr_parser_handle_store_id(&out->physicalDevices[j], physical_dev->base.id,
-            is_object_id_in_place(VK_OBJECT_TYPE_PHYSICAL_DEVICE));
+         vkr_cs_handle_store_id((void **)&out->physicalDevices[j], physical_dev->base.id,
+                                VK_OBJECT_TYPE_PHYSICAL_DEVICE);
       }
    }
 
@@ -793,11 +988,11 @@ vkr_dispatch_vkEnumerateDeviceExtensionProperties(struct vn_dispatch_context *di
 
    struct vkr_physical_device *physical_dev = (struct vkr_physical_device *)args->physicalDevice;
    if (!physical_dev || physical_dev->base.type != VK_OBJECT_TYPE_PHYSICAL_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
    if (args->pLayerName) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1096,7 +1291,7 @@ vkr_queue_destroy(struct vkr_context *ctx,
 static struct vkr_queue *
 vkr_queue_create(struct vkr_context *ctx,
                  struct vkr_device *dev,
-                 vkr_parser_object_id id,
+                 vkr_object_id id,
                  VkQueue handle,
                  uint32_t family,
                  uint32_t index)
@@ -1164,7 +1359,7 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
 
    struct vkr_physical_device *physical_dev = (struct vkr_physical_device *)args->physicalDevice;
    if (!physical_dev || physical_dev->base.type != VK_OBJECT_TYPE_PHYSICAL_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1203,8 +1398,7 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
    }
 
    dev->base.type = VK_OBJECT_TYPE_DEVICE;
-   dev->base.id = vkr_parser_handle_load_id(args->pDevice,
-         is_object_id_in_place(dev->base.type));
+   dev->base.id = vkr_cs_handle_load_id((const void **)args->pDevice, dev->base.type);
 
    vn_replace_vkCreateDevice_args_handle(args);
    args->ret = vkCreateDevice(args->physicalDevice, args->pCreateInfo, NULL, &dev->base.device);
@@ -1275,9 +1469,14 @@ vkr_dispatch_vkDestroyDevice(struct vn_dispatch_context *dispatch, struct vn_com
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
       if (dev)
-         vkr_parser_set_error(&ctx->parser);
+         vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
+
+   /* TODO cleanup all objects here? */
+   struct vkr_queue *queue, *queue_tmp;
+   LIST_FOR_EACH_ENTRY_SAFE(queue, queue_tmp, &dev->queues, head)
+      vkr_queue_destroy(ctx, queue);
 
    struct vkr_queue_sync *sync, *sync_tmp;
    LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &dev->free_syncs, head) {
@@ -1287,11 +1486,6 @@ vkr_dispatch_vkDestroyDevice(struct vn_dispatch_context *dispatch, struct vn_com
 
    vn_replace_vkDestroyDevice_args_handle(args);
    vkDestroyDevice(args->device, NULL);
-
-   /* TODO cleanup all objects instead? */
-   struct vkr_queue *queue, *queue_tmp;
-   LIST_FOR_EACH_ENTRY_SAFE(queue, queue_tmp, &dev->queues, head)
-      vkr_queue_destroy(ctx, queue);
 
    util_hash_table_remove_u64(ctx->object_table, dev->base.id);
 }
@@ -1304,10 +1498,10 @@ vkr_dispatch_vkGetDeviceGroupPeerMemoryFeatures(UNUSED struct vn_dispatch_contex
 }
 
 static void
-vkr_dispatch_vkDeviceWaitIdle(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkDeviceWaitIdle *args)
+vkr_dispatch_vkDeviceWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkDeviceWaitIdle *args)
 {
-   vn_replace_vkDeviceWaitIdle_args_handle(args);
-   args->ret = vkDeviceWaitIdle(args->device);
+   struct vkr_context *ctx = dispatch->data;
+   vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
 static void
@@ -1317,12 +1511,12 @@ vkr_dispatch_vkGetDeviceQueue(struct vn_dispatch_context *dispatch, struct vn_co
 
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
-   const vkr_parser_object_id id =
-      vkr_parser_handle_load_id(args->pQueue, is_object_id_in_place(VK_OBJECT_TYPE_QUEUE));
+   const vkr_object_id id =
+      vkr_cs_handle_load_id((const void **)args->pQueue, VK_OBJECT_TYPE_QUEUE);
 
    VkQueue handle;
    vn_replace_vkGetDeviceQueue_args_handle(args);
@@ -1339,12 +1533,12 @@ vkr_dispatch_vkGetDeviceQueue2(struct vn_dispatch_context *dispatch, struct vn_c
 
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
-   const vkr_parser_object_id id =
-      vkr_parser_handle_load_id(args->pQueue, is_object_id_in_place(VK_OBJECT_TYPE_QUEUE));
+   const vkr_object_id id =
+      vkr_cs_handle_load_id((const void **)args->pQueue, VK_OBJECT_TYPE_QUEUE);
 
    VkQueue handle;
    vn_replace_vkGetDeviceQueue2_args_handle(args);
@@ -1370,10 +1564,10 @@ vkr_dispatch_vkQueueBindSparse(UNUSED struct vn_dispatch_context *dispatch, stru
 }
 
 static void
-vkr_dispatch_vkQueueWaitIdle(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkQueueWaitIdle *args)
+vkr_dispatch_vkQueueWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkQueueWaitIdle *args)
 {
-   vn_replace_vkQueueWaitIdle_args_handle(args);
-   args->ret = vkQueueWaitIdle(args->queue);
+   struct vkr_context *ctx = dispatch->data;
+   vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
 static void
@@ -1383,7 +1577,7 @@ vkr_dispatch_vkAllocateMemory(struct vn_dispatch_context *dispatch, struct vn_co
 
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1404,8 +1598,7 @@ vkr_dispatch_vkAllocateMemory(struct vn_dispatch_context *dispatch, struct vn_co
    }
 
    mem->base.type = VK_OBJECT_TYPE_DEVICE_MEMORY;
-   mem->base.id = vkr_parser_handle_load_id(args->pMemory,
-         is_object_id_in_place(mem->base.type));
+   mem->base.id = vkr_cs_handle_load_id((const void **)args->pMemory, mem->base.type);
 
    vn_replace_vkAllocateMemory_args_handle(args);
    args->ret = vkAllocateMemory(args->device, args->pAllocateInfo, NULL, &mem->base.device_memory);
@@ -1451,7 +1644,7 @@ vkr_dispatch_vkFreeMemory(struct vn_dispatch_context *dispatch, struct vn_comman
    struct vkr_device_memory *mem = (struct vkr_device_memory *)(uintptr_t)args->memory;
    if (!mem || mem->base.type != VK_OBJECT_TYPE_DEVICE_MEMORY) {
       if (mem)
-         vkr_parser_set_error(&ctx->parser);
+         vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1476,7 +1669,7 @@ vkr_dispatch_vkGetDeviceMemoryOpaqueCaptureAddress(struct vn_dispatch_context *d
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1518,7 +1711,7 @@ vkr_dispatch_vkGetBufferOpaqueCaptureAddress(struct vn_dispatch_context *dispatc
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1532,7 +1725,7 @@ vkr_dispatch_vkGetBufferDeviceAddress(struct vn_dispatch_context *dispatch, stru
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1624,8 +1817,15 @@ vkr_dispatch_vkGetFenceStatus(UNUSED struct vn_dispatch_context *dispatch, struc
 }
 
 static void
-vkr_dispatch_vkWaitForFences(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkWaitForFences *args)
+vkr_dispatch_vkWaitForFences(struct vn_dispatch_context *dispatch, struct vn_command_vkWaitForFences *args)
 {
+   struct vkr_context *ctx = dispatch->data;
+
+   if (args->timeout) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
    vn_replace_vkWaitForFences_args_handle(args);
    args->ret = vkWaitForFences(args->device, args->fenceCount, args->pFences, args->waitAll, args->timeout);
 }
@@ -1656,7 +1856,7 @@ vkr_dispatch_vkGetSemaphoreCounterValue(struct vn_dispatch_context *dispatch, st
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1669,8 +1869,14 @@ vkr_dispatch_vkWaitSemaphores(struct vn_dispatch_context *dispatch, struct vn_co
 {
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
+
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
+   if (args->timeout) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1684,7 +1890,7 @@ vkr_dispatch_vkSignalSemaphore(struct vn_dispatch_context *dispatch, struct vn_c
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1699,7 +1905,7 @@ vkr_dispatch_vkCreateBuffer(struct vn_dispatch_context *dispatch, struct vn_comm
 
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1755,7 +1961,7 @@ vkr_dispatch_vkCreateImage(struct vn_dispatch_context *dispatch, struct vn_comma
 
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1904,7 +2110,7 @@ vkr_dispatch_vkResetDescriptorPool(struct vn_dispatch_context *dispatch, struct 
 
    struct vkr_descriptor_pool *pool = (struct vkr_descriptor_pool *)(uintptr_t)args->descriptorPool;
    if (!pool || pool->base.type != VK_OBJECT_TYPE_DESCRIPTOR_POOL) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1924,7 +2130,7 @@ vkr_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_context *dispatch, stru
 
    struct vkr_descriptor_pool *pool = (struct vkr_descriptor_pool *)(uintptr_t)args->pAllocateInfo->descriptorPool;
    if (!pool || pool->base.type != VK_OBJECT_TYPE_DESCRIPTOR_POOL) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -1970,7 +2176,7 @@ vkr_dispatch_vkFreeDescriptorSets(struct vn_dispatch_context *dispatch, struct v
       if (!set)
          continue;
       if (set->base.type != VK_OBJECT_TYPE_DESCRIPTOR_SET) {
-         vkr_parser_set_error(&ctx->parser);
+         vkr_cs_decoder_set_fatal(&ctx->decoder);
          return;
       }
 
@@ -2029,7 +2235,7 @@ vkr_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *dispatch, struct vn
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2039,8 +2245,7 @@ vkr_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *dispatch, struct vn
       return;
    }
    pass->base.type = VK_OBJECT_TYPE_RENDER_PASS;
-   pass->base.id = vkr_parser_handle_load_id(args->pRenderPass,
-         is_object_id_in_place(pass->base.type));
+   pass->base.id = vkr_cs_handle_load_id((const void **)args->pRenderPass, pass->base.type);
 
    vn_replace_vkCreateRenderPass2_args_handle(args);
    args->ret = dev->CreateRenderPass2(args->device, args->pCreateInfo,
@@ -2164,7 +2369,7 @@ vkr_dispatch_vkResetQueryPool(struct vn_dispatch_context *dispatch, struct vn_co
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2371,13 +2576,13 @@ vkr_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_context *dispatch, stru
 
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
    struct vkr_command_pool *pool = (struct vkr_command_pool *)(uintptr_t)args->pAllocateInfo->commandPool;
    if (!pool || pool->base.type != VK_OBJECT_TYPE_COMMAND_POOL) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2424,7 +2629,7 @@ vkr_dispatch_vkFreeCommandBuffers(struct vn_dispatch_context *dispatch, struct v
       if (!cmd)
          continue;
       if (cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-         vkr_parser_set_error(&ctx->parser);
+         vkr_cs_decoder_set_fatal(&ctx->decoder);
          return;
       }
 
@@ -2789,7 +2994,7 @@ vkr_dispatch_vkCmdBeginRenderPass2(struct vn_dispatch_context *dispatch, struct 
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2803,7 +3008,7 @@ vkr_dispatch_vkCmdNextSubpass2(struct vn_dispatch_context *dispatch, struct vn_c
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2817,7 +3022,7 @@ vkr_dispatch_vkCmdEndRenderPass2(struct vn_dispatch_context *dispatch, struct vn
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2831,7 +3036,7 @@ vkr_dispatch_vkCmdDrawIndirectCount(struct vn_dispatch_context *dispatch, struct
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2845,7 +3050,7 @@ vkr_dispatch_vkCmdDrawIndexedIndirectCount(struct vn_dispatch_context *dispatch,
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2859,7 +3064,7 @@ vkr_dispatch_vkCmdBindTransformFeedbackBuffersEXT(struct vn_dispatch_context *di
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2873,7 +3078,7 @@ vkr_dispatch_vkCmdBeginTransformFeedbackEXT(struct vn_dispatch_context *dispatch
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2887,7 +3092,7 @@ vkr_dispatch_vkCmdEndTransformFeedbackEXT(struct vn_dispatch_context *dispatch, 
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2901,7 +3106,7 @@ vkr_dispatch_vkCmdBeginQueryIndexedEXT(struct vn_dispatch_context *dispatch, str
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2915,7 +3120,7 @@ vkr_dispatch_vkCmdEndQueryIndexedEXT(struct vn_dispatch_context *dispatch, struc
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2929,7 +3134,7 @@ vkr_dispatch_vkCmdDrawIndirectByteCountEXT(struct vn_dispatch_context *dispatch,
    struct vkr_context *ctx = dispatch->data;
    struct vkr_command_buffer *cmd = (struct vkr_command_buffer *)args->commandBuffer;
    if (!cmd || cmd->base.type != VK_OBJECT_TYPE_COMMAND_BUFFER) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2943,7 +3148,7 @@ vkr_dispatch_vkGetImageDrmFormatModifierPropertiesEXT(struct vn_dispatch_context
    struct vkr_context *ctx = dispatch->data;
    struct vkr_device *dev = (struct vkr_device *)args->device;
    if (!dev || dev->base.type != VK_OBJECT_TYPE_DEVICE) {
-      vkr_parser_set_error(&ctx->parser);
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
 
@@ -2965,11 +3170,16 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
    dispatch->data = ctx;
    dispatch->debug_log = vkr_dispatch_debug_log;
 
-   dispatch->cs = (struct vn_cs *)&ctx->parser;
+   dispatch->encoder = (struct vn_cs_encoder *)&ctx->encoder;
+   dispatch->decoder = (struct vn_cs_decoder *)&ctx->decoder;
 
    dispatch->dispatch_vkSetReplyCommandStreamMESA = vkr_dispatch_vkSetReplyCommandStreamMESA;
    dispatch->dispatch_vkSeekReplyCommandStreamMESA = vkr_dispatch_vkSeekReplyCommandStreamMESA;
-   dispatch->dispatch_vkExecuteCommandStreamsMESA = NULL;
+   dispatch->dispatch_vkExecuteCommandStreamsMESA = vkr_dispatch_vkExecuteCommandStreamsMESA;
+   dispatch->dispatch_vkCreateRingMESA = vkr_dispatch_vkCreateRingMESA;
+   dispatch->dispatch_vkDestroyRingMESA = vkr_dispatch_vkDestroyRingMESA;
+   dispatch->dispatch_vkNotifyRingMESA = vkr_dispatch_vkNotifyRingMESA;
+   dispatch->dispatch_vkWriteRingExtraMESA = vkr_dispatch_vkWriteRingExtraMESA;
 
    dispatch->dispatch_vkEnumerateInstanceVersion = vkr_dispatch_vkEnumerateInstanceVersion;
    dispatch->dispatch_vkEnumerateInstanceExtensionProperties = vkr_dispatch_vkEnumerateInstanceExtensionProperties;
@@ -3188,7 +3398,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
 }
 
 static int
-vkr_context_submit_fence(struct virgl_context *base,
+vkr_context_submit_fence_locked(struct virgl_context *base,
                          uint32_t flags,
                          uint64_t queue_id,
                          void *fence_cookie)
@@ -3279,8 +3489,23 @@ vkr_context_submit_fence(struct virgl_context *base,
    return 0;
 }
 
+static int
+vkr_context_submit_fence(struct virgl_context *base,
+                         uint32_t flags,
+                         uint64_t queue_id,
+                         void *fence_cookie)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   int ret;
+
+   mtx_lock(&ctx->mutex);
+   ret = vkr_context_submit_fence_locked(base, flags, queue_id, fence_cookie);
+   mtx_unlock(&ctx->mutex);
+   return ret;
+}
+
 static void
-vkr_context_retire_fences(UNUSED struct virgl_context *base)
+vkr_context_retire_fences_locked(UNUSED struct virgl_context *base)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
    struct vkr_queue_sync *sync, *sync_tmp;
@@ -3320,6 +3545,15 @@ vkr_context_retire_fences(UNUSED struct virgl_context *base)
    }
 }
 
+static void
+vkr_context_retire_fences(struct virgl_context *base)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   mtx_lock(&ctx->mutex);
+   vkr_context_retire_fences_locked(base);
+   mtx_unlock(&ctx->mutex);
+}
+
 static int vkr_context_get_fencing_fd(struct virgl_context *base)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
@@ -3333,23 +3567,27 @@ static int vkr_context_submit_cmd(struct virgl_context *base,
    struct vkr_context *ctx = (struct vkr_context *)base;
    int ret = 0;
 
-   vkr_parser_set_command_stream(&ctx->parser, buffer, size);
+   mtx_lock(&ctx->mutex);
 
-   while (vkr_parser_has_command(&ctx->parser)) {
+   vkr_cs_decoder_set_stream(&ctx->decoder, buffer, size);
+
+   while (vkr_cs_decoder_has_command(&ctx->decoder)) {
       vn_dispatch_command(&ctx->dispatch);
       /* TODO consider the client malicious and disconnect it */
-      if (vkr_parser_has_error(&ctx->parser)) {
+      if (vkr_cs_decoder_get_fatal(&ctx->decoder)) {
          ret = EINVAL;
          break;
       }
    }
 
-   vkr_parser_reset(&ctx->parser);
+   vkr_cs_decoder_reset(&ctx->decoder);
+
+   mtx_unlock(&ctx->mutex);
 
    return ret;
 }
 
-static int vkr_context_get_blob(struct virgl_context *base,
+static int vkr_context_get_blob_locked(struct virgl_context *base,
                                 uint64_t blob_id,
                                 uint32_t flags,
                                 struct virgl_context_blob *blob)
@@ -3442,6 +3680,23 @@ static int vkr_context_get_blob(struct virgl_context *base,
    return 0;
 }
 
+static int vkr_context_get_blob(struct virgl_context *base,
+                                uint64_t blob_id,
+                                uint32_t flags,
+                                struct virgl_context_blob *blob)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   int ret;
+
+   mtx_lock(&ctx->mutex);
+   ret = vkr_context_get_blob_locked(base, blob_id, flags, blob);
+   /* XXX unlock in vkr_context_get_blob_done on success */
+   if (ret)
+      mtx_unlock(&ctx->mutex);
+
+   return ret;
+}
+
 static void vkr_context_get_blob_done(struct virgl_context *base,
                                       uint32_t res_id,
                                       struct virgl_context_blob *blob)
@@ -3449,17 +3704,15 @@ static void vkr_context_get_blob_done(struct virgl_context *base,
    struct vkr_context *ctx = (struct vkr_context *)base;
    struct vkr_device_memory *mem = blob->renderer_data;
 
-   if (!res_id) {
-      close(blob->u.fd);
-      return;
-   }
-
    mem->exported = true;
    mem->exported_res_id = res_id;
    list_add(&mem->head, &ctx->newly_exported_memories);
+
+   /* XXX locked in vkr_context_get_blob */
+   mtx_unlock(&ctx->mutex);
 }
 
-static int vkr_context_transfer_3d(struct virgl_context *base,
+static int vkr_context_transfer_3d_locked(struct virgl_context *base,
                                    struct virgl_resource *res,
                                    const struct vrend_transfer_info *info,
                                    int transfer_mode)
@@ -3525,7 +3778,22 @@ static int vkr_context_transfer_3d(struct virgl_context *base,
    return 0;
 }
 
-static void vkr_context_attach_resource(struct virgl_context *base,
+static int vkr_context_transfer_3d(struct virgl_context *base,
+                                   struct virgl_resource *res,
+                                   const struct vrend_transfer_info *info,
+                                   int transfer_mode)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   int ret;
+
+   mtx_lock(&ctx->mutex);
+   ret = vkr_context_transfer_3d_locked(base, res, info, transfer_mode);
+   mtx_unlock(&ctx->mutex);
+
+   return ret;
+}
+
+static void vkr_context_attach_resource_locked(struct virgl_context *base,
                                         struct virgl_resource *res)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
@@ -3567,18 +3835,35 @@ static void vkr_context_attach_resource(struct virgl_context *base,
                        att);
 }
 
+static void vkr_context_attach_resource(struct virgl_context *base,
+                                        struct virgl_resource *res)
+{
+   struct vkr_context *ctx = (struct vkr_context *)base;
+   mtx_lock(&ctx->mutex);
+   vkr_context_attach_resource_locked(base, res);
+   mtx_unlock(&ctx->mutex);
+}
+
 static void vkr_context_detach_resource(struct virgl_context *base,
                                         struct virgl_resource *res)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
 
+   mtx_lock(&ctx->mutex);
    util_hash_table_remove(ctx->resource_table,
                           uintptr_to_pointer(res->res_id));
+   mtx_unlock(&ctx->mutex);
 }
 
 static void vkr_context_destroy(struct virgl_context *base)
 {
    struct vkr_context *ctx = (struct vkr_context *)base;
+
+   struct vkr_ring *ring, *ring_tmp;
+   LIST_FOR_EACH_ENTRY_SAFE(ring, ring_tmp, &ctx->rings, head) {
+      vkr_ring_stop(ring);
+      vkr_ring_destroy(ring);
+   }
 
    /* TODO properly destroy all Vulkan objects */
    util_hash_table_destroy(ctx->resource_table);
@@ -3591,8 +3876,9 @@ static void vkr_context_destroy(struct virgl_context *base)
    if (ctx->fence_eventfd >= 0)
       close(ctx->fence_eventfd);
 
-   vkr_parser_fini(&ctx->parser);
+   vkr_cs_decoder_fini(&ctx->decoder);
 
+   mtx_destroy(&ctx->mutex);
    free(ctx->debug_name);
    free(ctx);
 }
@@ -3616,7 +3902,7 @@ vkr_context_init_base(struct vkr_context *ctx)
 static void
 destroy_func_object(void *val)
 {
-   struct vkr_parser_object *obj = val;
+   struct vkr_object *obj = val;
    free(obj);
 }
 
@@ -3644,11 +3930,21 @@ vkr_context_create(size_t debug_len, const char *debug_name)
       return NULL;
 
    ctx->debug_name = malloc(debug_len + 1);
-   if (!ctx->debug_name)
-      goto fail;
+   if (!ctx->debug_name) {
+      free(ctx);
+      return NULL;
+   }
 
    memcpy(ctx->debug_name, debug_name, debug_len);
    ctx->debug_name[debug_len] = '\0';
+
+   if (mtx_init(&ctx->mutex, mtx_plain) != thrd_success) {
+      free(ctx->debug_name);
+      free(ctx);
+      return NULL;
+   }
+
+   list_inithead(&ctx->rings);
 
    ctx->object_table =
       util_hash_table_create_u64(destroy_func_object);
@@ -3661,7 +3957,8 @@ vkr_context_create(size_t debug_len, const char *debug_name)
 
    list_inithead(&ctx->newly_exported_memories);
 
-   vkr_parser_init(&ctx->parser, ctx->object_table);
+   vkr_cs_decoder_init(&ctx->decoder, ctx->object_table);
+   vkr_cs_encoder_init(&ctx->encoder, &ctx->decoder.fatal_error);
 
    vkr_context_init_base(ctx);
    vkr_context_init_dispatch(ctx);
@@ -3685,6 +3982,7 @@ fail:
       util_hash_table_destroy_u64(ctx->object_table);
    if (ctx->resource_table)
       util_hash_table_destroy(ctx->resource_table);
+   mtx_destroy(&ctx->mutex);
    free(ctx->debug_name);
    free(ctx);
    return NULL;
