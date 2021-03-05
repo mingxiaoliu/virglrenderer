@@ -12,13 +12,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "os/os_misc.h"
 #include "util/u_hash_table.h"
 #include "util/u_math.h"
-#include "util/u_memory.h"
 
 #include "vkr_object.h"
-#include "vrend_iov.h"
+
+struct iovec;
 
 struct vkr_cs_encoder {
    bool *fatal_error;

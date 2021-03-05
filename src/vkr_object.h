@@ -13,6 +13,7 @@
 
 typedef uint64_t vkr_object_id;
 
+/* base class for all objects */
 struct vkr_object {
    VkObjectType type;
    vkr_object_id id;

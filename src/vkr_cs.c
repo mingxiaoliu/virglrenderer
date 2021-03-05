@@ -5,6 +5,10 @@
 
 #include "vkr_cs.h"
 
+#include "util/u_memory.h"
+
+#include "vrend_iov.h"
+
 void
 vkr_cs_encoder_set_stream(struct vkr_cs_encoder *enc,
                           const struct iovec *iov,
