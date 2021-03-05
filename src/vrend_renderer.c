@@ -336,8 +336,6 @@ struct global_renderer_state {
    struct vrend_fence *fence_waiting;
    pipe_condvar fence_cond;
 
-   struct list_head fence_cpu_list;
-
    struct vrend_context *ctx0;
 
    pipe_thread sync_thread;
@@ -5863,18 +5861,14 @@ static void vrend_free_sync_thread(void)
 static void free_fence_locked(struct vrend_fence *fence)
 {
    list_del(&fence->fences);
-
-   if (!(fence->flags & VIRGL_RENDERER_FENCE_FLAG_CPU)) {
 #ifdef HAVE_EPOXY_EGL_H
-      if (vrend_state.use_egl_fence) {
-         virgl_egl_fence_destroy(egl, fence->eglsyncobj);
-      } else
+   if (vrend_state.use_egl_fence) {
+      virgl_egl_fence_destroy(egl, fence->eglsyncobj);
+   } else
 #endif
-      {
-         glDeleteSync(fence->glsyncobj);
-      }
+   {
+      glDeleteSync(fence->glsyncobj);
    }
-
    free(fence);
 }
 
@@ -5888,8 +5882,6 @@ static void vrend_free_fences(void)
    LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_list, fences)
       free_fence_locked(fence);
    LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_wait_list, fences)
-      free_fence_locked(fence);
-   LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_cpu_list, fences)
       free_fence_locked(fence);
 }
 
@@ -5917,11 +5909,6 @@ static void vrend_free_fences_for_context(struct vrend_context *ctx)
          if (fence->ctx == ctx)
             free_fence_locked(fence);
       }
-   }
-
-   LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_cpu_list, fences) {
-      if (fence->ctx == ctx)
-         free_fence_locked(fence);
    }
 }
 
@@ -6228,7 +6215,6 @@ int vrend_renderer_init(const struct vrend_if_cbs *cbs, uint32_t flags)
    vrend_clicbs->destroy_gl_context(gl_context);
    list_inithead(&vrend_state.fence_list);
    list_inithead(&vrend_state.fence_wait_list);
-   list_inithead(&vrend_state.fence_cpu_list);
    list_inithead(&vrend_state.waiting_query_list);
    /* create 0 context */
    vrend_state.ctx0 = vrend_create_context(0, strlen("HOST"), "HOST");
@@ -9217,17 +9203,6 @@ int vrend_renderer_create_fence(struct vrend_context *ctx,
    fence->flags = flags;
    fence->fence_cookie = fence_cookie;
 
-   if (flags & VIRGL_RENDERER_FENCE_FLAG_CPU) {
-      fence->glsyncobj = NULL;
-      list_addtail(&fence->fences, &vrend_state.fence_cpu_list);
-      if (vrend_state.sync_thread) {
-         if (write_eventfd(vrend_state.eventfd, 1)) {
-            perror("failed to write to eventfd\n");
-         }
-      }
-      return 0;
-   }
-
 #ifdef HAVE_EPOXY_EGL_H
    if (vrend_state.use_egl_fence) {
       fence->eglsyncobj = virgl_egl_fence_create(egl);
@@ -9258,13 +9233,12 @@ int vrend_renderer_create_fence(struct vrend_context *ctx,
 
 static void vrend_renderer_check_queries(void);
 
-static bool need_fence_retire_signal_locked(struct vrend_fence *fence,
-                                            struct list_head *fence_list)
+static bool need_fence_retire_signal_locked(struct vrend_fence *fence)
 {
    struct vrend_fence *next;
 
    /* last fence */
-   if (fence->fences.next == fence_list)
+   if (fence->fences.next == &vrend_state.fence_list)
       return true;
 
    /* next fence belongs to a different context */
@@ -9298,7 +9272,7 @@ void vrend_renderer_check_fences(void)
             continue;
          }
 
-         if (need_fence_retire_signal_locked(fence, &vrend_state.fence_list)) {
+         if (need_fence_retire_signal_locked(fence)) {
             list_del(&fence->fences);
             list_addtail(&fence->fences, &retired_fences);
          } else {
@@ -9311,7 +9285,7 @@ void vrend_renderer_check_fences(void)
 
       LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_list, fences) {
          if (do_wait(fence, /* can_block */ false)) {
-            if (need_fence_retire_signal_locked(fence, &vrend_state.fence_list)) {
+            if (need_fence_retire_signal_locked(fence)) {
                list_del(&fence->fences);
                list_addtail(&fence->fences, &retired_fences);
             } else {
@@ -9321,15 +9295,6 @@ void vrend_renderer_check_fences(void)
             /* don't bother checking any subsequent ones */
             break;
          }
-      }
-   }
-
-   LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_cpu_list, fences) {
-      if (need_fence_retire_signal_locked(fence, &vrend_state.fence_cpu_list)) {
-         list_del(&fence->fences);
-         list_addtail(&fence->fences, &retired_fences);
-      } else {
-         free_fence_locked(fence);
       }
    }
 

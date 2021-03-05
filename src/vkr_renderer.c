@@ -310,7 +310,6 @@ struct vkr_context {
    struct vn_dispatch_context dispatch;
 
    int fence_eventfd;
-   struct list_head cpu_syncs;
    struct list_head busy_queues;
 
    struct vkr_instance *instance;
@@ -3402,25 +3401,6 @@ vkr_context_submit_fence_locked(struct virgl_context *base,
    struct vkr_queue *queue;
    VkResult result;
 
-   if (flags & VIRGL_RENDERER_FENCE_FLAG_CPU) {
-      if (queue_id)
-         return -EINVAL;
-
-      struct vkr_queue_sync *sync = malloc(sizeof(*sync));
-      if (!sync)
-         return -ENOMEM;
-
-      sync->fence = VK_NULL_HANDLE;
-      sync->flags = flags;
-      sync->fence_cookie = fence_cookie;
-      list_addtail(&sync->head, &ctx->cpu_syncs);
-
-      if (ctx->fence_eventfd >= 0)
-         write_eventfd(ctx->fence_eventfd, 1);
-
-      return 0;
-   }
-
    queue = util_hash_table_get_u64(ctx->object_table, queue_id);
    if (!queue)
       return -EINVAL;
@@ -3491,15 +3471,6 @@ vkr_context_retire_fences_locked(UNUSED struct virgl_context *base)
    struct vkr_context *ctx = (struct vkr_context *)base;
    struct vkr_queue_sync *sync, *sync_tmp;
    struct vkr_queue *queue, *queue_tmp;
-
-   LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &ctx->cpu_syncs, head) {
-      if (sync->head.next == &ctx->cpu_syncs ||
-          !(sync->flags & VIRGL_RENDERER_FENCE_FLAG_MERGEABLE))
-         ctx->base.fence_retire(&ctx->base, 0, sync->fence_cookie);
-
-      list_del(&sync->head);
-      free(sync);
-   }
 
    /* flush first and once because the per-queue sync threads might write to
     * it any time
@@ -3850,10 +3821,6 @@ static void vkr_context_destroy(struct virgl_context *base)
    util_hash_table_destroy(ctx->resource_table);
    util_hash_table_destroy_u64(ctx->object_table);
 
-   struct vkr_queue_sync *sync, *tmp;
-   LIST_FOR_EACH_ENTRY_SAFE(sync, tmp, &ctx->cpu_syncs, head)
-      free(sync);
-
    if (ctx->fence_eventfd >= 0)
       close(ctx->fence_eventfd);
 
@@ -3952,7 +3919,6 @@ vkr_context_create(size_t debug_len, const char *debug_name)
       ctx->fence_eventfd = -1;
    }
 
-   list_inithead(&ctx->cpu_syncs);
    list_inithead(&ctx->busy_queues);
 
    return &ctx->base;
