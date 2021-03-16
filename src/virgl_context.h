@@ -51,6 +51,7 @@ struct virgl_context_blob {
 struct virgl_context;
 
 typedef void (*virgl_context_fence_retire)(struct virgl_context *ctx,
+                                           uint32_t flags,
                                            uint64_t queue_id,
                                            void *fence_cookie);
 

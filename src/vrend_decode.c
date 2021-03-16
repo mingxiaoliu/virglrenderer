@@ -1462,11 +1462,12 @@ static int vrend_decode_pipe_resource_set_type(struct vrend_context *ctx, const 
 static void vrend_decode_ctx_init_base(struct vrend_decode_ctx *dctx,
                                        uint32_t ctx_id);
 
-static void vrend_decode_ctx_fence_retire(void *fence_cookie,
+static void vrend_decode_ctx_fence_retire(uint32_t flags,
+                                          void *fence_cookie,
                                           void *retire_data)
 {
    struct vrend_decode_ctx *dctx = retire_data;
-   dctx->base.fence_retire(&dctx->base, 0, fence_cookie);
+   dctx->base.fence_retire(&dctx->base, flags, 0, fence_cookie);
 }
 
 struct virgl_context *vrend_renderer_context_create(uint32_t handle,

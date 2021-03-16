@@ -3583,6 +3583,7 @@ vkr_context_retire_fences_locked(UNUSED struct virgl_context *base)
 
       LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &retired_syncs, head) {
          ctx->base.fence_retire(&ctx->base,
+                                sync->flags,
                                 queue->base.id,
                                 sync->fence_cookie);
          list_addtail(&sync->head, &dev->free_syncs);

@@ -9344,7 +9344,7 @@ void vrend_renderer_check_fences(void)
 
    LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &retired_fences, fences) {
       struct vrend_context *ctx = fence->ctx;
-      ctx->fence_retire(fence->fence_cookie, ctx->fence_retire_data);
+      ctx->fence_retire(fence->flags, fence->fence_cookie, ctx->fence_retire_data);
 
       free_fence_locked(fence);
    }

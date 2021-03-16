@@ -176,6 +176,7 @@ void virgl_renderer_fill_caps(uint32_t set, uint32_t version,
 }
 
 static void per_context_fence_retire(struct virgl_context *ctx,
+                                     UNUSED uint32_t flags,
                                      uint64_t queue_id,
                                      void *fence_cookie)
 {
@@ -505,7 +506,8 @@ void virgl_renderer_get_rect(int resource_id, struct iovec *iov, unsigned int nu
 }
 
 
-static void ctx0_fence_retire(void *fence_cookie,
+static void ctx0_fence_retire(UNUSED uint32_t flags,
+                              void *fence_cookie,
                               UNUSED void *retire_data)
 {
    const uint32_t fence_id = (uint32_t)(uintptr_t)fence_cookie;
