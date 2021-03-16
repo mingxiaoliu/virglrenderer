@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include "pipe/p_state.h"
+#include "util/u_double_list.h"
 #include "util/u_format.h"
 #include "util/u_math.h"
 #include "vkr_renderer.h"
@@ -46,6 +47,23 @@
 #include "virgl_resource.h"
 #include "virgl_util.h"
 
+#define VIRGL_RENDERER_FENCE_FLAG_TIMELINE (1u << 31)
+
+struct timeline_point {
+   uint32_t fence_id;
+   bool valid;
+   struct list_head fences;
+
+   struct list_head head;
+};
+
+struct timeline_fence {
+   struct virgl_context *context;
+   struct timeline_point *point;
+
+   struct list_head head;
+};
+
 struct global_state {
    bool client_initialized;
    void *cookie;
@@ -57,6 +75,9 @@ struct global_state {
    bool winsys_initialized;
    bool vrend_initialized;
    bool vkr_initialized;
+
+   struct list_head timeline;
+   struct list_head retired_timeline;
 };
 
 static struct global_state state;
@@ -176,10 +197,25 @@ void virgl_renderer_fill_caps(uint32_t set, uint32_t version,
 }
 
 static void per_context_fence_retire(struct virgl_context *ctx,
-                                     UNUSED uint32_t flags,
+                                     uint32_t flags,
                                      uint64_t queue_id,
                                      void *fence_cookie)
 {
+   if (flags & VIRGL_RENDERER_FENCE_FLAG_TIMELINE) {
+      struct timeline_fence *fence = fence_cookie;
+      struct timeline_point *point = fence->point;
+
+      list_del(&fence->head);
+      free(fence);
+
+      if (LIST_IS_EMPTY(&point->fences)) {
+         list_del(&point->head);
+         list_addtail(&point->head, &state.retired_timeline);
+      }
+
+      return;
+   }
+
    state.cbs->write_context_fence(state.cookie,
                                   ctx->ctx_id,
                                   queue_id,
@@ -254,6 +290,29 @@ int virgl_renderer_context_create(uint32_t handle, uint32_t nlen, const char *na
 void virgl_renderer_context_destroy(uint32_t handle)
 {
    TRACE_FUNC();
+
+   struct timeline_point *point, *tmp;
+   LIST_FOR_EACH_ENTRY_SAFE(point, tmp, &state.timeline, head) {
+      struct timeline_fence *fence;
+      bool found = false;
+      LIST_FOR_EACH_ENTRY(fence, &point->fences, head) {
+         if (fence->context->ctx_id == handle) {
+            found = true;
+            break;
+         }
+      }
+
+      if (found) {
+         list_del(&fence->head);
+         free(fence);
+
+         if (LIST_IS_EMPTY(&point->fences)) {
+            list_del(&point->head);
+            list_addtail(&point->head, &state.retired_timeline);
+         }
+      }
+   }
+
    virgl_context_remove(handle);
 }
 
@@ -380,13 +439,54 @@ void virgl_renderer_resource_detach_iov(int res_handle, struct iovec **iov_p, in
    virgl_resource_detach_iov(res);
 }
 
+static bool timeline_create_fence(struct virgl_context *ctx, void *data)
+{
+   struct timeline_point *point = data;
+   struct timeline_fence *fence;
+
+   fence = malloc(sizeof(*fence));
+   if (!fence) {
+      point->valid = false;
+      return false;
+   }
+   fence->context = ctx;
+   fence->point = point;
+
+   if (ctx->submit_fence(ctx, VIRGL_RENDERER_FENCE_FLAG_TIMELINE, 0, fence)) {
+      free(fence);
+      point->valid = false;
+      return false;
+   }
+
+   list_addtail(&fence->head, &point->fences);
+
+   return true;
+}
+
 int virgl_renderer_create_fence(int client_fence_id, UNUSED uint32_t ctx_id)
 {
    TRACE_FUNC();
    const uint32_t fence_id = (uint32_t)client_fence_id;
-   if (state.vrend_initialized)
-      return vrend_renderer_create_ctx0_fence(fence_id);
-   return EINVAL;
+
+   struct timeline_point *point = malloc(sizeof(*point));
+   if (!point)
+      return -ENOMEM;
+
+   point->fence_id = fence_id;
+   list_inithead(&point->fences);
+   point->valid = true;
+
+   struct virgl_context_foreach_args args;
+   args.callback = timeline_create_fence;
+   args.data = point;
+   virgl_context_foreach(&args);
+
+   if (LIST_IS_EMPTY(&point->fences))
+      list_addtail(&point->head, &state.retired_timeline);
+   else
+      list_addtail(&point->head, &state.timeline);
+
+   return point->valid ? 0 : -EINVAL;
 }
 
 int virgl_renderer_context_create_fence(uint32_t ctx_id,
@@ -565,11 +665,39 @@ void *virgl_renderer_get_cursor_data(uint32_t resource_id, uint32_t *width, uint
                                              height);
 }
 
+static bool timeline_poll(struct virgl_context *ctx, UNUSED void *data)
+{
+   ctx->retire_fences(ctx);
+   return true;
+}
+
 void virgl_renderer_poll(void)
 {
    TRACE_FUNC();
-   if (state.vrend_initialized)
-      vrend_renderer_check_fences();
+   struct virgl_context_foreach_args args;
+   args.callback = timeline_poll;
+   args.data = NULL;
+   virgl_context_foreach(&args);
+
+   if (!LIST_IS_EMPTY(&state.retired_timeline)) {
+      struct timeline_point *point, *tmp, *last = NULL;
+      LIST_FOR_EACH_ENTRY_SAFE(point, tmp, &state.retired_timeline, head) {
+         if (!point->valid) {
+            free(point);
+            continue;
+         }
+
+         if (last)
+            free(last);
+         last = point;
+      }
+      list_inithead(&state.retired_timeline);
+
+      if (last) {
+         state.cbs->write_fence(state.cookie, last->fence_id);
+         free(last);
+      }
+   }
 }
 
 void virgl_renderer_cleanup(UNUSED void *cookie)
@@ -690,6 +818,9 @@ int virgl_renderer_init(void *cookie, int flags, struct virgl_renderer_callbacks
          goto fail;
       state.vkr_initialized = true;
    }
+
+   list_inithead(&state.timeline);
+   list_inithead(&state.retired_timeline);
 
    return 0;
 
@@ -966,8 +1097,9 @@ virgl_renderer_resource_export_blob(uint32_t res_id, uint32_t *fd_type, int *fd)
 }
 
 int
-virgl_renderer_export_fence(uint32_t client_fence_id, int *fd)
+virgl_renderer_export_fence(UNUSED uint32_t client_fence_id, UNUSED int *fd)
 {
    TRACE_FUNC();
-   return vrend_renderer_export_ctx0_fence(client_fence_id, fd);
+   /* TODO find timeline_point and sync_merge all timeline_fences */
+   return -1;
 }
