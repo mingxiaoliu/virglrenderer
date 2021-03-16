@@ -169,6 +169,8 @@ struct vkr_queue {
 
    struct list_head head;
    struct list_head busy_head;
+
+   struct list_head all_head;
 };
 
 struct vkr_device_memory {
@@ -314,6 +316,9 @@ struct vkr_context {
 
    int fence_eventfd;
    struct list_head busy_queues;
+
+   struct list_head all_queues;
+   struct list_head cpu_syncs;
 
    struct vkr_instance *instance;
 };
@@ -1308,6 +1313,7 @@ vkr_queue_destroy(struct vkr_context *ctx,
 
    list_del(&queue->head);
    list_del(&queue->busy_head);
+   list_del(&queue->all_head);
 
    util_hash_table_remove_u64(ctx->object_table, queue->base.id);
 }
@@ -1369,6 +1375,7 @@ vkr_queue_create(struct vkr_context *ctx,
 
    list_addtail(&queue->head, &dev->queues);
    list_inithead(&queue->busy_head);
+   list_addtail(&queue->all_head, &ctx->all_queues);
 
    util_hash_table_set_u64(ctx->object_table, queue->base.id, queue);
 
@@ -3464,7 +3471,27 @@ vkr_context_submit_fence_locked(struct virgl_context *base,
    struct vkr_queue *queue;
    VkResult result;
 
-   queue = util_hash_table_get_u64(ctx->object_table, queue_id);
+   if (queue_id) {
+      queue = util_hash_table_get_u64(ctx->object_table, queue_id);
+   } else if (!LIST_IS_EMPTY(&ctx->all_queues)) {
+      /* XXX all, not just first */
+      queue = LIST_ENTRY(struct vkr_queue, ctx->all_queues.next, all_head);
+   } else {
+      struct vkr_queue_sync *sync = malloc(sizeof(*sync));
+      if (!sync)
+         return -ENOMEM;
+
+      sync->fence = VK_NULL_HANDLE;
+      sync->flags = flags;
+      sync->fence_cookie = fence_cookie;
+      list_addtail(&sync->head, &ctx->cpu_syncs);
+
+      if (ctx->fence_eventfd >= 0)
+         write_eventfd(ctx->fence_eventfd, 1);
+
+      return 0;
+   }
+
    if (!queue)
       return -EINVAL;
    struct vkr_device *dev = queue->device;
@@ -3534,6 +3561,12 @@ vkr_context_retire_fences_locked(UNUSED struct virgl_context *base)
    struct vkr_context *ctx = (struct vkr_context *)base;
    struct vkr_queue_sync *sync, *sync_tmp;
    struct vkr_queue *queue, *queue_tmp;
+
+   LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &ctx->cpu_syncs, head) {
+      ctx->base.fence_retire(&ctx->base, sync->flags, 0, sync->fence_cookie);
+      list_del(&sync->head);
+      free(sync);
+   }
 
    /* flush first and once because the per-queue sync threads might write to
     * it any time
@@ -3884,6 +3917,10 @@ static void vkr_context_destroy(struct virgl_context *base)
    util_hash_table_destroy(ctx->resource_table);
    util_hash_table_destroy_u64(ctx->object_table);
 
+   struct vkr_queue_sync *sync, *tmp;
+   LIST_FOR_EACH_ENTRY_SAFE(sync, tmp, &ctx->cpu_syncs, head)
+      free(sync);
+
    if (ctx->fence_eventfd >= 0)
       close(ctx->fence_eventfd);
 
@@ -3983,6 +4020,9 @@ vkr_context_create(size_t debug_len, const char *debug_name)
    }
 
    list_inithead(&ctx->busy_queues);
+
+   list_inithead(&ctx->all_queues);
+   list_inithead(&ctx->cpu_syncs);
 
    return &ctx->base;
 
