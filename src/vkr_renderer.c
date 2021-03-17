@@ -93,6 +93,8 @@ struct vkr_instance {
 struct vkr_physical_device {
    struct vkr_object base;
 
+   VkPhysicalDeviceProperties properties;
+
    VkExtensionProperties *extensions;
    uint32_t extension_count;
 
@@ -850,6 +852,22 @@ vkr_physical_device_init_extensions(struct vkr_physical_device *physical_dev)
 }
 
 static void
+vkr_physical_device_init_properties(struct vkr_physical_device *physical_dev)
+{
+   VkPhysicalDevice handle = physical_dev->base.physical_device;
+   vkGetPhysicalDeviceProperties(handle, &physical_dev->properties);
+
+   VkPhysicalDeviceProperties *props = &physical_dev->properties;
+   props->driverVersion = 0;
+   props->vendorID = 0;
+   props->deviceID = 0;
+   props->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+   memset(props->deviceName, 0, sizeof(props->deviceName));
+
+   /* TODO lie about props->pipelineCacheUUID and patch cache header */
+}
+
+static void
 vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, struct vn_command_vkEnumeratePhysicalDevices *args)
 {
    struct vkr_context *ctx = dispatch->data;
@@ -904,6 +922,7 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
       physical_dev->base.id = id;
       physical_dev->base.physical_device = instance->physical_device_handles[i];
 
+      vkr_physical_device_init_properties(physical_dev);
       vkr_physical_device_init_extensions(physical_dev);
       vkr_physical_device_init_memory_properties(physical_dev);
 
@@ -1018,24 +1037,16 @@ vkr_dispatch_vkGetPhysicalDeviceFeatures(UNUSED struct vn_dispatch_context *disp
 }
 
 static void
-redact_physical_device_properties(VkPhysicalDeviceProperties *props)
+vkr_dispatch_vkGetPhysicalDeviceProperties(struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties *args)
 {
-   props->driverVersion = 0;
-   props->vendorID = 0;
-   props->deviceID = 0;
-   props->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
-   memset(props->deviceName, 0, sizeof(props->deviceName));
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_physical_device *physical_dev = (struct vkr_physical_device *)args->physicalDevice;
+   if (!physical_dev || physical_dev->base.type != VK_OBJECT_TYPE_PHYSICAL_DEVICE) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
 
-   /* TODO lie about props->pipelineCacheUUID and patch cache header */
-}
-
-static void
-vkr_dispatch_vkGetPhysicalDeviceProperties(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties *args)
-{
-   vn_replace_vkGetPhysicalDeviceProperties_args_handle(args);
-   vkGetPhysicalDeviceProperties(args->physicalDevice, args->pProperties);
-
-   redact_physical_device_properties(args->pProperties);
+   *args->pProperties = physical_dev->properties;
 }
 
 static void
@@ -1082,8 +1093,15 @@ vkr_dispatch_vkGetPhysicalDeviceFeatures2(UNUSED struct vn_dispatch_context *dis
 }
 
 static void
-vkr_dispatch_vkGetPhysicalDeviceProperties2(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties2 *args)
+vkr_dispatch_vkGetPhysicalDeviceProperties2(struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties2 *args)
 {
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_physical_device *physical_dev = (struct vkr_physical_device *)args->physicalDevice;
+   if (!physical_dev || physical_dev->base.type != VK_OBJECT_TYPE_PHYSICAL_DEVICE) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
    vn_replace_vkGetPhysicalDeviceProperties2_args_handle(args);
    vkGetPhysicalDeviceProperties2(args->physicalDevice, args->pProperties);
 
@@ -1100,7 +1118,7 @@ vkr_dispatch_vkGetPhysicalDeviceProperties2(UNUSED struct vn_dispatch_context *d
    while (u.pnext) {
       switch (u.pnext->sType) {
       case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2:
-         redact_physical_device_properties(&u.props->properties);
+         u.props->properties = physical_dev->properties;
          break;
       case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES:
          memset(u.vk11->deviceUUID, 0, sizeof(u.vk11->deviceUUID));
