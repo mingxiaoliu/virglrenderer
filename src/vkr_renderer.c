@@ -81,7 +81,7 @@ struct vkr_physical_device;
 struct vkr_instance {
    struct vkr_object base;
 
-   uint32_t version;
+   uint32_t api_version;
    PFN_vkGetMemoryFdKHR get_memory_fd;
    PFN_vkGetFenceFdKHR get_fence_fd;
 
@@ -94,6 +94,7 @@ struct vkr_physical_device {
    struct vkr_object base;
 
    VkPhysicalDeviceProperties properties;
+   uint32_t api_version;
 
    VkExtensionProperties *extensions;
    uint32_t extension_count;
@@ -682,14 +683,15 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
       return;
    }
 
-   args->ret = vkEnumerateInstanceVersion(&instance->version);
+   uint32_t instance_version;
+   args->ret = vkEnumerateInstanceVersion(&instance_version);
    if (args->ret != VK_SUCCESS) {
       free(instance);
       return;
    }
 
    /* require Vulkan 1.1 */
-   if (instance->version < VK_API_VERSION_1_1) {
+   if (instance_version < VK_API_VERSION_1_1) {
       args->ret = VK_ERROR_INITIALIZATION_FAILED;
       return;
    }
@@ -708,6 +710,7 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
    instance->base.type = VK_OBJECT_TYPE_INSTANCE;
    instance->base.id = vkr_cs_handle_load_id((const void **)args->pInstance,
                                              instance->base.type);
+   instance->api_version = app_info.apiVersion;
 
    vn_replace_vkCreateInstance_args_handle(args);
    args->ret = vkCreateInstance(args->pCreateInfo, NULL, &instance->base.instance);
@@ -923,6 +926,8 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
       physical_dev->base.physical_device = instance->physical_device_handles[i];
 
       vkr_physical_device_init_properties(physical_dev);
+      physical_dev->api_version = MIN2(physical_dev->properties.apiVersion,
+                                       instance->api_version);
       vkr_physical_device_init_extensions(physical_dev);
       vkr_physical_device_init_memory_properties(physical_dev);
 
@@ -1424,32 +1429,61 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
 
    dev->physical_device = physical_dev;
 
-   dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetSemaphoreCounterValue");
-   dev->WaitSemaphores = (PFN_vkWaitSemaphores)
-      vkGetDeviceProcAddr(dev->base.device, "vkWaitSemaphores");
-   dev->SignalSemaphore = (PFN_vkSignalSemaphore)
-      vkGetDeviceProcAddr(dev->base.device, "vkSignalSemaphore");
-   dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetDeviceMemoryOpaqueCaptureAddress");
-   dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetBufferOpaqueCaptureAddress");
-   dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetBufferDeviceAddress");
-   dev->ResetQueryPool = (PFN_vkResetQueryPool)
-      vkGetDeviceProcAddr(dev->base.device, "vkResetQueryPool");
-   dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCreateRenderPass2");
-   dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginRenderPass2");
-   dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdNextSubpass2");
-   dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdEndRenderPass2");
-   dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectCount");
-   dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndexedIndirectCount");
+   if (physical_dev->api_version >= VK_API_VERSION_1_2) {
+      dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetSemaphoreCounterValue");
+      dev->WaitSemaphores = (PFN_vkWaitSemaphores)
+         vkGetDeviceProcAddr(dev->base.device, "vkWaitSemaphores");
+      dev->SignalSemaphore = (PFN_vkSignalSemaphore)
+         vkGetDeviceProcAddr(dev->base.device, "vkSignalSemaphore");
+      dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetDeviceMemoryOpaqueCaptureAddress");
+      dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferOpaqueCaptureAddress");
+      dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferDeviceAddress");
+      dev->ResetQueryPool = (PFN_vkResetQueryPool)
+         vkGetDeviceProcAddr(dev->base.device, "vkResetQueryPool");
+      dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCreateRenderPass2");
+      dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginRenderPass2");
+      dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdNextSubpass2");
+      dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdEndRenderPass2");
+      dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectCount");
+      dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndexedIndirectCount");
+   } else {
+      dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetSemaphoreCounterValueKHR");
+      dev->WaitSemaphores = (PFN_vkWaitSemaphores)
+         vkGetDeviceProcAddr(dev->base.device, "vkWaitSemaphoresKHR");
+      dev->SignalSemaphore = (PFN_vkSignalSemaphore)
+         vkGetDeviceProcAddr(dev->base.device, "vkSignalSemaphoreKHR");
+      dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
+      dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferOpaqueCaptureAddressKHR");
+      dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
+         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferDeviceAddressKHR");
+      dev->ResetQueryPool = (PFN_vkResetQueryPool)
+         vkGetDeviceProcAddr(dev->base.device, "vkResetQueryPoolEXT");
+      dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCreateRenderPass2KHR");
+      dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginRenderPass2KHR");
+      dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdNextSubpass2KHR");
+      dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdEndRenderPass2KHR");
+      dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectCountKHR");
+      dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
+         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndexedIndirectCountKHR");
+   }
 
    dev->cmd_bind_transform_feedback_buffers = (PFN_vkCmdBindTransformFeedbackBuffersEXT)
       vkGetDeviceProcAddr(dev->base.device, "vkCmdBindTransformFeedbackBuffersEXT");
