@@ -118,9 +118,9 @@ vkr_cs_encoder_next_iov(struct vkr_cs_encoder *enc)
 }
 
 static uint8_t *
-vkr_cs_encoder_write_ptr(struct vkr_cs_encoder *enc,
-                         size_t size,
-                         size_t *ptr_size)
+vkr_cs_encoder_get_ptr(struct vkr_cs_encoder *enc,
+                       size_t size,
+                       size_t *ptr_size)
 {
    do {
       uint8_t *ptr = enc->cur;
@@ -153,7 +153,7 @@ vkr_cs_encoder_write_internal(struct vkr_cs_encoder *enc,
 
    do {
       size_t ptr_size;
-      uint8_t *ptr = vkr_cs_encoder_write_ptr(enc, val_size, &ptr_size);
+      uint8_t *ptr = vkr_cs_encoder_get_ptr(enc, val_size, &ptr_size);
       if (unlikely(!ptr)) {
          vkr_cs_encoder_set_fatal(enc);
          return;
@@ -166,7 +166,7 @@ vkr_cs_encoder_write_internal(struct vkr_cs_encoder *enc,
 
    while (pad_size) {
       size_t ptr_size;
-      const void *ptr = vkr_cs_encoder_write_ptr(enc, pad_size, &ptr_size);
+      const void *ptr = vkr_cs_encoder_get_ptr(enc, pad_size, &ptr_size);
       if (unlikely(!ptr)) {
          vkr_cs_encoder_set_fatal(enc);
          return;
