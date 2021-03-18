@@ -324,19 +324,22 @@ struct object_array {
    uint32_t count;
    void **objects;
    void *handle_storage;
+
+   /* true if the ownership of the objects has been transferred (to
+    * vkr_context::object_table)
+    */
+   bool objects_stolen;
 };
 
 static void
-object_array_fini(struct object_array *arr, bool error)
+object_array_fini(struct object_array *arr)
 {
-   if (arr->objects) {
-      if (error) {
-         for (uint32_t i = 0; i < arr->count; i++)
-            free(arr->objects[i]);
-      }
-      free(arr->objects);
+   if (!arr->objects_stolen) {
+      for (uint32_t i = 0; i < arr->count; i++)
+         free(arr->objects[i]);
    }
 
+   free(arr->objects);
    free(arr->handle_storage);
 }
 
@@ -360,11 +363,12 @@ object_array_init(struct object_array *arr,
       return false;
    }
 
+   arr->objects_stolen = false;
    for (uint32_t i = 0; i < count; i++) {
       struct vkr_object *obj = calloc(1, obj_size);
       if (!obj) {
          arr->count = i;
-         object_array_fini(arr, true);
+         object_array_fini(arr);
          return false;
       }
 
@@ -2194,7 +2198,7 @@ vkr_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_context *dispatch, stru
    vn_replace_vkAllocateDescriptorSets_args_handle(args);
    args->ret = vkAllocateDescriptorSets(args->device, args->pAllocateInfo, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
@@ -2207,7 +2211,8 @@ vkr_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_context *dispatch, stru
       util_hash_table_set_u64(ctx->object_table, set->base.id, set);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
@@ -2516,7 +2521,7 @@ vkr_dispatch_vkCreateGraphicsPipelines(struct vn_dispatch_context *dispatch, str
    vn_replace_vkCreateGraphicsPipelines_args_handle(args);
    args->ret = vkCreateGraphicsPipelines(args->device, args->pipelineCache, args->createInfoCount, args->pCreateInfos, NULL, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
@@ -2528,7 +2533,8 @@ vkr_dispatch_vkCreateGraphicsPipelines(struct vn_dispatch_context *dispatch, str
       util_hash_table_set_u64(ctx->object_table, pipeline->base.id, pipeline);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
@@ -2550,7 +2556,7 @@ vkr_dispatch_vkCreateComputePipelines(struct vn_dispatch_context *dispatch, stru
    vn_replace_vkCreateComputePipelines_args_handle(args);
    args->ret = vkCreateComputePipelines(args->device, args->pipelineCache, args->createInfoCount, args->pCreateInfos, NULL, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
@@ -2562,7 +2568,8 @@ vkr_dispatch_vkCreateComputePipelines(struct vn_dispatch_context *dispatch, stru
       util_hash_table_set_u64(ctx->object_table, pipeline->base.id, pipeline);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
@@ -2646,7 +2653,7 @@ vkr_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_context *dispatch, stru
    vn_replace_vkAllocateCommandBuffers_args_handle(args);
    args->ret = vkAllocateCommandBuffers(args->device, args->pAllocateInfo, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
@@ -2660,7 +2667,8 @@ vkr_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_context *dispatch, stru
       util_hash_table_set_u64(ctx->object_table, cmd->base.id, cmd);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
