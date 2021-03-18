@@ -111,15 +111,13 @@ vkr_ring_create(const struct vkr_ring_layout *layout,
       return NULL;
    }
 
-   ring->join = true;
-
    return ring;
 }
 
 void
 vkr_ring_destroy(struct vkr_ring *ring)
 {
-   assert(ring->join);
+   assert(!ring->started);
    mtx_destroy(&ring->mutex);
    cnd_destroy(&ring->cond);
    free(ring->cmd);
@@ -151,7 +149,7 @@ vkr_ring_thread(void *arg)
    uint64_t last_submit = vkr_ring_now();
    int ret = 0;
 
-   while (!ring->join) {
+   while (ring->started) {
       bool wait = false;
       uint32_t cmd_size;
 
@@ -165,12 +163,12 @@ vkr_ring_thread(void *arg)
 
       if (wait) {
          mtx_lock(&ring->mutex);
-         if (!ring->join && !ring->pending_notify)
+         if (ring->started && !ring->pending_notify)
             cnd_wait(&ring->cond, &ring->mutex);
          vkr_ring_store_status(ring, 0);
          mtx_unlock(&ring->mutex);
 
-         if (ring->join)
+         if (!ring->started)
             break;
       }
 
@@ -199,11 +197,11 @@ vkr_ring_start(struct vkr_ring *ring)
 {
    int ret;
 
-   assert(ring->join);
-   ring->join = false;
+   assert(!ring->started);
+   ring->started = true;
    ret = thrd_create(&ring->thread, vkr_ring_thread, ring);
    if (ret != thrd_success)
-      ring->join = true;
+      ring->started = false;
 }
 
 bool
@@ -214,8 +212,8 @@ vkr_ring_stop(struct vkr_ring *ring)
       mtx_unlock(&ring->mutex);
       return false;
    }
-   assert(!ring->join);
-   ring->join = true;
+   assert(ring->started);
+   ring->started = false;
    cnd_signal(&ring->cond);
    mtx_unlock(&ring->mutex);
 

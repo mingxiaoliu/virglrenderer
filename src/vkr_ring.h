@@ -65,7 +65,7 @@ struct vkr_ring {
    mtx_t mutex;
    cnd_t cond;
    thrd_t thread;
-   atomic_bool join;
+   atomic_bool started;
    atomic_bool pending_notify;
 };
 
