@@ -248,6 +248,12 @@ vkr_cs_decoder_alloc_temp(struct vkr_cs_decoder *dec, size_t size)
 static inline bool
 vkr_cs_handle_indirect_id(VkObjectType type)
 {
+   /* Dispatchable handles may or may not have enough bits to store
+    * vkr_object_id.  Non-dispatchable handles always have enough bits to
+    * store vkr_object_id.
+    *
+    * This should compile to a constant after inlining.
+    */
    switch (type) {
    case VK_OBJECT_TYPE_INSTANCE:
    case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
