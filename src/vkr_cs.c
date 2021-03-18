@@ -126,19 +126,15 @@ vkr_cs_encoder_get_ptr(struct vkr_cs_encoder *enc,
       uint8_t *ptr = enc->cur;
       const size_t avail = enc->end - enc->cur;
 
-      if (size <= avail) {
-         *ptr_size = size;
-         enc->cur += size;
-         return ptr;
-      } else if (avail) {
-         *ptr_size = avail;
-         enc->cur += avail;
+      if (avail) {
+         *ptr_size = MIN2(size, avail);
+         enc->cur += *ptr_size;
          return ptr;
       }
 
       if (!vkr_cs_encoder_next_iov(enc)) {
          *ptr_size = 0;
-         return NULL;
+         return size ? NULL : ptr;
       }
    } while (true);
 }
