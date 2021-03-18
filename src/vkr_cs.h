@@ -191,10 +191,11 @@ vkr_cs_decoder_read(struct vkr_cs_decoder *dec,
 
 static inline void
 vkr_cs_decoder_peek(const struct vkr_cs_decoder *dec,
+                    size_t size,
                     void *val,
                     size_t val_size)
 {
-   vkr_cs_decoder_peek_internal(dec, val_size, val, val_size);
+   vkr_cs_decoder_peek_internal(dec, size, val, val_size);
 }
 
 static inline struct vkr_object *
