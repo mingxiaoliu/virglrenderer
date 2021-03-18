@@ -44,6 +44,7 @@ static void
 vkr_ring_read_buffer(struct vkr_ring *ring, void *data, size_t size)
 {
    const size_t offset = ring->cur & ring->buffer_mask;
+   assert(size <= ring->buffer_size);
    if (offset + size <= ring->buffer_size) {
       memcpy(data, (const uint8_t *)ring->shared.buffer + offset, size);
    } else {
