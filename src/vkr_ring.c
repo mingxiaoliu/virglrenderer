@@ -82,6 +82,7 @@ vkr_ring_create(const struct vkr_ring_layout *layout,
    ring->buffer_mask = layout->buffer_size - 1;
    ring->extra_size = layout->extra_size;
 
+   /* we will manage head and status, and we expect them to be 0 initially */
    if (*ring->shared.head || *ring->shared.status) {
       free(ring);
       return NULL;
