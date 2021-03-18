@@ -10,6 +10,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "util/u_math.h"
+
 #include "virgl_context.h"
 
 enum vkr_ring_status_flag {
@@ -74,6 +76,8 @@ vkr_ring_create(const struct vkr_ring_layout *layout,
    ring->shared.status = (void *)((uint8_t *)shared + layout->status_offset);
    ring->shared.buffer = (void *)((uint8_t *)shared + layout->buffer_offset);
    ring->shared.extra = (void *)((uint8_t *)shared + layout->extra_offset);
+
+   assert(layout->buffer_size && util_is_power_of_two(layout->buffer_size));
    ring->buffer_size = layout->buffer_size;
    ring->buffer_mask = layout->buffer_size - 1;
    ring->extra_size = layout->extra_size;
