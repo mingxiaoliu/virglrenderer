@@ -57,7 +57,7 @@
                                                                 \
    vn_replace_ ## vk_cmd ## _args_handle(args);                 \
    args->ret = vk_cmd(args->device, args->pCreateInfo, NULL,    \
-                     &obj->base.vkr_type);                      \
+                     &obj->base.handle.vkr_type);               \
    if (args->ret != VK_SUCCESS) {                               \
       free(obj);                                                \
       return;                                                   \
@@ -719,16 +719,16 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
    instance->api_version = app_info.apiVersion;
 
    vn_replace_vkCreateInstance_args_handle(args);
-   args->ret = vkCreateInstance(args->pCreateInfo, NULL, &instance->base.instance);
+   args->ret = vkCreateInstance(args->pCreateInfo, NULL, &instance->base.handle.instance);
    if (args->ret != VK_SUCCESS) {
       free(instance);
       return;
    }
 
    instance->get_memory_fd = (PFN_vkGetMemoryFdKHR)
-      vkGetInstanceProcAddr(instance->base.instance, "vkGetMemoryFdKHR");
+      vkGetInstanceProcAddr(instance->base.handle.instance, "vkGetMemoryFdKHR");
    instance->get_fence_fd = (PFN_vkGetFenceFdKHR)
-      vkGetInstanceProcAddr(instance->base.instance, "vkGetFenceFdKHR");
+      vkGetInstanceProcAddr(instance->base.handle.instance, "vkGetFenceFdKHR");
 
    util_hash_table_set_u64(ctx->object_table, instance->base.id, instance);
 
@@ -772,7 +772,7 @@ vkr_instance_enumerate_physical_devices(struct vkr_instance *instance)
       return VK_SUCCESS;
 
    uint32_t count;
-   VkResult result = vkEnumeratePhysicalDevices(instance->base.instance, &count, NULL);
+   VkResult result = vkEnumeratePhysicalDevices(instance->base.handle.instance, &count, NULL);
    if (result != VK_SUCCESS)
       return result;
 
@@ -784,7 +784,7 @@ vkr_instance_enumerate_physical_devices(struct vkr_instance *instance)
       return VK_ERROR_OUT_OF_HOST_MEMORY;
    }
 
-   result = vkEnumeratePhysicalDevices(instance->base.instance, &count, handles);
+   result = vkEnumeratePhysicalDevices(instance->base.handle.instance, &count, handles);
    if (result != VK_SUCCESS) {
       free(physical_devs);
       free(handles);
@@ -812,14 +812,14 @@ vkr_instance_lookup_physical_device(struct vkr_instance *instance, VkPhysicalDev
 static void
 vkr_physical_device_init_memory_properties(struct vkr_physical_device *physical_dev)
 {
-   VkPhysicalDevice handle = physical_dev->base.physical_device;
+   VkPhysicalDevice handle = physical_dev->base.handle.physical_device;
    vkGetPhysicalDeviceMemoryProperties(handle, &physical_dev->memory_properties);
 }
 
 static void
 vkr_physical_device_init_extensions(struct vkr_physical_device *physical_dev)
 {
-   VkPhysicalDevice handle = physical_dev->base.physical_device;
+   VkPhysicalDevice handle = physical_dev->base.handle.physical_device;
 
    VkExtensionProperties *exts;
    uint32_t count;
@@ -863,7 +863,7 @@ vkr_physical_device_init_extensions(struct vkr_physical_device *physical_dev)
 static void
 vkr_physical_device_init_properties(struct vkr_physical_device *physical_dev)
 {
-   VkPhysicalDevice handle = physical_dev->base.physical_device;
+   VkPhysicalDevice handle = physical_dev->base.handle.physical_device;
    vkGetPhysicalDeviceProperties(handle, &physical_dev->properties);
 
    VkPhysicalDeviceProperties *props = &physical_dev->properties;
@@ -929,7 +929,7 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
 
       physical_dev->base.type = VK_OBJECT_TYPE_PHYSICAL_DEVICE;
       physical_dev->base.id = id;
-      physical_dev->base.physical_device = instance->physical_device_handles[i];
+      physical_dev->base.handle.physical_device = instance->physical_device_handles[i];
 
       vkr_physical_device_init_properties(physical_dev);
       physical_dev->api_version = MIN2(physical_dev->properties.apiVersion,
@@ -1228,7 +1228,7 @@ vkr_queue_retire_syncs(struct vkr_queue *queue,
       mtx_unlock(&queue->mutex);
    } else {
       LIST_FOR_EACH_ENTRY_SAFE(sync, tmp, &queue->pending_syncs, head) {
-         VkResult result = vkGetFenceStatus(dev->base.device, sync->fence);
+         VkResult result = vkGetFenceStatus(dev->base.handle.device, sync->fence);
          if (result == VK_NOT_READY)
             break;
 
@@ -1264,7 +1264,7 @@ vkr_queue_thread(void *arg)
 
       mtx_unlock(&queue->mutex);
 
-      VkResult result = vkWaitForFences(dev->base.device, 1, &sync->fence,
+      VkResult result = vkWaitForFences(dev->base.handle.device, 1, &sync->fence,
             false, ns_per_sec * 3);
 
       mtx_lock(&queue->mutex);
@@ -1334,7 +1334,7 @@ vkr_queue_create(struct vkr_context *ctx,
 
    queue->base.type = VK_OBJECT_TYPE_QUEUE;
    queue->base.id = id;
-   queue->base.queue = handle;
+   queue->base.handle.queue = handle;
 
    queue->device = dev;
    queue->family = family;
@@ -1424,7 +1424,7 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
    dev->base.id = vkr_cs_handle_load_id((const void **)args->pDevice, dev->base.type);
 
    vn_replace_vkCreateDevice_args_handle(args);
-   args->ret = vkCreateDevice(args->physicalDevice, args->pCreateInfo, NULL, &dev->base.device);
+   args->ret = vkCreateDevice(args->physicalDevice, args->pCreateInfo, NULL, &dev->base.handle.device);
    if (args->ret != VK_SUCCESS) {
       free(exts);
       free(dev);
@@ -1435,77 +1435,78 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
 
    dev->physical_device = physical_dev;
 
+   VkDevice handle = dev->base.handle.device;
    if (physical_dev->api_version >= VK_API_VERSION_1_2) {
       dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetSemaphoreCounterValue");
+         vkGetDeviceProcAddr(handle, "vkGetSemaphoreCounterValue");
       dev->WaitSemaphores = (PFN_vkWaitSemaphores)
-         vkGetDeviceProcAddr(dev->base.device, "vkWaitSemaphores");
+         vkGetDeviceProcAddr(handle, "vkWaitSemaphores");
       dev->SignalSemaphore = (PFN_vkSignalSemaphore)
-         vkGetDeviceProcAddr(dev->base.device, "vkSignalSemaphore");
+         vkGetDeviceProcAddr(handle, "vkSignalSemaphore");
       dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetDeviceMemoryOpaqueCaptureAddress");
+         vkGetDeviceProcAddr(handle, "vkGetDeviceMemoryOpaqueCaptureAddress");
       dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferOpaqueCaptureAddress");
+         vkGetDeviceProcAddr(handle, "vkGetBufferOpaqueCaptureAddress");
       dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferDeviceAddress");
+         vkGetDeviceProcAddr(handle, "vkGetBufferDeviceAddress");
       dev->ResetQueryPool = (PFN_vkResetQueryPool)
-         vkGetDeviceProcAddr(dev->base.device, "vkResetQueryPool");
+         vkGetDeviceProcAddr(handle, "vkResetQueryPool");
       dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCreateRenderPass2");
+         vkGetDeviceProcAddr(handle, "vkCreateRenderPass2");
       dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginRenderPass2");
+         vkGetDeviceProcAddr(handle, "vkCmdBeginRenderPass2");
       dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdNextSubpass2");
+         vkGetDeviceProcAddr(handle, "vkCmdNextSubpass2");
       dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdEndRenderPass2");
+         vkGetDeviceProcAddr(handle, "vkCmdEndRenderPass2");
       dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectCount");
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndirectCount");
       dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndexedIndirectCount");
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndexedIndirectCount");
    } else {
       dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetSemaphoreCounterValueKHR");
+         vkGetDeviceProcAddr(handle, "vkGetSemaphoreCounterValueKHR");
       dev->WaitSemaphores = (PFN_vkWaitSemaphores)
-         vkGetDeviceProcAddr(dev->base.device, "vkWaitSemaphoresKHR");
+         vkGetDeviceProcAddr(handle, "vkWaitSemaphoresKHR");
       dev->SignalSemaphore = (PFN_vkSignalSemaphore)
-         vkGetDeviceProcAddr(dev->base.device, "vkSignalSemaphoreKHR");
+         vkGetDeviceProcAddr(handle, "vkSignalSemaphoreKHR");
       dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
+         vkGetDeviceProcAddr(handle, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
       dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferOpaqueCaptureAddressKHR");
+         vkGetDeviceProcAddr(handle, "vkGetBufferOpaqueCaptureAddressKHR");
       dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
-         vkGetDeviceProcAddr(dev->base.device, "vkGetBufferDeviceAddressKHR");
+         vkGetDeviceProcAddr(handle, "vkGetBufferDeviceAddressKHR");
       dev->ResetQueryPool = (PFN_vkResetQueryPool)
-         vkGetDeviceProcAddr(dev->base.device, "vkResetQueryPoolEXT");
+         vkGetDeviceProcAddr(handle, "vkResetQueryPoolEXT");
       dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCreateRenderPass2KHR");
+         vkGetDeviceProcAddr(handle, "vkCreateRenderPass2KHR");
       dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginRenderPass2KHR");
+         vkGetDeviceProcAddr(handle, "vkCmdBeginRenderPass2KHR");
       dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdNextSubpass2KHR");
+         vkGetDeviceProcAddr(handle, "vkCmdNextSubpass2KHR");
       dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdEndRenderPass2KHR");
+         vkGetDeviceProcAddr(handle, "vkCmdEndRenderPass2KHR");
       dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectCountKHR");
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndirectCountKHR");
       dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
-         vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndexedIndirectCountKHR");
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndexedIndirectCountKHR");
    }
 
    dev->cmd_bind_transform_feedback_buffers = (PFN_vkCmdBindTransformFeedbackBuffersEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBindTransformFeedbackBuffersEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdBindTransformFeedbackBuffersEXT");
    dev->cmd_begin_transform_feedback = (PFN_vkCmdBeginTransformFeedbackEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginTransformFeedbackEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdBeginTransformFeedbackEXT");
    dev->cmd_end_transform_feedback = (PFN_vkCmdEndTransformFeedbackEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdEndTransformFeedbackEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdEndTransformFeedbackEXT");
    dev->cmd_begin_query_indexed = (PFN_vkCmdBeginQueryIndexedEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginQueryIndexedEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdBeginQueryIndexedEXT");
    dev->cmd_end_query_indexed = (PFN_vkCmdEndQueryIndexedEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdEndQueryIndexedEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdEndQueryIndexedEXT");
    dev->cmd_draw_indirect_byte_count = (PFN_vkCmdDrawIndirectByteCountEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectByteCountEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdDrawIndirectByteCountEXT");
 
    dev->get_image_drm_format_modifier_properties = (PFN_vkGetImageDrmFormatModifierPropertiesEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetImageDrmFormatModifierPropertiesEXT");
+      vkGetDeviceProcAddr(handle, "vkGetImageDrmFormatModifierPropertiesEXT");
 
    list_inithead(&dev->queues);
    list_inithead(&dev->free_syncs);
@@ -1532,7 +1533,7 @@ vkr_dispatch_vkDestroyDevice(struct vn_dispatch_context *dispatch, struct vn_com
 
    struct vkr_queue_sync *sync, *sync_tmp;
    LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &dev->free_syncs, head) {
-      vkDestroyFence(dev->base.device, sync->fence, NULL);
+      vkDestroyFence(dev->base.handle.device, sync->fence, NULL);
       free(sync);
    }
 
@@ -1653,7 +1654,7 @@ vkr_dispatch_vkAllocateMemory(struct vn_dispatch_context *dispatch, struct vn_co
    mem->base.id = vkr_cs_handle_load_id((const void **)args->pMemory, mem->base.type);
 
    vn_replace_vkAllocateMemory_args_handle(args);
-   args->ret = vkAllocateMemory(args->device, args->pAllocateInfo, NULL, &mem->base.device_memory);
+   args->ret = vkAllocateMemory(args->device, args->pAllocateInfo, NULL, &mem->base.handle.device_memory);
    if (args->ret != VK_SUCCESS) {
       free(mem);
       return;
@@ -2207,7 +2208,7 @@ vkr_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_context *dispatch, stru
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_descriptor_set *set = arr.objects[i];
 
-      set->base.descriptor_set = ((VkDescriptorSet *)arr.handle_storage)[i];
+      set->base.handle.descriptor_set = ((VkDescriptorSet *)arr.handle_storage)[i];
       list_add(&set->head, &pool->descriptor_sets);
 
       util_hash_table_set_u64(ctx->object_table, set->base.id, set);
@@ -2302,7 +2303,7 @@ vkr_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *dispatch, struct vn
 
    vn_replace_vkCreateRenderPass2_args_handle(args);
    args->ret = dev->CreateRenderPass2(args->device, args->pCreateInfo,
-         NULL, &pass->base.render_pass);
+         NULL, &pass->base.handle.render_pass);
    if (args->ret != VK_SUCCESS) {
       free(pass);
       return;
@@ -2530,7 +2531,7 @@ vkr_dispatch_vkCreateGraphicsPipelines(struct vn_dispatch_context *dispatch, str
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_pipeline *pipeline = arr.objects[i];
 
-      pipeline->base.pipeline = ((VkPipeline *)arr.handle_storage)[i];
+      pipeline->base.handle.pipeline = ((VkPipeline *)arr.handle_storage)[i];
 
       util_hash_table_set_u64(ctx->object_table, pipeline->base.id, pipeline);
    }
@@ -2565,7 +2566,7 @@ vkr_dispatch_vkCreateComputePipelines(struct vn_dispatch_context *dispatch, stru
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_pipeline *pipeline = arr.objects[i];
 
-      pipeline->base.pipeline = ((VkPipeline *)arr.handle_storage)[i];
+      pipeline->base.handle.pipeline = ((VkPipeline *)arr.handle_storage)[i];
 
       util_hash_table_set_u64(ctx->object_table, pipeline->base.id, pipeline);
    }
@@ -2662,7 +2663,7 @@ vkr_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_context *dispatch, stru
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_command_buffer *cmd = arr.objects[i];
 
-      cmd->base.command_buffer = ((VkCommandBuffer *)arr.handle_storage)[i];
+      cmd->base.handle.command_buffer = ((VkCommandBuffer *)arr.handle_storage)[i];
       cmd->device = dev;
       list_add(&cmd->head, &pool->command_buffers);
 
@@ -3477,7 +3478,7 @@ vkr_context_submit_fence_locked(struct virgl_context *base,
       const struct VkFenceCreateInfo create_info = {
          .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
       };
-      result = vkCreateFence(dev->base.device, &create_info, NULL, &sync->fence);
+      result = vkCreateFence(dev->base.handle.device, &create_info, NULL, &sync->fence);
       if (result != VK_SUCCESS) {
          free(sync);
          return -ENOMEM;
@@ -3485,10 +3486,10 @@ vkr_context_submit_fence_locked(struct virgl_context *base,
    } else {
       sync = LIST_ENTRY(struct vkr_queue_sync, dev->free_syncs.next, head);
       list_del(&sync->head);
-      vkResetFences(dev->base.device, 1, &sync->fence);
+      vkResetFences(dev->base.handle.device, 1, &sync->fence);
    }
 
-   result = vkQueueSubmit(queue->base.queue, 0, NULL, sync->fence);
+   result = vkQueueSubmit(queue->base.handle.queue, 0, NULL, sync->fence);
    if (result != VK_SUCCESS) {
       list_add(&sync->head, &dev->free_syncs);
       return -1;
@@ -3662,7 +3663,7 @@ static int vkr_context_get_blob_locked(struct virgl_context *base,
       VkResult result = ctx->instance->get_memory_fd(mem->device,
             &(VkMemoryGetFdInfoKHR){
                .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
-               .memory = mem->base.device_memory,
+               .memory = mem->base.handle.device_memory,
                .handleType = handle_type,
             }, &fd);
       if (result != VK_SUCCESS)
@@ -3768,7 +3769,7 @@ static int vkr_context_transfer_3d_locked(struct virgl_context *base,
       LIST_ENTRY(struct vkr_device_memory, att->memories.next, head);
    const VkMappedMemoryRange range = {
       .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
-      .memory = mem->base.device_memory,
+      .memory = mem->base.handle.device_memory,
       .offset = info->box->x,
       .size = info->box->width,
    };
