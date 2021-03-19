@@ -135,10 +135,25 @@ vkr_ring_now(void)
 }
 
 static void
-vkr_ring_relax(void)
+vkr_ring_relax(uint32_t *iter)
 {
    /* TODO do better */
-   thrd_yield();
+   const uint32_t busy_wait_order = 4;
+   const uint32_t base_sleep_us = 10;
+
+   (*iter)++;
+   if (*iter < (1u << busy_wait_order)) {
+      thrd_yield();
+      return;
+   }
+
+   const uint32_t shift = util_last_bit(*iter) - busy_wait_order - 1;
+   const uint32_t us = base_sleep_us << shift;
+   const struct timespec ts = {
+      .tv_sec = us / 1000000,
+      .tv_nsec = (us % 1000000) * 1000,
+   };
+   clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
 }
 
 static int
@@ -147,6 +162,7 @@ vkr_ring_thread(void *arg)
    struct vkr_ring *ring = arg;
    struct virgl_context *ctx = ring->context;
    uint64_t last_submit = vkr_ring_now();
+   uint32_t relax_iter = 0;
    int ret = 0;
 
    while (ring->started) {
@@ -170,6 +186,9 @@ vkr_ring_thread(void *arg)
 
          if (!ring->started)
             break;
+
+         last_submit = vkr_ring_now();
+         relax_iter = 0;
       }
 
       cmd_size = vkr_ring_load_tail(ring) - ring->cur;
@@ -184,8 +203,9 @@ vkr_ring_thread(void *arg)
          vkr_ring_store_head(ring);
 
          last_submit = vkr_ring_now();
+         relax_iter = 0;
       } else {
-         vkr_ring_relax();
+         vkr_ring_relax(&relax_iter);
       }
    }
 
