@@ -74,7 +74,7 @@ vrend_winsys_glx_sources = [
    'vrend_winsys_glx.h',
 ]
 
-virgl_venus_sources = [
+venus_sources = [
    'venus-protocol/vn_protocol_renderer.h',
    'venus_hw.h',
    'vkr_cs.c',
@@ -115,7 +115,7 @@ if have_glx
 endif
 
 if with_venus
-   virgl_sources += virgl_venus_sources
+   virgl_sources += venus_sources
    virgl_depends += [venus_dep]
 endif
 

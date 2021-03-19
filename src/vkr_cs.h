@@ -12,13 +12,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "os/os_misc.h"
 #include "util/u_hash_table.h"
 #include "util/u_math.h"
-#include "util/u_memory.h"
 
 #include "vkr_object.h"
-#include "vrend_iov.h"
+
+struct iovec;
 
 struct vkr_cs_encoder {
    bool *fatal_error;
@@ -161,38 +160,42 @@ vkr_cs_decoder_push_state(struct vkr_cs_decoder *dec);
 void
 vkr_cs_decoder_pop_state(struct vkr_cs_decoder *dec);
 
-static inline void
-vkr_cs_decoder_read(struct vkr_cs_decoder *dec,
-                    size_t size,
-                    void *val,
-                    size_t val_size)
+static inline bool
+vkr_cs_decoder_peek_internal(const struct vkr_cs_decoder *dec,
+                             size_t size,
+                             void *val,
+                             size_t val_size)
 {
    assert(val_size <= size);
 
    if (unlikely(size > (size_t)(dec->end - dec->cur))) {
       vkr_cs_decoder_set_fatal(dec);
       memset(val, 0, val_size);
-      return;
+      return false;
    }
 
    /* we should not rely on the compiler to optimize away memcpy... */
    memcpy(val, dec->cur, val_size);
-   dec->cur += size;
+   return true;
+}
+
+static inline void
+vkr_cs_decoder_read(struct vkr_cs_decoder *dec,
+                    size_t size,
+                    void *val,
+                    size_t val_size)
+{
+   if (vkr_cs_decoder_peek_internal(dec, size, val, val_size))
+      dec->cur += size;
 }
 
 static inline void
 vkr_cs_decoder_peek(const struct vkr_cs_decoder *dec,
+                    size_t size,
                     void *val,
                     size_t val_size)
 {
-   if (unlikely(val_size > (size_t)(dec->end - dec->cur))) {
-      vkr_cs_decoder_set_fatal(dec);
-      memset(val, 0, val_size);
-      return;
-   }
-
-   /* we should not rely on the compiler to optimize away memcpy... */
-   memcpy(val, dec->cur, val_size);
+   vkr_cs_decoder_peek_internal(dec, size, val, val_size);
 }
 
 static inline struct vkr_object *
@@ -245,6 +248,12 @@ vkr_cs_decoder_alloc_temp(struct vkr_cs_decoder *dec, size_t size)
 static inline bool
 vkr_cs_handle_indirect_id(VkObjectType type)
 {
+   /* Dispatchable handles may or may not have enough bits to store
+    * vkr_object_id.  Non-dispatchable handles always have enough bits to
+    * store vkr_object_id.
+    *
+    * This should compile to a constant after inlining.
+    */
    switch (type) {
    case VK_OBJECT_TYPE_INSTANCE:
    case VK_OBJECT_TYPE_PHYSICAL_DEVICE:

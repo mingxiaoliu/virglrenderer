@@ -10,6 +10,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "util/u_math.h"
+
 #include "virgl_context.h"
 
 enum vkr_ring_status_flag {
@@ -44,6 +46,7 @@ static void
 vkr_ring_read_buffer(struct vkr_ring *ring, void *data, size_t size)
 {
    const size_t offset = ring->cur & ring->buffer_mask;
+   assert(size <= ring->buffer_size);
    if (offset + size <= ring->buffer_size) {
       memcpy(data, (const uint8_t *)ring->shared.buffer + offset, size);
    } else {
@@ -73,10 +76,13 @@ vkr_ring_create(const struct vkr_ring_layout *layout,
    ring->shared.status = (void *)((uint8_t *)shared + layout->status_offset);
    ring->shared.buffer = (void *)((uint8_t *)shared + layout->buffer_offset);
    ring->shared.extra = (void *)((uint8_t *)shared + layout->extra_offset);
+
+   assert(layout->buffer_size && util_is_power_of_two(layout->buffer_size));
    ring->buffer_size = layout->buffer_size;
    ring->buffer_mask = layout->buffer_size - 1;
    ring->extra_size = layout->extra_size;
 
+   /* we will manage head and status, and we expect them to be 0 initially */
    if (*ring->shared.head || *ring->shared.status) {
       free(ring);
       return NULL;
@@ -105,15 +111,13 @@ vkr_ring_create(const struct vkr_ring_layout *layout,
       return NULL;
    }
 
-   ring->join = true;
-
    return ring;
 }
 
 void
 vkr_ring_destroy(struct vkr_ring *ring)
 {
-   assert(ring->join);
+   assert(!ring->started);
    mtx_destroy(&ring->mutex);
    cnd_destroy(&ring->cond);
    free(ring->cmd);
@@ -131,10 +135,25 @@ vkr_ring_now(void)
 }
 
 static void
-vkr_ring_relax(void)
+vkr_ring_relax(uint32_t *iter)
 {
    /* TODO do better */
-   thrd_yield();
+   const uint32_t busy_wait_order = 4;
+   const uint32_t base_sleep_us = 10;
+
+   (*iter)++;
+   if (*iter < (1u << busy_wait_order)) {
+      thrd_yield();
+      return;
+   }
+
+   const uint32_t shift = util_last_bit(*iter) - busy_wait_order - 1;
+   const uint32_t us = base_sleep_us << shift;
+   const struct timespec ts = {
+      .tv_sec = us / 1000000,
+      .tv_nsec = (us % 1000000) * 1000,
+   };
+   clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
 }
 
 static int
@@ -143,9 +162,10 @@ vkr_ring_thread(void *arg)
    struct vkr_ring *ring = arg;
    struct virgl_context *ctx = ring->context;
    uint64_t last_submit = vkr_ring_now();
+   uint32_t relax_iter = 0;
    int ret = 0;
 
-   while (!ring->join) {
+   while (ring->started) {
       bool wait = false;
       uint32_t cmd_size;
 
@@ -159,13 +179,16 @@ vkr_ring_thread(void *arg)
 
       if (wait) {
          mtx_lock(&ring->mutex);
-         if (!ring->join && !ring->pending_notify)
+         if (ring->started && !ring->pending_notify)
             cnd_wait(&ring->cond, &ring->mutex);
          vkr_ring_store_status(ring, 0);
          mtx_unlock(&ring->mutex);
 
-         if (ring->join)
+         if (!ring->started)
             break;
+
+         last_submit = vkr_ring_now();
+         relax_iter = 0;
       }
 
       cmd_size = vkr_ring_load_tail(ring) - ring->cur;
@@ -180,8 +203,9 @@ vkr_ring_thread(void *arg)
          vkr_ring_store_head(ring);
 
          last_submit = vkr_ring_now();
+         relax_iter = 0;
       } else {
-         vkr_ring_relax();
+         vkr_ring_relax(&relax_iter);
       }
    }
 
@@ -193,11 +217,11 @@ vkr_ring_start(struct vkr_ring *ring)
 {
    int ret;
 
-   assert(ring->join);
-   ring->join = false;
+   assert(!ring->started);
+   ring->started = true;
    ret = thrd_create(&ring->thread, vkr_ring_thread, ring);
    if (ret != thrd_success)
-      ring->join = true;
+      ring->started = false;
 }
 
 bool
@@ -208,8 +232,8 @@ vkr_ring_stop(struct vkr_ring *ring)
       mtx_unlock(&ring->mutex);
       return false;
    }
-   assert(!ring->join);
-   ring->join = true;
+   assert(ring->started);
+   ring->started = false;
    cnd_signal(&ring->cond);
    mtx_unlock(&ring->mutex);
 

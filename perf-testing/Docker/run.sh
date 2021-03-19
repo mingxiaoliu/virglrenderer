@@ -70,14 +70,15 @@ if [ ! -f build/build.ninja ]; then
       -Ddri-drivers=i965 \
       -Dgallium-drivers=swrast,virgl,radeonsi,iris \
       -Dbuildtype=debugoptimized \
-      -Dllvm=true \
+      -Dllvm=enabled \
       -Dglx=dri \
-      -Degl=true \
-      -Dgbm=false \
-      -Dgallium-vdpau=false \
-      -Dgallium-va=false \
+      -Degl=enabled \
+      -Dgbm=disabled \
+      -Dgallium-vdpau=disabled \
+      -Dgallium-va=disabled \
       -Dvulkan-drivers=[] \
-      -Dvalgrind=false \
+      -Dvalgrind=disabled \
+      -Dtracing=perfetto \
       -Dlibdir=lib
 else    
    pushd build
@@ -86,14 +87,15 @@ else
       -Ddri-drivers=i965 \
       -Dgallium-drivers=swrast,virgl,radeonsi,iris \
       -Dbuildtype=debugoptimized \
-      -Dllvm=true \
+      -Dllvm=enabled \
       -Dglx=dri \
-      -Degl=true \
-      -Dgbm=false \
-      -Dgallium-vdpau=false \
-      -Dgallium-va=false \
+      -Degl=enabled \
+      -Dgbm=disabled \
+      -Dgallium-vdpau=disabled \
+      -Dgallium-va=disabled \
       -Dvulkan-drivers=[] \
-      -Dvalgrind=false \
+      -Dvalgrind=disabled \
+      -Dtracing=perfetto \
       -Dlibdir=lib
    popd
 fi 
@@ -107,17 +109,19 @@ if [ ! -f build/build.ninja ]; then
    meson build/ \
       -Dprefix=/usr/local \
       -Dlibdir=lib \
-      -Dplatforms=glx,egl \
+      -Dplatforms=egl \
       -Dminigbm_allocation=true \
-      -Dtracing=perfetto
+      -Dtracing=perfetto \
+      -Dbuildtype=debugoptimized
 else    
    pushd build
    meson configure \
       -Dprefix=/usr/local \
       -Dlibdir=lib \
-      -Dplatforms=glx,egl \
+      -Dplatforms=egl \
       -Dminigbm_allocation=true \
-      -Dtracing=perfetto
+      -Dtracing=perfetto \
+      -Dbuildtype=debugoptimized
    popd
 fi    
 ninja -C build/ install
@@ -192,7 +196,11 @@ if [ "x$debug" = "xyes" ]; then
    export EGL_DEBUG=debug
 fi
 
-crosvm run \
+
+if [ -e /wd/crosvm-debug.cmd ]; then
+    gdb -x /wd/crosvm-debug.cmd
+else
+    crosvm run \
    --gpu gles=false\
    -m 4096 \
    -c 4 \
@@ -202,9 +210,10 @@ crosvm run \
    --shared-dir "/apitrace:apitrace-tag:type=fs" \
    --shared-dir "/traces-db:traces-db-tag:type=fs" \
    --shared-dir "/perfetto:perfetto-tag:type=fs" \
-   --host_ip 192.168.0.1 --netmask 255.255.255.0 --mac AA:BB:CC:00:00:12 \
-   -p "root=/dev/ram0 rdinit=/init.sh ip=192.168.0.2::192.168.0.1:255.255.255.0:crosvm:eth0 nohz=off clocksource=kvm-clock" \
+   --host_ip 192.168.200.1 --netmask 255.255.255.0 --mac AA:BB:CC:00:00:12 \
+   -p "root=/dev/ram0 rdinit=/init.sh ip=192.168.200.2::192.168.200.1:255.255.255.0:crosvm:eth0 nohz=off clocksource=kvm-clock" \
    /vmlinux
+fi
 
 rm -f /traces-db/current_trace
 rm -f /traces-db/command

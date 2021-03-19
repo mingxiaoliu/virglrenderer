@@ -57,7 +57,7 @@
                                                                 \
    vn_replace_ ## vk_cmd ## _args_handle(args);                 \
    args->ret = vk_cmd(args->device, args->pCreateInfo, NULL,    \
-                     &obj->base.vkr_type);                      \
+                     &obj->base.handle.vkr_type);               \
    if (args->ret != VK_SUCCESS) {                               \
       free(obj);                                                \
       return;                                                   \
@@ -81,7 +81,7 @@ struct vkr_physical_device;
 struct vkr_instance {
    struct vkr_object base;
 
-   uint32_t version;
+   uint32_t api_version;
    PFN_vkGetMemoryFdKHR get_memory_fd;
    PFN_vkGetFenceFdKHR get_fence_fd;
 
@@ -92,6 +92,9 @@ struct vkr_instance {
 
 struct vkr_physical_device {
    struct vkr_object base;
+
+   VkPhysicalDeviceProperties properties;
+   uint32_t api_version;
 
    VkExtensionProperties *extensions;
    uint32_t extension_count;
@@ -310,7 +313,6 @@ struct vkr_context {
    struct vn_dispatch_context dispatch;
 
    int fence_eventfd;
-   struct list_head cpu_syncs;
    struct list_head busy_queues;
 
    struct vkr_instance *instance;
@@ -322,19 +324,22 @@ struct object_array {
    uint32_t count;
    void **objects;
    void *handle_storage;
+
+   /* true if the ownership of the objects has been transferred (to
+    * vkr_context::object_table)
+    */
+   bool objects_stolen;
 };
 
 static void
-object_array_fini(struct object_array *arr, bool error)
+object_array_fini(struct object_array *arr)
 {
-   if (arr->objects) {
-      if (error) {
-         for (uint32_t i = 0; i < arr->count; i++)
-            free(arr->objects[i]);
-      }
-      free(arr->objects);
+   if (!arr->objects_stolen) {
+      for (uint32_t i = 0; i < arr->count; i++)
+         free(arr->objects[i]);
    }
 
+   free(arr->objects);
    free(arr->handle_storage);
 }
 
@@ -358,11 +363,12 @@ object_array_init(struct object_array *arr,
       return false;
    }
 
+   arr->objects_stolen = false;
    for (uint32_t i = 0; i < count; i++) {
       struct vkr_object *obj = calloc(1, obj_size);
       if (!obj) {
          arr->count = i;
-         object_array_fini(arr, true);
+         object_array_fini(arr);
          return false;
       }
 
@@ -524,8 +530,10 @@ vkr_dispatch_vkCreateRingMESA(struct vn_dispatch_context *dispatch, struct vn_co
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
-   /* TODO */
+
+   /* TODO support scatter-gather or require logically contiguous resources */
    if (att->resource->iov_count != 1) {
+      vrend_printf("vkr: no scatter-gather support for ring buffers (TODO)");
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
    }
@@ -681,14 +689,15 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
       return;
    }
 
-   args->ret = vkEnumerateInstanceVersion(&instance->version);
+   uint32_t instance_version;
+   args->ret = vkEnumerateInstanceVersion(&instance_version);
    if (args->ret != VK_SUCCESS) {
       free(instance);
       return;
    }
 
    /* require Vulkan 1.1 */
-   if (instance->version < VK_API_VERSION_1_1) {
+   if (instance_version < VK_API_VERSION_1_1) {
       args->ret = VK_ERROR_INITIALIZATION_FAILED;
       return;
    }
@@ -707,18 +716,19 @@ vkr_dispatch_vkCreateInstance(struct vn_dispatch_context *dispatch, struct vn_co
    instance->base.type = VK_OBJECT_TYPE_INSTANCE;
    instance->base.id = vkr_cs_handle_load_id((const void **)args->pInstance,
                                              instance->base.type);
+   instance->api_version = app_info.apiVersion;
 
    vn_replace_vkCreateInstance_args_handle(args);
-   args->ret = vkCreateInstance(args->pCreateInfo, NULL, &instance->base.instance);
+   args->ret = vkCreateInstance(args->pCreateInfo, NULL, &instance->base.handle.instance);
    if (args->ret != VK_SUCCESS) {
       free(instance);
       return;
    }
 
    instance->get_memory_fd = (PFN_vkGetMemoryFdKHR)
-      vkGetInstanceProcAddr(instance->base.instance, "vkGetMemoryFdKHR");
+      vkGetInstanceProcAddr(instance->base.handle.instance, "vkGetMemoryFdKHR");
    instance->get_fence_fd = (PFN_vkGetFenceFdKHR)
-      vkGetInstanceProcAddr(instance->base.instance, "vkGetFenceFdKHR");
+      vkGetInstanceProcAddr(instance->base.handle.instance, "vkGetFenceFdKHR");
 
    util_hash_table_set_u64(ctx->object_table, instance->base.id, instance);
 
@@ -762,7 +772,7 @@ vkr_instance_enumerate_physical_devices(struct vkr_instance *instance)
       return VK_SUCCESS;
 
    uint32_t count;
-   VkResult result = vkEnumeratePhysicalDevices(instance->base.instance, &count, NULL);
+   VkResult result = vkEnumeratePhysicalDevices(instance->base.handle.instance, &count, NULL);
    if (result != VK_SUCCESS)
       return result;
 
@@ -774,7 +784,7 @@ vkr_instance_enumerate_physical_devices(struct vkr_instance *instance)
       return VK_ERROR_OUT_OF_HOST_MEMORY;
    }
 
-   result = vkEnumeratePhysicalDevices(instance->base.instance, &count, handles);
+   result = vkEnumeratePhysicalDevices(instance->base.handle.instance, &count, handles);
    if (result != VK_SUCCESS) {
       free(physical_devs);
       free(handles);
@@ -802,14 +812,14 @@ vkr_instance_lookup_physical_device(struct vkr_instance *instance, VkPhysicalDev
 static void
 vkr_physical_device_init_memory_properties(struct vkr_physical_device *physical_dev)
 {
-   VkPhysicalDevice handle = physical_dev->base.physical_device;
+   VkPhysicalDevice handle = physical_dev->base.handle.physical_device;
    vkGetPhysicalDeviceMemoryProperties(handle, &physical_dev->memory_properties);
 }
 
 static void
 vkr_physical_device_init_extensions(struct vkr_physical_device *physical_dev)
 {
-   VkPhysicalDevice handle = physical_dev->base.physical_device;
+   VkPhysicalDevice handle = physical_dev->base.handle.physical_device;
 
    VkExtensionProperties *exts;
    uint32_t count;
@@ -848,6 +858,22 @@ vkr_physical_device_init_extensions(struct vkr_physical_device *physical_dev)
 
    physical_dev->extensions = exts;
    physical_dev->extension_count = advertised_count;
+}
+
+static void
+vkr_physical_device_init_properties(struct vkr_physical_device *physical_dev)
+{
+   VkPhysicalDevice handle = physical_dev->base.handle.physical_device;
+   vkGetPhysicalDeviceProperties(handle, &physical_dev->properties);
+
+   VkPhysicalDeviceProperties *props = &physical_dev->properties;
+   props->driverVersion = 0;
+   props->vendorID = 0;
+   props->deviceID = 0;
+   props->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+   memset(props->deviceName, 0, sizeof(props->deviceName));
+
+   /* TODO lie about props->pipelineCacheUUID and patch cache header */
 }
 
 static void
@@ -903,8 +929,11 @@ vkr_dispatch_vkEnumeratePhysicalDevices(struct vn_dispatch_context *dispatch, st
 
       physical_dev->base.type = VK_OBJECT_TYPE_PHYSICAL_DEVICE;
       physical_dev->base.id = id;
-      physical_dev->base.physical_device = instance->physical_device_handles[i];
+      physical_dev->base.handle.physical_device = instance->physical_device_handles[i];
 
+      vkr_physical_device_init_properties(physical_dev);
+      physical_dev->api_version = MIN2(physical_dev->properties.apiVersion,
+                                       instance->api_version);
       vkr_physical_device_init_extensions(physical_dev);
       vkr_physical_device_init_memory_properties(physical_dev);
 
@@ -1019,24 +1048,16 @@ vkr_dispatch_vkGetPhysicalDeviceFeatures(UNUSED struct vn_dispatch_context *disp
 }
 
 static void
-redact_physical_device_properties(VkPhysicalDeviceProperties *props)
+vkr_dispatch_vkGetPhysicalDeviceProperties(struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties *args)
 {
-   props->driverVersion = 0;
-   props->vendorID = 0;
-   props->deviceID = 0;
-   props->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
-   memset(props->deviceName, 0, sizeof(props->deviceName));
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_physical_device *physical_dev = (struct vkr_physical_device *)args->physicalDevice;
+   if (!physical_dev || physical_dev->base.type != VK_OBJECT_TYPE_PHYSICAL_DEVICE) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
 
-   /* TODO lie about props->pipelineCacheUUID and patch cache header */
-}
-
-static void
-vkr_dispatch_vkGetPhysicalDeviceProperties(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties *args)
-{
-   vn_replace_vkGetPhysicalDeviceProperties_args_handle(args);
-   vkGetPhysicalDeviceProperties(args->physicalDevice, args->pProperties);
-
-   redact_physical_device_properties(args->pProperties);
+   *args->pProperties = physical_dev->properties;
 }
 
 static void
@@ -1083,8 +1104,15 @@ vkr_dispatch_vkGetPhysicalDeviceFeatures2(UNUSED struct vn_dispatch_context *dis
 }
 
 static void
-vkr_dispatch_vkGetPhysicalDeviceProperties2(UNUSED struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties2 *args)
+vkr_dispatch_vkGetPhysicalDeviceProperties2(struct vn_dispatch_context *dispatch, struct vn_command_vkGetPhysicalDeviceProperties2 *args)
 {
+   struct vkr_context *ctx = dispatch->data;
+   struct vkr_physical_device *physical_dev = (struct vkr_physical_device *)args->physicalDevice;
+   if (!physical_dev || physical_dev->base.type != VK_OBJECT_TYPE_PHYSICAL_DEVICE) {
+      vkr_cs_decoder_set_fatal(&ctx->decoder);
+      return;
+   }
+
    vn_replace_vkGetPhysicalDeviceProperties2_args_handle(args);
    vkGetPhysicalDeviceProperties2(args->physicalDevice, args->pProperties);
 
@@ -1101,7 +1129,7 @@ vkr_dispatch_vkGetPhysicalDeviceProperties2(UNUSED struct vn_dispatch_context *d
    while (u.pnext) {
       switch (u.pnext->sType) {
       case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2:
-         redact_physical_device_properties(&u.props->properties);
+         u.props->properties = physical_dev->properties;
          break;
       case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES:
          memset(u.vk11->deviceUUID, 0, sizeof(u.vk11->deviceUUID));
@@ -1200,7 +1228,7 @@ vkr_queue_retire_syncs(struct vkr_queue *queue,
       mtx_unlock(&queue->mutex);
    } else {
       LIST_FOR_EACH_ENTRY_SAFE(sync, tmp, &queue->pending_syncs, head) {
-         VkResult result = vkGetFenceStatus(dev->base.device, sync->fence);
+         VkResult result = vkGetFenceStatus(dev->base.handle.device, sync->fence);
          if (result == VK_NOT_READY)
             break;
 
@@ -1236,7 +1264,7 @@ vkr_queue_thread(void *arg)
 
       mtx_unlock(&queue->mutex);
 
-      VkResult result = vkWaitForFences(dev->base.device, 1, &sync->fence,
+      VkResult result = vkWaitForFences(dev->base.handle.device, 1, &sync->fence,
             false, ns_per_sec * 3);
 
       mtx_lock(&queue->mutex);
@@ -1306,7 +1334,7 @@ vkr_queue_create(struct vkr_context *ctx,
 
    queue->base.type = VK_OBJECT_TYPE_QUEUE;
    queue->base.id = id;
-   queue->base.queue = handle;
+   queue->base.handle.queue = handle;
 
    queue->device = dev;
    queue->family = family;
@@ -1396,7 +1424,7 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
    dev->base.id = vkr_cs_handle_load_id((const void **)args->pDevice, dev->base.type);
 
    vn_replace_vkCreateDevice_args_handle(args);
-   args->ret = vkCreateDevice(args->physicalDevice, args->pCreateInfo, NULL, &dev->base.device);
+   args->ret = vkCreateDevice(args->physicalDevice, args->pCreateInfo, NULL, &dev->base.handle.device);
    if (args->ret != VK_SUCCESS) {
       free(exts);
       free(dev);
@@ -1407,48 +1435,78 @@ vkr_dispatch_vkCreateDevice(struct vn_dispatch_context *dispatch, struct vn_comm
 
    dev->physical_device = physical_dev;
 
-   dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetSemaphoreCounterValue");
-   dev->WaitSemaphores = (PFN_vkWaitSemaphores)
-      vkGetDeviceProcAddr(dev->base.device, "vkWaitSemaphores");
-   dev->SignalSemaphore = (PFN_vkSignalSemaphore)
-      vkGetDeviceProcAddr(dev->base.device, "vkSignalSemaphore");
-   dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetDeviceMemoryOpaqueCaptureAddress");
-   dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetBufferOpaqueCaptureAddress");
-   dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetBufferDeviceAddress");
-   dev->ResetQueryPool = (PFN_vkResetQueryPool)
-      vkGetDeviceProcAddr(dev->base.device, "vkResetQueryPool");
-   dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCreateRenderPass2");
-   dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginRenderPass2");
-   dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdNextSubpass2");
-   dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdEndRenderPass2");
-   dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectCount");
-   dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndexedIndirectCount");
+   VkDevice handle = dev->base.handle.device;
+   if (physical_dev->api_version >= VK_API_VERSION_1_2) {
+      dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
+         vkGetDeviceProcAddr(handle, "vkGetSemaphoreCounterValue");
+      dev->WaitSemaphores = (PFN_vkWaitSemaphores)
+         vkGetDeviceProcAddr(handle, "vkWaitSemaphores");
+      dev->SignalSemaphore = (PFN_vkSignalSemaphore)
+         vkGetDeviceProcAddr(handle, "vkSignalSemaphore");
+      dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(handle, "vkGetDeviceMemoryOpaqueCaptureAddress");
+      dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(handle, "vkGetBufferOpaqueCaptureAddress");
+      dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
+         vkGetDeviceProcAddr(handle, "vkGetBufferDeviceAddress");
+      dev->ResetQueryPool = (PFN_vkResetQueryPool)
+         vkGetDeviceProcAddr(handle, "vkResetQueryPool");
+      dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
+         vkGetDeviceProcAddr(handle, "vkCreateRenderPass2");
+      dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
+         vkGetDeviceProcAddr(handle, "vkCmdBeginRenderPass2");
+      dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
+         vkGetDeviceProcAddr(handle, "vkCmdNextSubpass2");
+      dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
+         vkGetDeviceProcAddr(handle, "vkCmdEndRenderPass2");
+      dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndirectCount");
+      dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndexedIndirectCount");
+   } else {
+      dev->GetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)
+         vkGetDeviceProcAddr(handle, "vkGetSemaphoreCounterValueKHR");
+      dev->WaitSemaphores = (PFN_vkWaitSemaphores)
+         vkGetDeviceProcAddr(handle, "vkWaitSemaphoresKHR");
+      dev->SignalSemaphore = (PFN_vkSignalSemaphore)
+         vkGetDeviceProcAddr(handle, "vkSignalSemaphoreKHR");
+      dev->GetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(handle, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
+      dev->GetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)
+         vkGetDeviceProcAddr(handle, "vkGetBufferOpaqueCaptureAddressKHR");
+      dev->GetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)
+         vkGetDeviceProcAddr(handle, "vkGetBufferDeviceAddressKHR");
+      dev->ResetQueryPool = (PFN_vkResetQueryPool)
+         vkGetDeviceProcAddr(handle, "vkResetQueryPoolEXT");
+      dev->CreateRenderPass2 = (PFN_vkCreateRenderPass2)
+         vkGetDeviceProcAddr(handle, "vkCreateRenderPass2KHR");
+      dev->CmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)
+         vkGetDeviceProcAddr(handle, "vkCmdBeginRenderPass2KHR");
+      dev->CmdNextSubpass2 = (PFN_vkCmdNextSubpass2)
+         vkGetDeviceProcAddr(handle, "vkCmdNextSubpass2KHR");
+      dev->CmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)
+         vkGetDeviceProcAddr(handle, "vkCmdEndRenderPass2KHR");
+      dev->CmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndirectCountKHR");
+      dev->CmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)
+         vkGetDeviceProcAddr(handle, "vkCmdDrawIndexedIndirectCountKHR");
+   }
 
    dev->cmd_bind_transform_feedback_buffers = (PFN_vkCmdBindTransformFeedbackBuffersEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBindTransformFeedbackBuffersEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdBindTransformFeedbackBuffersEXT");
    dev->cmd_begin_transform_feedback = (PFN_vkCmdBeginTransformFeedbackEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginTransformFeedbackEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdBeginTransformFeedbackEXT");
    dev->cmd_end_transform_feedback = (PFN_vkCmdEndTransformFeedbackEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdEndTransformFeedbackEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdEndTransformFeedbackEXT");
    dev->cmd_begin_query_indexed = (PFN_vkCmdBeginQueryIndexedEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdBeginQueryIndexedEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdBeginQueryIndexedEXT");
    dev->cmd_end_query_indexed = (PFN_vkCmdEndQueryIndexedEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdEndQueryIndexedEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdEndQueryIndexedEXT");
    dev->cmd_draw_indirect_byte_count = (PFN_vkCmdDrawIndirectByteCountEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkCmdDrawIndirectByteCountEXT");
+      vkGetDeviceProcAddr(handle, "vkCmdDrawIndirectByteCountEXT");
 
    dev->get_image_drm_format_modifier_properties = (PFN_vkGetImageDrmFormatModifierPropertiesEXT)
-      vkGetDeviceProcAddr(dev->base.device, "vkGetImageDrmFormatModifierPropertiesEXT");
+      vkGetDeviceProcAddr(handle, "vkGetImageDrmFormatModifierPropertiesEXT");
 
    list_inithead(&dev->queues);
    list_inithead(&dev->free_syncs);
@@ -1475,7 +1533,7 @@ vkr_dispatch_vkDestroyDevice(struct vn_dispatch_context *dispatch, struct vn_com
 
    struct vkr_queue_sync *sync, *sync_tmp;
    LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &dev->free_syncs, head) {
-      vkDestroyFence(dev->base.device, sync->fence, NULL);
+      vkDestroyFence(dev->base.handle.device, sync->fence, NULL);
       free(sync);
    }
 
@@ -1596,7 +1654,7 @@ vkr_dispatch_vkAllocateMemory(struct vn_dispatch_context *dispatch, struct vn_co
    mem->base.id = vkr_cs_handle_load_id((const void **)args->pMemory, mem->base.type);
 
    vn_replace_vkAllocateMemory_args_handle(args);
-   args->ret = vkAllocateMemory(args->device, args->pAllocateInfo, NULL, &mem->base.device_memory);
+   args->ret = vkAllocateMemory(args->device, args->pAllocateInfo, NULL, &mem->base.handle.device_memory);
    if (args->ret != VK_SUCCESS) {
       free(mem);
       return;
@@ -2143,20 +2201,21 @@ vkr_dispatch_vkAllocateDescriptorSets(struct vn_dispatch_context *dispatch, stru
    vn_replace_vkAllocateDescriptorSets_args_handle(args);
    args->ret = vkAllocateDescriptorSets(args->device, args->pAllocateInfo, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_descriptor_set *set = arr.objects[i];
 
-      set->base.descriptor_set = ((VkDescriptorSet *)arr.handle_storage)[i];
+      set->base.handle.descriptor_set = ((VkDescriptorSet *)arr.handle_storage)[i];
       list_add(&set->head, &pool->descriptor_sets);
 
       util_hash_table_set_u64(ctx->object_table, set->base.id, set);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
@@ -2244,7 +2303,7 @@ vkr_dispatch_vkCreateRenderPass2(struct vn_dispatch_context *dispatch, struct vn
 
    vn_replace_vkCreateRenderPass2_args_handle(args);
    args->ret = dev->CreateRenderPass2(args->device, args->pCreateInfo,
-         NULL, &pass->base.render_pass);
+         NULL, &pass->base.handle.render_pass);
    if (args->ret != VK_SUCCESS) {
       free(pass);
       return;
@@ -2465,19 +2524,20 @@ vkr_dispatch_vkCreateGraphicsPipelines(struct vn_dispatch_context *dispatch, str
    vn_replace_vkCreateGraphicsPipelines_args_handle(args);
    args->ret = vkCreateGraphicsPipelines(args->device, args->pipelineCache, args->createInfoCount, args->pCreateInfos, NULL, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_pipeline *pipeline = arr.objects[i];
 
-      pipeline->base.pipeline = ((VkPipeline *)arr.handle_storage)[i];
+      pipeline->base.handle.pipeline = ((VkPipeline *)arr.handle_storage)[i];
 
       util_hash_table_set_u64(ctx->object_table, pipeline->base.id, pipeline);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
@@ -2499,19 +2559,20 @@ vkr_dispatch_vkCreateComputePipelines(struct vn_dispatch_context *dispatch, stru
    vn_replace_vkCreateComputePipelines_args_handle(args);
    args->ret = vkCreateComputePipelines(args->device, args->pipelineCache, args->createInfoCount, args->pCreateInfos, NULL, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_pipeline *pipeline = arr.objects[i];
 
-      pipeline->base.pipeline = ((VkPipeline *)arr.handle_storage)[i];
+      pipeline->base.handle.pipeline = ((VkPipeline *)arr.handle_storage)[i];
 
       util_hash_table_set_u64(ctx->object_table, pipeline->base.id, pipeline);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
@@ -2595,21 +2656,22 @@ vkr_dispatch_vkAllocateCommandBuffers(struct vn_dispatch_context *dispatch, stru
    vn_replace_vkAllocateCommandBuffers_args_handle(args);
    args->ret = vkAllocateCommandBuffers(args->device, args->pAllocateInfo, arr.handle_storage);
    if (args->ret != VK_SUCCESS) {
-      object_array_fini(&arr, true);
+      object_array_fini(&arr);
       return;
    }
 
    for (uint32_t i = 0; i < arr.count; i++) {
       struct vkr_command_buffer *cmd = arr.objects[i];
 
-      cmd->base.command_buffer = ((VkCommandBuffer *)arr.handle_storage)[i];
+      cmd->base.handle.command_buffer = ((VkCommandBuffer *)arr.handle_storage)[i];
       cmd->device = dev;
       list_add(&cmd->head, &pool->command_buffers);
 
       util_hash_table_set_u64(ctx->object_table, cmd->base.id, cmd);
    }
 
-   object_array_fini(&arr, false);
+   arr.objects_stolen = true;
+   object_array_fini(&arr);
 }
 
 static void
@@ -3402,25 +3464,6 @@ vkr_context_submit_fence_locked(struct virgl_context *base,
    struct vkr_queue *queue;
    VkResult result;
 
-   if (flags & VIRGL_RENDERER_FENCE_FLAG_CPU) {
-      if (queue_id)
-         return -EINVAL;
-
-      struct vkr_queue_sync *sync = malloc(sizeof(*sync));
-      if (!sync)
-         return -ENOMEM;
-
-      sync->fence = VK_NULL_HANDLE;
-      sync->flags = flags;
-      sync->fence_cookie = fence_cookie;
-      list_addtail(&sync->head, &ctx->cpu_syncs);
-
-      if (ctx->fence_eventfd >= 0)
-         write_eventfd(ctx->fence_eventfd, 1);
-
-      return 0;
-   }
-
    queue = util_hash_table_get_u64(ctx->object_table, queue_id);
    if (!queue)
       return -EINVAL;
@@ -3435,7 +3478,7 @@ vkr_context_submit_fence_locked(struct virgl_context *base,
       const struct VkFenceCreateInfo create_info = {
          .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
       };
-      result = vkCreateFence(dev->base.device, &create_info, NULL, &sync->fence);
+      result = vkCreateFence(dev->base.handle.device, &create_info, NULL, &sync->fence);
       if (result != VK_SUCCESS) {
          free(sync);
          return -ENOMEM;
@@ -3443,10 +3486,10 @@ vkr_context_submit_fence_locked(struct virgl_context *base,
    } else {
       sync = LIST_ENTRY(struct vkr_queue_sync, dev->free_syncs.next, head);
       list_del(&sync->head);
-      vkResetFences(dev->base.device, 1, &sync->fence);
+      vkResetFences(dev->base.handle.device, 1, &sync->fence);
    }
 
-   result = vkQueueSubmit(queue->base.queue, 0, NULL, sync->fence);
+   result = vkQueueSubmit(queue->base.handle.queue, 0, NULL, sync->fence);
    if (result != VK_SUCCESS) {
       list_add(&sync->head, &dev->free_syncs);
       return -1;
@@ -3491,15 +3534,6 @@ vkr_context_retire_fences_locked(UNUSED struct virgl_context *base)
    struct vkr_context *ctx = (struct vkr_context *)base;
    struct vkr_queue_sync *sync, *sync_tmp;
    struct vkr_queue *queue, *queue_tmp;
-
-   LIST_FOR_EACH_ENTRY_SAFE(sync, sync_tmp, &ctx->cpu_syncs, head) {
-      if (sync->head.next == &ctx->cpu_syncs ||
-          !(sync->flags & VIRGL_RENDERER_FENCE_FLAG_MERGEABLE))
-         ctx->base.fence_retire(&ctx->base, 0, sync->fence_cookie);
-
-      list_del(&sync->head);
-      free(sync);
-   }
 
    /* flush first and once because the per-queue sync threads might write to
     * it any time
@@ -3629,7 +3663,7 @@ static int vkr_context_get_blob_locked(struct virgl_context *base,
       VkResult result = ctx->instance->get_memory_fd(mem->device,
             &(VkMemoryGetFdInfoKHR){
                .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
-               .memory = mem->base.device_memory,
+               .memory = mem->base.handle.device_memory,
                .handleType = handle_type,
             }, &fd);
       if (result != VK_SUCCESS)
@@ -3735,7 +3769,7 @@ static int vkr_context_transfer_3d_locked(struct virgl_context *base,
       LIST_ENTRY(struct vkr_device_memory, att->memories.next, head);
    const VkMappedMemoryRange range = {
       .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
-      .memory = mem->base.device_memory,
+      .memory = mem->base.handle.device_memory,
       .offset = info->box->x,
       .size = info->box->width,
    };
@@ -3850,10 +3884,6 @@ static void vkr_context_destroy(struct virgl_context *base)
    util_hash_table_destroy(ctx->resource_table);
    util_hash_table_destroy_u64(ctx->object_table);
 
-   struct vkr_queue_sync *sync, *tmp;
-   LIST_FOR_EACH_ENTRY_SAFE(sync, tmp, &ctx->cpu_syncs, head)
-      free(sync);
-
    if (ctx->fence_eventfd >= 0)
       close(ctx->fence_eventfd);
 
@@ -3952,7 +3982,6 @@ vkr_context_create(size_t debug_len, const char *debug_name)
       ctx->fence_eventfd = -1;
    }
 
-   list_inithead(&ctx->cpu_syncs);
    list_inithead(&ctx->busy_queues);
 
    return &ctx->base;

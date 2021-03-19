@@ -13,12 +13,13 @@
 
 typedef uint64_t vkr_object_id;
 
+/* base class for all objects */
 struct vkr_object {
    VkObjectType type;
    vkr_object_id id;
 
    union {
-      uint64_t handle;
+      uint64_t u64;
 
       VkInstance instance;
       VkPhysicalDevice physical_device;
@@ -48,7 +49,7 @@ struct vkr_object {
       VkCommandPool command_pool;
       VkSamplerYcbcrConversion sampler_ycbcr_conversion;
       VkDescriptorUpdateTemplate descriptor_update_template;
-   };
+   } handle;
 };
 
 #endif /* VKR_OBJECT_H */

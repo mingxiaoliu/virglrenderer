@@ -71,11 +71,6 @@ struct vrend_resource {
    GLuint id;
    GLenum target;
 
-   /* fb id if we need to readback this resource */
-   GLuint readback_fb_id;
-   GLuint readback_fb_level;
-   GLuint readback_fb_z;
-
    GLuint tbo_tex_id;/* tbos have two ids to track */
    bool y_0_top;
 
@@ -469,8 +464,11 @@ void vrend_fb_bind_texture(struct vrend_resource *res,
                            int idx,
                            uint32_t level, uint32_t layer);
 bool vrend_format_is_emulated_alpha(enum virgl_formats format);
+
+#define VREND_COPY_COMPAT_FLAG_ALLOW_COMPRESSED (1u << 0)
+#define VREND_COPY_COMPAT_FLAG_ONE_IS_EGL_IMAGE (1u << 1)
 boolean format_is_copy_compatible(enum virgl_formats src, enum virgl_formats dst,
-                                  boolean allow_compressed);
+                                  unsigned int flags);
 
 /* blitter interface */
 void vrend_renderer_blit_gl(struct vrend_context *ctx,
@@ -525,4 +523,7 @@ int vrend_renderer_resource_map(struct pipe_resource *pres, void **map, uint64_t
 
 int vrend_renderer_resource_unmap(struct pipe_resource *pres);
 
+void vrend_renderer_get_meminfo(struct vrend_context *ctx, uint32_t res_handle);
+
+void vrend_context_emit_string_marker(struct vrend_context *ctx, GLsizei length, const char * message);
 #endif

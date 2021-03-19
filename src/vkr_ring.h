@@ -20,7 +20,7 @@
 
 struct virgl_context;
 
-/* the layout of a ring in a BO */
+/* the layout of a ring in a virgl_resource */
 struct vkr_ring_layout {
    size_t head_offset;
    size_t tail_offset;
@@ -36,7 +36,7 @@ struct vkr_ring_layout {
 static_assert(ATOMIC_INT_LOCK_FREE == 2 && sizeof(atomic_uint) == 4,
               "vkr_ring_shared requires lock-free 32-bit atomic_uint");
 
-/* pointers to a ring in a BO */
+/* pointers to a ring in a virgl_resource */
 struct vkr_ring_shared {
    volatile atomic_uint *head;
    const volatile atomic_uint *tail;
@@ -65,7 +65,7 @@ struct vkr_ring {
    mtx_t mutex;
    cnd_t cond;
    thrd_t thread;
-   atomic_bool join;
+   atomic_bool started;
    atomic_bool pending_notify;
 };
 

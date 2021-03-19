@@ -55,6 +55,7 @@
 #include "virgl_resource.h"
 #include "virglrenderer.h"
 #include "virglrenderer_hw.h"
+#include "virgl_protocol.h"
 
 #include "tgsi/tgsi_text.h"
 
@@ -120,6 +121,7 @@ enum features_id
    feat_arb_robustness,
    feat_arb_buffer_storage,
    feat_arrays_of_arrays,
+   feat_ati_meminfo,
    feat_atomic_counters,
    feat_base_instance,
    feat_barrier,
@@ -156,6 +158,7 @@ enum features_id
    feat_indep_blend_func,
    feat_indirect_draw,
    feat_indirect_params,
+   feat_khr_debug,
    feat_memory_object,
    feat_memory_object_fd,
    feat_mesa_invert,
@@ -164,6 +167,7 @@ enum features_id
    feat_multi_draw_indirect,
    feat_nv_conditional_render,
    feat_nv_prim_restart,
+   feat_nvx_gpu_memory_info,
    feat_polygon_offset_clamp,
    feat_occlusion_query,
    feat_occlusion_query_boolean,
@@ -217,6 +221,7 @@ static const  struct {
    FEAT(arb_robustness, UNAVAIL, UNAVAIL,  "GL_ARB_robustness" ),
    FEAT(arb_buffer_storage, 44, UNAVAIL, "GL_ARB_buffer_storage", "GL_EXT_buffer_storage"),
    FEAT(arrays_of_arrays, 43, 31, "GL_ARB_arrays_of_arrays"),
+   FEAT(ati_meminfo, UNAVAIL, UNAVAIL, "GL_ATI_meminfo" ),
    FEAT(atomic_counters, 42, 31,  "GL_ARB_shader_atomic_counters" ),
    FEAT(base_instance, 42, UNAVAIL,  "GL_ARB_base_instance", "GL_EXT_base_instance" ),
    FEAT(barrier, 42, 31, NULL),
@@ -253,6 +258,7 @@ static const  struct {
    FEAT(indep_blend_func, 40, 32,  "GL_ARB_draw_buffers_blend", "GL_OES_draw_buffers_indexed"),
    FEAT(indirect_draw, 40, 31,  "GL_ARB_draw_indirect" ),
    FEAT(indirect_params, 46, UNAVAIL,  "GL_ARB_indirect_parameters" ),
+   FEAT(khr_debug, 43, 32,  "GL_KHR_debug" ),
    FEAT(memory_object, UNAVAIL, UNAVAIL, "GL_EXT_memory_object"),
    FEAT(memory_object_fd, UNAVAIL, UNAVAIL, "GL_EXT_memory_object_fd"),
    FEAT(mesa_invert, UNAVAIL, UNAVAIL,  "GL_MESA_pack_invert" ),
@@ -261,6 +267,7 @@ static const  struct {
    FEAT(multi_draw_indirect, 43, UNAVAIL,  "GL_ARB_multi_draw_indirect", "GL_EXT_multi_draw_indirect" ),
    FEAT(nv_conditional_render, UNAVAIL, UNAVAIL,  "GL_NV_conditional_render" ),
    FEAT(nv_prim_restart, UNAVAIL, UNAVAIL,  "GL_NV_primitive_restart" ),
+   FEAT(nvx_gpu_memory_info, UNAVAIL, UNAVAIL, "GL_NVX_gpu_memory_info" ),
    FEAT(polygon_offset_clamp, 46, UNAVAIL,  "GL_ARB_polygon_offset_clamp", "GL_EXT_polygon_offset_clamp"),
    FEAT(occlusion_query, 15, UNAVAIL, "GL_ARB_occlusion_query"),
    FEAT(occlusion_query_boolean, 33, 30, "GL_EXT_occlusion_query_boolean", "GL_ARB_occlusion_query2"),
@@ -336,8 +343,6 @@ struct global_renderer_state {
    struct vrend_fence *fence_waiting;
    pipe_condvar fence_cond;
 
-   struct list_head fence_cpu_list;
-
    struct vrend_context *ctx0;
 
    pipe_thread sync_thread;
@@ -411,6 +416,7 @@ struct vrend_shader {
    struct vrend_strarray glsl_strings;
    GLuint id;
    uint32_t uid;
+   bool is_compiled;
    struct vrend_shader_key key;
    struct list_head programs;
 };
@@ -763,6 +769,8 @@ void vrend_update_stencil_state(struct vrend_sub_context *sub_ctx);
 
 static struct vrend_format_table tex_conv_table[VIRGL_FORMAT_MAX_EXTENDED];
 
+static uint32_t vrend_renderer_get_video_memory(void);
+
 static inline bool vrend_format_can_sample(enum virgl_formats format)
 {
    if (tex_conv_table[format].bindings & VIRGL_BIND_SAMPLER_VIEW)
@@ -1108,6 +1116,20 @@ static void vrend_destroy_shader_selector(struct vrend_shader_selector *sel)
    free(sel);
 }
 
+static inline int conv_shader_type(int type)
+{
+   switch (type) {
+   case PIPE_SHADER_VERTEX: return GL_VERTEX_SHADER;
+   case PIPE_SHADER_FRAGMENT: return GL_FRAGMENT_SHADER;
+   case PIPE_SHADER_GEOMETRY: return GL_GEOMETRY_SHADER;
+   case PIPE_SHADER_TESS_CTRL: return GL_TESS_CONTROL_SHADER;
+   case PIPE_SHADER_TESS_EVAL: return GL_TESS_EVALUATION_SHADER;
+   case PIPE_SHADER_COMPUTE: return GL_COMPUTE_SHADER;
+   default:
+      return 0;
+   };
+}
+
 static bool vrend_compile_shader(struct vrend_sub_context *sub_ctx,
                                  struct vrend_shader *shader)
 {
@@ -1116,6 +1138,8 @@ static bool vrend_compile_shader(struct vrend_sub_context *sub_ctx,
 
    for (int i = 0; i < shader->glsl_strings.num_strings; i++)
       shader_parts[i] = shader->glsl_strings.strings[i].buf;
+
+   shader->id = glCreateShader(conv_shader_type(shader->sel->type));
    glShaderSource(shader->id, shader->glsl_strings.num_strings, shader_parts, NULL);
    glCompileShader(shader->id);
    glGetShaderiv(shader->id, GL_COMPILE_STATUS, &param);
@@ -1123,11 +1147,13 @@ static bool vrend_compile_shader(struct vrend_sub_context *sub_ctx,
       char infolog[65536];
       int len;
       glGetShaderInfoLog(shader->id, 65536, &len, infolog);
+      glDeleteShader(shader->id);
       vrend_report_context_error(sub_ctx->parent, VIRGL_ERROR_CTX_ILLEGAL_SHADER, 0);
       vrend_printf("shader failed to compile\n%s\n", infolog);
       vrend_shader_dump(shader);
       return false;
    }
+   shader->is_compiled = true;
    return true;
 }
 
@@ -3408,27 +3434,12 @@ static inline void vrend_fill_shader_key(struct vrend_sub_context *sub_ctx,
    }
 }
 
-static inline int conv_shader_type(int type)
-{
-   switch (type) {
-   case PIPE_SHADER_VERTEX: return GL_VERTEX_SHADER;
-   case PIPE_SHADER_FRAGMENT: return GL_FRAGMENT_SHADER;
-   case PIPE_SHADER_GEOMETRY: return GL_GEOMETRY_SHADER;
-   case PIPE_SHADER_TESS_CTRL: return GL_TESS_CONTROL_SHADER;
-   case PIPE_SHADER_TESS_EVAL: return GL_TESS_EVALUATION_SHADER;
-   case PIPE_SHADER_COMPUTE: return GL_COMPUTE_SHADER;
-   default:
-      return 0;
-   };
-}
-
 static int vrend_shader_create(struct vrend_context *ctx,
                                struct vrend_shader *shader,
                                struct vrend_shader_key *key)
 {
    static uint32_t uid;
 
-   shader->id = glCreateShader(conv_shader_type(shader->sel->type));
    shader->uid = ++uid;
 
    if (shader->sel->tokens) {
@@ -3436,26 +3447,14 @@ static int vrend_shader_create(struct vrend_context *ctx,
                                       shader->sel->req_local_mem, key, &shader->sel->sinfo, &shader->glsl_strings);
       if (!ret) {
          vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_SHADER, shader->sel->type);
-         glDeleteShader(shader->id);
          return -1;
       }
    } else if (!ctx->shader_cfg.use_gles && shader->sel->type != TGSI_PROCESSOR_TESS_CTRL) {
       vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_SHADER, shader->sel->type);
-      glDeleteShader(shader->id);
       return -1;
    }
 
    shader->key = *key;
-   if (1) {//shader->sel->type == PIPE_SHADER_FRAGMENT || shader->sel->type == PIPE_SHADER_GEOMETRY) {
-      bool ret;
-
-      ret = vrend_compile_shader(ctx->sub, shader);
-      if (ret == false) {
-         glDeleteShader(shader->id);
-         strarray_free(&shader->glsl_strings, true);
-         return -1;
-      }
-   }
    return 0;
 }
 
@@ -4466,7 +4465,6 @@ void vrend_inject_tcs(struct vrend_sub_context *sub_ctx, int vertices_per_patch)
    sub_ctx->shaders[PIPE_SHADER_TESS_CTRL] = sel;
    sub_ctx->shaders[PIPE_SHADER_TESS_CTRL]->num_shaders = 1;
 
-   shader->id = glCreateShader(conv_shader_type(shader->sel->type));
    vrend_compile_shader(sub_ctx, shader);
 }
 
@@ -4511,6 +4509,39 @@ vrend_select_program(struct vrend_sub_context *sub_ctx, const struct pipe_draw_i
    if (shaders[PIPE_SHADER_GEOMETRY])
       vrend_shader_select(sub_ctx, shaders[PIPE_SHADER_GEOMETRY], &gs_dirty);
    vrend_shader_select(sub_ctx, shaders[PIPE_SHADER_FRAGMENT], &fs_dirty);
+
+   // NOTE: run shader selection again as a workaround to #180 - "duplicated shader compilation"
+   if (shaders[PIPE_SHADER_GEOMETRY])
+      vrend_shader_select(sub_ctx, shaders[PIPE_SHADER_GEOMETRY], &gs_dirty);
+   if (shaders[PIPE_SHADER_TESS_EVAL])
+      vrend_shader_select(sub_ctx, shaders[PIPE_SHADER_TESS_EVAL], &tes_dirty);
+   if (shaders[PIPE_SHADER_TESS_CTRL] && shaders[PIPE_SHADER_TESS_CTRL]->tokens)
+      vrend_shader_select(sub_ctx, shaders[PIPE_SHADER_TESS_CTRL], &tcs_dirty);
+   else if (vrend_state.use_gles && shaders[PIPE_SHADER_TESS_EVAL]) {
+      VREND_DEBUG(dbg_shader, sub_ctx->parent, "Need to inject a TCS\n");
+      vrend_inject_tcs(sub_ctx, info->vertices_per_patch);
+   }
+   sub_ctx->drawing = true;
+   vrend_shader_select(sub_ctx, shaders[PIPE_SHADER_VERTEX], &vs_dirty);
+   sub_ctx->drawing = false;
+
+
+   for (uint i = 0; i < PIPE_SHADER_TYPES; i++) {
+      struct vrend_shader_selector *sel = shaders[i];
+      if (!sel)
+         continue;
+
+      struct vrend_shader *shader = sel->current;
+      if (shader && !shader->is_compiled) {//shader->sel->type == PIPE_SHADER_FRAGMENT || shader->sel->type == PIPE_SHADER_GEOMETRY) {
+         bool ret;
+
+         ret = vrend_compile_shader(sub_ctx, shader);
+         if (ret == false) {
+            strarray_free(&shader->glsl_strings, true);
+            return -1;
+         }
+      }
+   }
 
    if (!shaders[PIPE_SHADER_VERTEX]->current ||
        !shaders[PIPE_SHADER_FRAGMENT]->current ||
@@ -4856,8 +4887,14 @@ void vrend_launch_grid(struct vrend_context *ctx,
 
       vrend_shader_select(sub_ctx, sub_ctx->shaders[PIPE_SHADER_COMPUTE], &cs_dirty);
       if (!sub_ctx->shaders[PIPE_SHADER_COMPUTE]->current) {
-         vrend_printf( "failure to compile shader variants: %s\n", ctx->debug_name);
+         vrend_printf( "failure to select compute shader variant: %s\n", ctx->debug_name);
          return;
+      }
+      if (!sub_ctx->shaders[PIPE_SHADER_COMPUTE]->current->is_compiled) {
+         if(!vrend_compile_shader(sub_ctx, sub_ctx->shaders[PIPE_SHADER_COMPUTE]->current)) {
+            vrend_printf( "failure to compile compute shader variant: %s\n", ctx->debug_name);
+            return;
+         }
       }
       if (sub_ctx->shaders[PIPE_SHADER_COMPUTE]->current->id != (GLuint)sub_ctx->prog_ids[PIPE_SHADER_COMPUTE]) {
          prog = lookup_cs_shader_program(ctx, sub_ctx->shaders[PIPE_SHADER_COMPUTE]->current->id);
@@ -5863,18 +5900,14 @@ static void vrend_free_sync_thread(void)
 static void free_fence_locked(struct vrend_fence *fence)
 {
    list_del(&fence->fences);
-
-   if (!(fence->flags & VIRGL_RENDERER_FENCE_FLAG_CPU)) {
 #ifdef HAVE_EPOXY_EGL_H
-      if (vrend_state.use_egl_fence) {
-         virgl_egl_fence_destroy(egl, fence->eglsyncobj);
-      } else
+   if (vrend_state.use_egl_fence) {
+      virgl_egl_fence_destroy(egl, fence->eglsyncobj);
+   } else
 #endif
-      {
-         glDeleteSync(fence->glsyncobj);
-      }
+   {
+      glDeleteSync(fence->glsyncobj);
    }
-
    free(fence);
 }
 
@@ -5888,8 +5921,6 @@ static void vrend_free_fences(void)
    LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_list, fences)
       free_fence_locked(fence);
    LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_wait_list, fences)
-      free_fence_locked(fence);
-   LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_cpu_list, fences)
       free_fence_locked(fence);
 }
 
@@ -5917,11 +5948,6 @@ static void vrend_free_fences_for_context(struct vrend_context *ctx)
          if (fence->ctx == ctx)
             free_fence_locked(fence);
       }
-   }
-
-   LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_cpu_list, fences) {
-      if (fence->ctx == ctx)
-         free_fence_locked(fence);
    }
 }
 
@@ -6119,6 +6145,8 @@ static bool use_integer() {
       return true;
 
    const char * a = (const char *) glGetString(GL_VENDOR);
+   if (!a)
+       return false;
    if (strcmp(a, "ARM") == 0)
       return true;
    return false;
@@ -6228,7 +6256,6 @@ int vrend_renderer_init(const struct vrend_if_cbs *cbs, uint32_t flags)
    vrend_clicbs->destroy_gl_context(gl_context);
    list_inithead(&vrend_state.fence_list);
    list_inithead(&vrend_state.fence_wait_list);
-   list_inithead(&vrend_state.fence_cpu_list);
    list_inithead(&vrend_state.waiting_query_list);
    /* create 0 context */
    vrend_state.ctx0 = vrend_create_context(0, strlen("HOST"), "HOST");
@@ -6694,7 +6721,7 @@ static void vrend_create_buffer(struct vrend_resource *gr, uint32_t width, uint3
    glBindBufferARB(gr->target, gr->id);
 
    if (buffer_storage_flags) {
-      if (has_feature(feat_arb_buffer_storage)) {
+      if (has_feature(feat_arb_buffer_storage) && !vrend_state.use_external_blob) {
          glBufferStorage(gr->target, width, NULL, buffer_storage_flags);
          gr->map_info = vrend_state.inferred_gl_caching_type;
       }
@@ -6833,6 +6860,8 @@ static void vrend_resource_gbm_init(struct vrend_resource *gr, uint32_t format)
    uint32_t gbm_format = 0;
    if (virgl_gbm_convert_format(&format, &gbm_format))
       return;
+   if (vrend_winsys_different_gpu())
+      gbm_flags |= GBM_BO_USE_LINEAR;
 
    if (gr->base.depth0 != 1 || gr->base.last_level != 0 || gr->base.nr_samples != 0)
       return;
@@ -7144,9 +7173,6 @@ vrend_renderer_resource_create(const struct vrend_renderer_resource_create_args 
 
 void vrend_renderer_resource_destroy(struct vrend_resource *res)
 {
-   if (res->readback_fb_id)
-      glDeleteFramebuffers(1, &res->readback_fb_id);
-
    if (has_bit(res->storage_bits, VREND_STORAGE_GL_TEXTURE)) {
       glDeleteTextures(1, &res->id);
    } else if (has_bit(res->storage_bits, VREND_STORAGE_GL_BUFFER)) {
@@ -7580,21 +7606,11 @@ static int vrend_renderer_transfer_write_iov(struct vrend_context *ctx,
 
       if ((!vrend_state.use_core_profile) && (res->y_0_top)) {
          GLuint buffers;
+         GLuint fb_id;
 
-         if (res->readback_fb_id == 0 || (int)res->readback_fb_level != info->level) {
-            GLuint fb_id;
-            if (res->readback_fb_id)
-               glDeleteFramebuffers(1, &res->readback_fb_id);
-
-            glGenFramebuffers(1, &fb_id);
-            glBindFramebuffer(GL_FRAMEBUFFER, fb_id);
-            vrend_fb_bind_texture(res, 0, info->level, 0);
-
-            res->readback_fb_id = fb_id;
-            res->readback_fb_level = info->level;
-         } else {
-            glBindFramebuffer(GL_FRAMEBUFFER, res->readback_fb_id);
-         }
+         glGenFramebuffers(1, &fb_id);
+         glBindFramebuffer(GL_FRAMEBUFFER, fb_id);
+         vrend_fb_bind_texture(res, 0, info->level, 0);
 
          buffers = GL_COLOR_ATTACHMENT0;
          glDrawBuffers(1, &buffers);
@@ -7612,6 +7628,7 @@ static int vrend_renderer_transfer_write_iov(struct vrend_context *ctx,
          glWindowPos2i(info->box->x, res->y_0_top ? (int)res->base.height0 - info->box->y : info->box->y);
          glDrawPixels(info->box->width, info->box->height, glformat, gltype,
                       data);
+         glDeleteFramebuffers(1, &fb_id);
       } else {
          uint32_t comp_size;
          GLint old_tex = 0;
@@ -7811,17 +7828,28 @@ static int vrend_transfer_send_getteximage(struct vrend_resource *res,
    return 0;
 }
 
-static void do_readpixels(GLint x, GLint y,
+static void do_readpixels(struct vrend_resource *res,
+                          int idx, uint32_t level, uint32_t layer,
+                          GLint x, GLint y,
                           GLsizei width, GLsizei height,
                           GLenum format, GLenum type,
                           GLsizei bufSize, void *data)
 {
+   GLuint fb_id;
+
+   glGenFramebuffers(1, &fb_id);
+   glBindFramebuffer(GL_FRAMEBUFFER, fb_id);
+
+   vrend_fb_bind_texture(res, idx, level, layer);
+
    if (has_feature(feat_arb_robustness))
       glReadnPixelsARB(x, y, width, height, format, type, bufSize, data);
    else if (has_feature(feat_gles_khr_robustness))
       glReadnPixelsKHR(x, y, width, height, format, type, bufSize, data);
    else
       glReadPixels(x, y, width, height, format, type, data);
+
+   glDeleteFramebuffers(1, &fb_id);
 }
 
 static int vrend_transfer_send_readpixels(struct vrend_context *ctx,
@@ -7831,7 +7859,6 @@ static int vrend_transfer_send_readpixels(struct vrend_context *ctx,
 {
    char *myptr = (char*)iov[0].iov_base + info->offset;
    int need_temp = 0;
-   GLuint fb_id;
    char *data;
    bool actually_invert, separate_invert = false;
    GLenum format, type;
@@ -7892,22 +7919,6 @@ static int vrend_transfer_send_readpixels(struct vrend_context *ctx,
 
    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &old_fbo);
 
-   if (res->readback_fb_id == 0 || (int)res->readback_fb_level != info->level ||
-       (int)res->readback_fb_z != info->box->z) {
-
-      if (res->readback_fb_id)
-         glDeleteFramebuffers(1, &res->readback_fb_id);
-
-      glGenFramebuffers(1, &fb_id);
-      glBindFramebuffer(GL_FRAMEBUFFER, fb_id);
-
-      vrend_fb_bind_texture(res, 0, info->level, info->box->z);
-
-      res->readback_fb_id = fb_id;
-      res->readback_fb_level = info->level;
-      res->readback_fb_z = info->box->z;
-   } else
-      glBindFramebuffer(GL_FRAMEBUFFER, res->readback_fb_id);
    if (actually_invert)
       y1 = h - info->box->y - info->box->height;
    else
@@ -7915,8 +7926,6 @@ static int vrend_transfer_send_readpixels(struct vrend_context *ctx,
 
    if (has_feature(feat_mesa_invert) && actually_invert)
       glPixelStorei(GL_PACK_INVERT_MESA, 1);
-   if (!vrend_format_is_ds(res->base.format))
-      glReadBuffer(GL_COLOR_ATTACHMENT0);
    if (!need_temp && row_stride)
       glPixelStorei(GL_PACK_ROW_LENGTH, row_stride);
 
@@ -7974,7 +7983,8 @@ static int vrend_transfer_send_readpixels(struct vrend_context *ctx,
       }
    }
 
-   do_readpixels(info->box->x, y1, info->box->width, info->box->height, format, type, send_size, data);
+   do_readpixels(res, 0, info->level, info->box->z, info->box->x, y1,
+                 info->box->width, info->box->height, format, type, send_size, data);
 
    if (res->base.format == VIRGL_FORMAT_Z24X8_UNORM) {
       if (!vrend_state.use_core_profile)
@@ -8689,6 +8699,7 @@ void vrend_renderer_resource_copy_region(struct vrend_context *ctx,
    struct vrend_resource *src_res, *dst_res;
    GLbitfield glmask = 0;
    GLint sy1, sy2, dy1, dy2;
+   unsigned int comp_flags;
 
    if (ctx->in_error)
       return;
@@ -8723,8 +8734,14 @@ void vrend_renderer_resource_copy_region(struct vrend_context *ctx,
       return;
    }
 
+   comp_flags = VREND_COPY_COMPAT_FLAG_ALLOW_COMPRESSED;
+   if (src_res->egl_image)
+      comp_flags |= VREND_COPY_COMPAT_FLAG_ONE_IS_EGL_IMAGE;
+   if (dst_res->egl_image)
+      comp_flags ^= VREND_COPY_COMPAT_FLAG_ONE_IS_EGL_IMAGE;
+
    if (has_feature(feat_copy_image) &&
-       format_is_copy_compatible(src_res->base.format,dst_res->base.format, true) &&
+       format_is_copy_compatible(src_res->base.format,dst_res->base.format, comp_flags) &&
        src_res->base.nr_samples == dst_res->base.nr_samples) {
       VREND_DEBUG(dbg_copy_resource, ctx, "COPY_REGION: use glCopyImageSubData\n");
       vrend_copy_sub_image(src_res, dst_res, src_level, src_box,
@@ -9115,6 +9132,7 @@ void vrend_renderer_blit(struct vrend_context *ctx,
                          uint32_t dst_handle, uint32_t src_handle,
                          const struct pipe_blit_info *info)
 {
+   unsigned int comp_flags = 0;
    struct vrend_resource *src_res, *dst_res;
    src_res = vrend_renderer_ctx_res_lookup(ctx, src_handle);
    dst_res = vrend_renderer_ctx_res_lookup(ctx, dst_handle);
@@ -9162,6 +9180,11 @@ void vrend_renderer_blit(struct vrend_context *ctx,
                                    info->dst.box.width, info->dst.box.height, info->dst.box.depth,
                                    info->dst.level);
 
+   if (src_res->egl_image)
+      comp_flags |= VREND_COPY_COMPAT_FLAG_ONE_IS_EGL_IMAGE;
+   if (dst_res->egl_image)
+      comp_flags ^= VREND_COPY_COMPAT_FLAG_ONE_IS_EGL_IMAGE;
+
    /* The Gallium blit function can be called for a general blit that may
     * scale, convert the data, and apply some rander states, or it is called via
     * glCopyImageSubData. If the src or the dst image are equal, or the two
@@ -9171,7 +9194,7 @@ void vrend_renderer_blit(struct vrend_context *ctx,
     * normal blit. */
    if (has_feature(feat_copy_image) &&
        (!info->render_condition_enable || !ctx->sub->cond_render_gl_mode) &&
-       format_is_copy_compatible(info->src.format,info->dst.format, false) &&
+       format_is_copy_compatible(info->src.format,info->dst.format, comp_flags) &&
        !info->scissor_enable && (info->filter == PIPE_TEX_FILTER_NEAREST) &&
        !info->alpha_blend && (info->mask == PIPE_MASK_RGBA) &&
        src_res->base.nr_samples == dst_res->base.nr_samples &&
@@ -9217,17 +9240,6 @@ int vrend_renderer_create_fence(struct vrend_context *ctx,
    fence->flags = flags;
    fence->fence_cookie = fence_cookie;
 
-   if (flags & VIRGL_RENDERER_FENCE_FLAG_CPU) {
-      fence->glsyncobj = NULL;
-      list_addtail(&fence->fences, &vrend_state.fence_cpu_list);
-      if (vrend_state.sync_thread) {
-         if (write_eventfd(vrend_state.eventfd, 1)) {
-            perror("failed to write to eventfd\n");
-         }
-      }
-      return 0;
-   }
-
 #ifdef HAVE_EPOXY_EGL_H
    if (vrend_state.use_egl_fence) {
       fence->eglsyncobj = virgl_egl_fence_create(egl);
@@ -9259,12 +9271,12 @@ int vrend_renderer_create_fence(struct vrend_context *ctx,
 static void vrend_renderer_check_queries(void);
 
 static bool need_fence_retire_signal_locked(struct vrend_fence *fence,
-                                            struct list_head *fence_list)
+                                            const struct list_head *signaled_list)
 {
    struct vrend_fence *next;
 
    /* last fence */
-   if (fence->fences.next == fence_list)
+   if (fence->fences.next == signaled_list)
       return true;
 
    /* next fence belongs to a different context */
@@ -9311,25 +9323,17 @@ void vrend_renderer_check_fences(void)
 
       LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_list, fences) {
          if (do_wait(fence, /* can_block */ false)) {
-            if (need_fence_retire_signal_locked(fence, &vrend_state.fence_list)) {
-               list_del(&fence->fences);
-               list_addtail(&fence->fences, &retired_fences);
-            } else {
-               free_fence_locked(fence);
-            }
+            list_del(&fence->fences);
+            list_addtail(&fence->fences, &retired_fences);
          } else {
             /* don't bother checking any subsequent ones */
             break;
          }
       }
-   }
 
-   LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &vrend_state.fence_cpu_list, fences) {
-      if (need_fence_retire_signal_locked(fence, &vrend_state.fence_cpu_list)) {
-         list_del(&fence->fences);
-         list_addtail(&fence->fences, &retired_fences);
-      } else {
-         free_fence_locked(fence);
+      LIST_FOR_EACH_ENTRY_SAFE(fence, stor, &retired_fences, fences) {
+         if (!need_fence_retire_signal_locked(fence, &retired_fences))
+            free_fence_locked(fence);
       }
    }
 
@@ -10442,7 +10446,8 @@ static void vrend_renderer_fill_caps_v2(int gl_ver, int gles_ver,  union virgl_c
 
 #ifdef ENABLE_MINIGBM_ALLOCATION
    if (has_feature(feat_memory_object) && has_feature(feat_memory_object_fd)) {
-         if (!strcmp(gbm_device_get_backend_name(gbm->device), "i915"))
+         if (!strcmp(gbm_device_get_backend_name(gbm->device), "i915") &&
+             !vrend_winsys_different_gpu())
             caps->v2.capability_bits |= VIRGL_CAP_ARB_BUFFER_STORAGE;
    }
 #endif
@@ -10455,11 +10460,21 @@ static void vrend_renderer_fill_caps_v2(int gl_ver, int gles_ver,  union virgl_c
       caps->v2.capability_bits_v2 |= VIRGL_CAP_V2_UNTYPED_RESOURCE;
 #endif
 
-   video_memory = vrend_winsys_query_video_memory();
+   video_memory = vrend_renderer_get_video_memory();
    if (video_memory) {
       caps->v2.capability_bits_v2 |= VIRGL_CAP_V2_VIDEO_MEMORY;
       caps->v2.max_video_memory = video_memory;
    }
+
+   if (has_feature(feat_ati_meminfo) || has_feature(feat_nvx_gpu_memory_info)) {
+      caps->v2.capability_bits_v2 |= VIRGL_CAP_V2_MEMINFO;
+   }
+
+   if (has_feature(feat_khr_debug))
+       caps->v2.capability_bits_v2 |= VIRGL_CAP_V2_STRING_MARKER;
+
+   if (vrend_winsys_different_gpu())
+      caps->v2.capability_bits_v2 |= VIRGL_CAP_V2_DIFFERENT_GPU;
 }
 
 void vrend_renderer_fill_caps(uint32_t set, uint32_t version,
@@ -10562,26 +10577,7 @@ void *vrend_renderer_get_cursor_contents(struct pipe_resource *pres,
       glBindTexture(res->target, res->id);
       glGetnTexImageARB(res->target, 0, format, type, size, data);
    } else if (vrend_state.use_gles) {
-      GLuint fb_id;
-
-      if (res->readback_fb_id == 0 || res->readback_fb_level != 0 || res->readback_fb_z != 0) {
-
-         if (res->readback_fb_id)
-            glDeleteFramebuffers(1, &res->readback_fb_id);
-
-         glGenFramebuffers(1, &fb_id);
-         glBindFramebuffer(GL_FRAMEBUFFER, fb_id);
-
-         vrend_fb_bind_texture(res, 0, 0, 0);
-
-         res->readback_fb_id = fb_id;
-         res->readback_fb_level = 0;
-         res->readback_fb_z = 0;
-      } else {
-         glBindFramebuffer(GL_FRAMEBUFFER, res->readback_fb_id);
-      }
-
-      do_readpixels(0, 0, *width, *height, format, type, size, data);
+      do_readpixels(res, 0, 0, 0, 0, 0, *width, *height, format, type, size, data);
    } else {
       glBindTexture(res->target, res->id);
       glGetTexImage(res->target, 0, format, type, data);
@@ -11151,4 +11147,73 @@ int vrend_renderer_export_ctx0_fence(uint32_t fence_id, int* out_fd) {
    }
 #endif
    return -EINVAL;
+}
+
+void vrend_renderer_get_meminfo(struct vrend_context *ctx, uint32_t res_handle)
+{
+   struct vrend_resource *res;
+   struct virgl_memory_info *info;
+
+   res = vrend_renderer_ctx_res_lookup(ctx, res_handle);
+
+   info = (struct virgl_memory_info *)res->iov->iov_base;
+
+   if (has_feature(feat_nvx_gpu_memory_info)) {
+         GLint i;
+         glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &i);
+         info->total_device_memory = i;
+         glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &i);
+         info->total_staging_memory = i - info->total_device_memory;
+         glGetIntegerv(GL_GPU_MEMORY_INFO_EVICTION_COUNT_NVX, &i);
+         info->nr_device_memory_evictions = i;
+         glGetIntegerv(GL_GPU_MEMORY_INFO_EVICTED_MEMORY_NVX, &i);
+         info->device_memory_evicted = i;
+      }
+
+   if (has_feature(feat_ati_meminfo)) {
+      GLint i[4];
+      glGetIntegerv(GL_VBO_FREE_MEMORY_ATI, i);
+      info->avail_device_memory = i[0];
+      info->avail_staging_memory = i[2];
+   }
+}
+
+static uint32_t vrend_renderer_get_video_memory(void)
+{
+   GLint video_memory = vrend_winsys_query_video_memory();
+
+   if (!video_memory && has_feature(feat_nvx_gpu_memory_info))
+      glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &video_memory);
+
+   return video_memory;
+}
+
+void vrend_context_emit_string_marker(struct vrend_context *ctx, GLsizei length, const char * message)
+{
+    VREND_DEBUG(dbg_khr, ctx, "MARKER: '%.*s'\n", length, message);
+
+#ifdef ENABLE_TRACING
+    char buf[256];
+    if (length > 6 && !strncmp(message, "BEGIN:", 6)) {
+       snprintf(buf, 256, "%.*s", length - 6, &message[6]);
+       TRACE_SCOPE_BEGIN(buf);
+    } else if (length > 4 && !strncmp(message, "END:", 4)) {
+       snprintf(buf, 256, "%.*s", length - 4, &message[4]);
+       const char *scope = buf;
+       TRACE_SCOPE_END(scope);
+    }
+#endif
+
+    if (has_feature(feat_khr_debug))  {
+        if (vrend_state.use_gles)
+            glDebugMessageInsertKHR(GL_DEBUG_SOURCE_APPLICATION_KHR,
+                                    GL_DEBUG_TYPE_MARKER_KHR,
+                                    0, GL_DEBUG_SEVERITY_NOTIFICATION,
+                                    length, message);
+        else
+            glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION,
+                                 GL_DEBUG_TYPE_MARKER,
+                                 0, GL_DEBUG_SEVERITY_NOTIFICATION_KHR,
+                                 length, message);
+    }
 }

@@ -57,7 +57,7 @@ vkr_renderer_reset(void)
 }
 
 static inline size_t
-vkr_get_capset(void *capset)
+vkr_get_capset(UNUSED void *capset)
 {
    return 0;
 }
