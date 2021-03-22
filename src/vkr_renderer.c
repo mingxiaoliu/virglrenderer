@@ -3240,6 +3240,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
 
    dispatch->dispatch_vkEnumerateInstanceVersion = vkr_dispatch_vkEnumerateInstanceVersion;
    dispatch->dispatch_vkEnumerateInstanceExtensionProperties = vkr_dispatch_vkEnumerateInstanceExtensionProperties;
+   /* we don't advertise layers (and should never) */
    dispatch->dispatch_vkEnumerateInstanceLayerProperties = NULL;
    dispatch->dispatch_vkCreateInstance = vkr_dispatch_vkCreateInstance;
    dispatch->dispatch_vkDestroyInstance = vkr_dispatch_vkDestroyInstance;
