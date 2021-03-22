@@ -3771,11 +3771,10 @@ static int vkr_context_transfer_3d_locked(struct virgl_context *base,
    assert(att->resource == res);
 
    /* TODO transfer via dmabuf (and find a solution to coherency issues) */
-   if (res->fd_type == VIRGL_RESOURCE_FD_DMABUF)  {
-   }
-
-   if (LIST_IS_EMPTY(&att->memories))
+   if (LIST_IS_EMPTY(&att->memories)) {
+      vrend_printf("unable to transfer without VkDeviceMemory (TODO)");
       return EINVAL;
+   }
 
    struct vkr_device_memory *mem =
       LIST_ENTRY(struct vkr_device_memory, att->memories.next, head);
