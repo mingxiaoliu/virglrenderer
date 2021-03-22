@@ -1916,7 +1916,6 @@ static int vtest_sync_wait_init(struct vtest_sync_wait *wait,
    }
 
    if (i < sync_count) {
-      wait->count = i;
       vtest_free_sync_wait(wait);
       return -EEXIST;
    }
