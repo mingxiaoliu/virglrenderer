@@ -1576,8 +1576,11 @@ vkr_dispatch_vkGetDeviceQueue(struct vn_dispatch_context *dispatch, struct vn_co
    vn_replace_vkGetDeviceQueue_args_handle(args);
    vkGetDeviceQueue(args->device, args->queueFamilyIndex, args->queueIndex, &handle);
 
-   /* TODO deal with errors */
-   vkr_queue_create(ctx, dev, id, handle, args->queueFamilyIndex, args->queueIndex);
+   struct vkr_queue *queue = vkr_queue_create(ctx, dev, id, handle,
+         args->queueFamilyIndex, args->queueIndex);
+   /* TODO create queues with device and deal with failures there */
+   if (!queue)
+      vrend_printf("failed to create queue\n");
 }
 
 static void
