@@ -1554,6 +1554,7 @@ static void
 vkr_dispatch_vkDeviceWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkDeviceWaitIdle *args)
 {
    struct vkr_context *ctx = dispatch->data;
+   /* no blocking call */
    vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
@@ -1620,6 +1621,7 @@ static void
 vkr_dispatch_vkQueueWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkQueueWaitIdle *args)
 {
    struct vkr_context *ctx = dispatch->data;
+   /* no blocking call */
    vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
@@ -1874,6 +1876,11 @@ vkr_dispatch_vkWaitForFences(struct vn_dispatch_context *dispatch, struct vn_com
 {
    struct vkr_context *ctx = dispatch->data;
 
+   /* Being single-threaded, we cannot afford potential blocking calls.  It
+    * also leads to GPU lost when the wait never returns and can only be
+    * unblocked by a following command (e.g., vkCmdWaitEvents that is
+    * unblocked by a following vkSetEvent).
+    */
    if (args->timeout) {
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
@@ -1928,6 +1935,7 @@ vkr_dispatch_vkWaitSemaphores(struct vn_dispatch_context *dispatch, struct vn_co
       return;
    }
 
+   /* no blocking call */
    if (args->timeout) {
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
