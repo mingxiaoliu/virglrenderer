@@ -21,6 +21,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -156,8 +161,8 @@ while (__AFL_LOOP(1000)) {
 #define OPT_USE_GLX 'x'
 #define OPT_USE_EGL_SURFACELESS 's'
 #define OPT_USE_GLES 'e'
-#define OPT_VENUS 'v'
 #define OPT_RENDERNODE 'r'
+#define OPT_VENUS 'v'
 
 static void vtest_server_parse_args(int argc, char **argv)
 {
@@ -170,8 +175,8 @@ static void vtest_server_parse_args(int argc, char **argv)
       {"use-glx",             no_argument, NULL, OPT_USE_GLX},
       {"use-egl-surfaceless", no_argument, NULL, OPT_USE_EGL_SURFACELESS},
       {"use-gles",            no_argument, NULL, OPT_USE_GLES},
-      {"venus",               no_argument, NULL, OPT_VENUS},
       {"rendernode",          required_argument, NULL, OPT_RENDERNODE},
+      {"venus",               no_argument, NULL, OPT_VENUS},
       {0, 0, 0, 0}
    };
 
@@ -204,16 +209,21 @@ static void vtest_server_parse_args(int argc, char **argv)
       case OPT_USE_GLES:
          server.use_gles = true;
          break;
-      case OPT_VENUS:
-         server.venus = true;
-         break;
       case OPT_RENDERNODE:
          server.render_device = optarg;
          break;
+#ifdef ENABLE_VENUS
+      case OPT_VENUS:
+         server.venus = true;
+         break;
+#endif
       default:
          printf("Usage: %s [--no-fork] [--no-loop-or-fork] [--multi-clients] "
                 "[--use-glx] [--use-egl-surfaceless] [--use-gles] "
-                "[--venus] [--rendernode <dev>]"
+                "[--rendernode <dev>]"
+#ifdef ENABLE_VENUS
+                " [--venus]"
+#endif
                 " [file]\n", argv[0]);
          exit(EXIT_FAILURE);
          break;
