@@ -1835,6 +1835,18 @@ int vtest_sync_read(UNUSED uint32_t length_dw)
    return 0;
 }
 
+static uint32_t vtest_sync_decode_id_and_value(const uint32_t *data,
+                                               uint32_t index,
+                                               uint64_t *value)
+{
+   data += index * 3;
+
+   /* 32-bit sync id followed by 64-bit sync value */
+   *value = (uint64_t)data[1];
+   *value |= (uint64_t)data[2] << 32;
+   return data[0];
+}
+
 int vtest_sync_write(UNUSED uint32_t length_dw)
 {
    struct vtest_context *ctx = vtest_get_current_context();
@@ -1850,9 +1862,7 @@ int vtest_sync_write(UNUSED uint32_t length_dw)
       return -1;
    }
 
-   sync_id = sync_write_buf[VCMD_SYNC_WRITE_ID];
-   value = sync_write_buf[VCMD_SYNC_WRITE_VALUE_LO];
-   value |= (uint64_t)sync_write_buf[VCMD_SYNC_WRITE_VALUE_HI] << 32;
+   sync_id = vtest_sync_decode_id_and_value(sync_write_buf, 0, &value);
 
    sync = util_hash_table_get(ctx->sync_table, intptr_to_pointer(sync_id));
    if (!sync)
@@ -1891,9 +1901,7 @@ static int vtest_sync_wait_init(struct vtest_sync_wait *wait,
       uint32_t sync_id;
       uint64_t value;
 
-      sync_id = syncs[i * 3 + 0];
-      value = syncs[i * 3 + 1];
-      value |= (uint64_t)syncs[i * 3 + 2] << 32;
+      sync_id = vtest_sync_decode_id_and_value(syncs, i, &value);
 
       sync = util_hash_table_get(ctx->sync_table, intptr_to_pointer(sync_id));
       if (!sync)
@@ -1908,7 +1916,6 @@ static int vtest_sync_wait_init(struct vtest_sync_wait *wait,
    }
 
    if (i < sync_count) {
-      wait->count = i;
       vtest_free_sync_wait(wait);
       return -EEXIST;
    }
@@ -2023,9 +2030,7 @@ static int vtest_submit_cmd2_batch(struct vtest_context *ctx,
       uint32_t sync_id;
       uint64_t value;
 
-      sync_id = syncs[i * 3 + 0];
-      value = syncs[i * 3 + 1];
-      value |= (uint64_t)syncs[i * 3 + 2] << 32;
+      sync_id = vtest_sync_decode_id_and_value(syncs, i, &value);
 
       sync = util_hash_table_get(ctx->sync_table, intptr_to_pointer(sync_id));
       if (!sync)

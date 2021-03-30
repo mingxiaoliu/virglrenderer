@@ -42,7 +42,7 @@ vkr_context_create(size_t debug_len, const char *debug_name);
 static inline int
 vkr_renderer_init(UNUSED uint32_t flags)
 {
-   fprintf(stderr, "Vulkan is not supported on this platform\n");
+   fprintf(stderr, "Vulkan support was not enabled in virglrenderer\n");
    return -1;
 }
 

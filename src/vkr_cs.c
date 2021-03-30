@@ -122,7 +122,7 @@ vkr_cs_encoder_get_ptr(struct vkr_cs_encoder *enc,
                        size_t size,
                        size_t *ptr_size)
 {
-   do {
+   while (true) {
       uint8_t *ptr = enc->cur;
       const size_t avail = enc->end - enc->cur;
 
@@ -136,7 +136,7 @@ vkr_cs_encoder_get_ptr(struct vkr_cs_encoder *enc,
          *ptr_size = 0;
          return size ? NULL : ptr;
       }
-   } while (true);
+   }
 }
 
 void

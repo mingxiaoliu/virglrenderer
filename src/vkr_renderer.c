@@ -1561,6 +1561,7 @@ static void
 vkr_dispatch_vkDeviceWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkDeviceWaitIdle *args)
 {
    struct vkr_context *ctx = dispatch->data;
+   /* no blocking call */
    vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
@@ -1582,8 +1583,11 @@ vkr_dispatch_vkGetDeviceQueue(struct vn_dispatch_context *dispatch, struct vn_co
    vn_replace_vkGetDeviceQueue_args_handle(args);
    vkGetDeviceQueue(args->device, args->queueFamilyIndex, args->queueIndex, &handle);
 
-   /* TODO deal with errors */
-   vkr_queue_create(ctx, dev, id, handle, args->queueFamilyIndex, args->queueIndex);
+   struct vkr_queue *queue = vkr_queue_create(ctx, dev, id, handle,
+         args->queueFamilyIndex, args->queueIndex);
+   /* TODO create queues with device and deal with failures there */
+   if (!queue)
+      vrend_printf("failed to create queue\n");
 }
 
 static void
@@ -1627,6 +1631,7 @@ static void
 vkr_dispatch_vkQueueWaitIdle(struct vn_dispatch_context *dispatch, UNUSED struct vn_command_vkQueueWaitIdle *args)
 {
    struct vkr_context *ctx = dispatch->data;
+   /* no blocking call */
    vkr_cs_decoder_set_fatal(&ctx->decoder);
 }
 
@@ -1881,6 +1886,11 @@ vkr_dispatch_vkWaitForFences(struct vn_dispatch_context *dispatch, struct vn_com
 {
    struct vkr_context *ctx = dispatch->data;
 
+   /* Being single-threaded, we cannot afford potential blocking calls.  It
+    * also leads to GPU lost when the wait never returns and can only be
+    * unblocked by a following command (e.g., vkCmdWaitEvents that is
+    * unblocked by a following vkSetEvent).
+    */
    if (args->timeout) {
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
@@ -1935,6 +1945,7 @@ vkr_dispatch_vkWaitSemaphores(struct vn_dispatch_context *dispatch, struct vn_co
       return;
    }
 
+   /* no blocking call */
    if (args->timeout) {
       vkr_cs_decoder_set_fatal(&ctx->decoder);
       return;
@@ -3247,6 +3258,7 @@ vkr_context_init_dispatch(struct vkr_context *ctx)
 
    dispatch->dispatch_vkEnumerateInstanceVersion = vkr_dispatch_vkEnumerateInstanceVersion;
    dispatch->dispatch_vkEnumerateInstanceExtensionProperties = vkr_dispatch_vkEnumerateInstanceExtensionProperties;
+   /* we don't advertise layers (and should never) */
    dispatch->dispatch_vkEnumerateInstanceLayerProperties = NULL;
    dispatch->dispatch_vkCreateInstance = vkr_dispatch_vkCreateInstance;
    dispatch->dispatch_vkDestroyInstance = vkr_dispatch_vkDestroyInstance;
@@ -3793,11 +3805,10 @@ static int vkr_context_transfer_3d_locked(struct virgl_context *base,
    assert(att->resource == res);
 
    /* TODO transfer via dmabuf (and find a solution to coherency issues) */
-   if (res->fd_type == VIRGL_RESOURCE_FD_DMABUF)  {
-   }
-
-   if (LIST_IS_EMPTY(&att->memories))
+   if (LIST_IS_EMPTY(&att->memories)) {
+      vrend_printf("unable to transfer without VkDeviceMemory (TODO)");
       return EINVAL;
+   }
 
    struct vkr_device_memory *mem =
       LIST_ENTRY(struct vkr_device_memory, att->memories.next, head);
