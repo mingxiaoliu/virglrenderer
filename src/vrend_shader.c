@@ -272,6 +272,7 @@ struct dump_ctx {
    bool has_file_memory;
    bool force_color_two_side;
    bool winsys_adjust_y_emitted;
+   bool gles_use_tex_query_level;
 
    int tcs_vertices_out;
    int tes_prim_mode;
@@ -2304,14 +2305,16 @@ static void emit_txq(struct dump_ctx *ctx,
          if (inst->Dst[0].Register.WriteMask & 0x7)
             twm = TGSI_WRITEMASK_W;
 
-         if (!ctx->cfg->use_gles)
+         if (!ctx->cfg->use_gles) {
             emit_buff(&ctx->glsl_strbufs, "%s%s = %s(textureQueryLevels(%s));\n", dst,
                       get_wm_string(twm), get_string(dtypeprefix),
                       srcs[sampler_index]);
-         else
+         } else {
             emit_buff(&ctx->glsl_strbufs, "%s%s = %s(%s_texlod[%s]);\n", dst, get_wm_string(twm),
                       get_string(dtypeprefix), tgsi_proc_to_prefix(ctx->info.processor),
                       srcs[sampler_index]);
+            ctx->gles_use_tex_query_level = true;
+         }
       }
 
       if (inst->Dst[0].Register.WriteMask & 0x7) {
@@ -5973,7 +5976,7 @@ static int emit_ios_common(const struct dump_ctx *ctx,
       }
    }
 
-   if (ctx->cfg->use_gles && n_samplers)
+   if (ctx->cfg->use_gles && ctx->gles_use_tex_query_level)
       emit_hdrf(glsl_strbufs, "uniform int %s_texlod[%d];\n", tgsi_proc_to_prefix(ctx->info.processor), n_samplers);
 
    if (ctx->info.indirect_files & (1 << TGSI_FILE_IMAGE)) {
@@ -6967,6 +6970,7 @@ static void fill_sinfo(const struct dump_ctx *ctx, struct vrend_shader_info *sin
       if (ctx->outputs[i].invariant)
          sinfo->invariant_outputs |= 1ull << ctx->outputs[i].sid;
    }
+   sinfo->gles_use_tex_query_level = ctx->gles_use_tex_query_level;
 }
 
 static bool allocate_strbuffers(struct vrend_glsl_strbufs* glsl_strbufs)
